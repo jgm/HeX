@@ -1,5 +1,4 @@
-{-# LANGUAGE DeriveDataTypeable, OverloadedStrings, FlexibleInstances,
-    MultiParamTypeClasses #-}
+{-# LANGUAGE DeriveDataTypeable, OverloadedStrings #-}
 {- |
    Module      : Text.HeX
    Copyright   : Copyright (C) 2010 John MacFarlane
@@ -37,18 +36,12 @@ import System.Environment
 import System.Exit (ExitCode(..), exitWith)
 import System.FilePath
 import System.Directory
-import qualified Data.Text as T
-import qualified Data.Text.IO as T
-import Data.Text (Text)
-
-instance Monad m => Stream Text m Char where
-  uncons = return . T.uncons
 
 data HeXState = HeXState { hexParsers :: [HeX Builder]
                          , hexFormat  :: String
                          , hexVars    :: M.Map String Dynamic }
 
-type HeX = ParsecT Text HeXState IO
+type HeX = ParsecT String HeXState IO
 
 setVar :: Typeable a => String -> a -> HeX a
 setVar name' v = do
@@ -72,7 +65,7 @@ updateVar name' f = getVar name' >>= setVar name' . f
 setParsers :: [HeX Builder] -> HeX ()
 setParsers parsers = updateState $ \s -> s{ hexParsers = parsers }
 
-run :: [HeX Builder] -> String -> Text -> IO L.ByteString
+run :: [HeX Builder] -> String -> String -> IO L.ByteString
 run parsers format contents = do
   result <- runParserT (do setParsers parsers
                            spaces
@@ -98,19 +91,17 @@ use parsers = do
   format <- case args of
              [x]    -> return x
              _      -> usage >> exitWith (ExitFailure 1)
-  txt <- liftM removeCode $ T.readFile prog'
+  txt <- liftM removeCode $ readFile prog'
   res <- run parsers format txt
   L.putStr res
   exitWith ExitSuccess
 
-removeCode :: Text -> Text
-removeCode = T.unlines .
-  map (\ln -> if isCommentLine ln then ln else T.empty) . T.lines
-   where isCommentLine :: Text -> Bool
-         isCommentLine t = case T.uncons t of
-                                Just ('>',_) -> False
-                                Just ('#',_) -> False
-                                _            -> True
+removeCode :: String -> String
+removeCode = unlines . map (\ln -> if isCommentLine ln then ln else "") . lines
+   where isCommentLine :: String -> Bool
+         isCommentLine ('>':_) = False
+         isCommentLine ('#':_) = False
+         isCommentLine _       = True
 
 getInputFilePath :: IO FilePath
 getInputFilePath = do
