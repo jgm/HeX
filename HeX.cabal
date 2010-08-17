@@ -1,0 +1,22 @@
+Name:                HeX
+Version:             0.1
+Synopsis:            A flexible text macro system.
+-- Description:
+License:             BSD3
+License-file:        LICENSE
+Author:              John MacFarlane
+Maintainer:          jgm@berkeley.edu
+Copyright:           Copyright 2010 John MacFarlane
+Category:            Text
+Build-type:          Simple
+Extra-source-files:  examples/test.lhs
+Cabal-version:       >=1.2
+Library
+  Exposed-modules:   Text.HeX
+  Build-depends:     parsec >= 3.1, base >= 4,
+                     filepath, directory, process, mtl, containers,
+                     bytestring, utf8-string, blaze-builder >= 0.1 && < 0.2
+  if impl(ghc >= 6.12)
+    Ghc-Options:     -Wall -fno-warn-unused-do-bind
+  else
+    Ghc-Options:     -Wall

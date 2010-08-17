@@ -1,0 +1,41 @@
+Make a data type
+
+data HeXDoc = HeXDoc { teXDoc   :: TeX
+                     , htmlDoc  :: Html }
+
+instance Doc HeXDoc where
+
+Idea is that our parsers can then emit both TeX and HTML.
+Many will be combinators & will be neutral.
+
+Concept:
+
+- commands not latex syntax
+- instead, ;emph {hi there}
+- all commands have type
+   HeX Builder
+- so you can make an Html module and a TeX module for the
+  same set of macros, e.g.
+
+to a more flexible form of contextualism:
+\begin{definition}[Context-sensitive ought---flexible]
+An occurrence of ``$S$ ought to $\phi$'' at a context $c$ is
+true iff $\phi$-ing is the best course of action available to
+$S$ in light of the evidence relevant at $c$.
+\end{definition}
+
+to a more flexible form of contextualism:
+.definition [Context-sensitive ought---flexible]
+an occurrence of ``$S$ ought to $;phi$'' at a context $c$ is
+true iff $;phi$-ing is the best course of action available to
+$S$ in light of the evidence relevant at $c$.
+.
+
+the ;cmd are reg commands;
+they parse some number of arguments
+
+the |def> <def| are start/stop state-changers;
+they actually change the list of active parsers
+
+
+
