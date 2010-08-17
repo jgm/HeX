@@ -1,20 +1,12 @@
 #!/usr/bin/env runghc
 
 > import Text.HeX
+> import Text.HeX.TeX as TeX
+> import Text.HeX.Html as Html
 
 > oneChar = do
 >   c <- anyChar
->   "html"  ==> escapeHtmlChar c &
->    "tex"  ==> escapeTeXChar c
-
-> escapeHtmlChar '&' = fromString "&amp;"
-> escapeHtmlChar '<' = fromString "&lt;"
-> escapeHtmlChar '>' = fromString "&gt;"
-> escapeHtmlChar c   = fromChar c
-
-> escapeTeXChar c | c `elem` "$#&%"     = fromString ['\\',c]
-> escapeTeXChar c | c `elem` "&~\\{}_^" = fromString $ "{\\char`\\" ++ [c] ++ "}"
-> escapeTeXChar c                       = fromChar c
+>   "html"  ==> Html.ch c & "tex" ==> TeX.ch c
 
 > main = use [oneChar]
 
