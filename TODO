@@ -1,41 +1,39 @@
-Make a data type
+problem if you have a line beginning with > or # in a verbatim
+section.  these will be stripped out as code.
 
-data HeXDoc = HeXDoc { teXDoc   :: TeX
-                     , htmlDoc  :: Html }
+perhaps better to have a separate program that parses the input
+file into code + text, then uses the GHC API to construct a function out
+of the code, and finally parses the text with this function.
 
-instance Doc HeXDoc where
+or, if not using the GHC API, we could simply construct a temporary
+file with a lhs program.
 
-Idea is that our parsers can then emit both TeX and HTML.
-Many will be combinators & will be neutral.
+possible solution?
 
-Concept:
+jgm@johnsmac:~/src/HeX [503]% cat t.sh
+#!/bin/sh
+# $1 is source file name, $2 is source contents, $3 is dest file name
+sed -e 's/Y/y/g' $2 > $3
+echo $4
+jgm@johnsmac:~/src/HeX [504]% runghc -F -pgmF=./t.sh -optF=--eek h.txt
+--eek
+Hi you
+jgm@johnsmac:~/src/HeX [505]% 
 
-- commands not latex syntax
-- instead, ;emph {hi there}
-- all commands have type
-   HeX Builder
-- so you can make an Html module and a TeX module for the
-  same set of macros, e.g.
+now we just need, instead of t.sh, something that strips out the
+code parts and puts in blank lines.
+striphex
 
-to a more flexible form of contextualism:
-\begin{definition}[Context-sensitive ought---flexible]
-An occurrence of ``$S$ ought to $\phi$'' at a context $c$ is
-true iff $\phi$-ing is the best course of action available to
-$S$ in light of the evidence relevant at $c$.
-\end{definition}
+Then a target hex file can look like this:
 
-to a more flexible form of contextualism:
-.definition [Context-sensitive ought---flexible]
-an occurrence of ``$S$ ought to $;phi$'' at a context $c$ is
-true iff $;phi$-ing is the best course of action available to
-$S$ in light of the evidence relevant at $c$.
-.
+import Blah
 
-the ;cmd are reg commands;
-they parse some number of arguments
+main = blah
 
-the |def> <def| are start/stop state-changers;
-they actually change the list of active parsers
+----
 
+The file starts here.
+
+more text
 
 
