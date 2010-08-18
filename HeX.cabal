@@ -16,9 +16,20 @@ Library
                      Text.HeX.TeX
                      Text.HeX.Html
   Build-depends:     parsec >= 3.1, base >= 4,
-                     filepath, directory, process, mtl, containers,
+                     mtl, containers,
                      bytestring, utf8-string, blaze-builder >= 0.1 && < 0.2
   if impl(ghc >= 6.12)
     Ghc-Options:     -Wall -fno-warn-unused-do-bind
   else
     Ghc-Options:     -Wall
+Executable hex
+  Main-is:           hex.hs
+  Build-depends:     parsec >= 3.1, base >= 4,
+                     filepath, directory, mtl, containers,
+                     bytestring, utf8-string, blaze-builder >= 0.1 && < 0.2,
+                     hint >= 0.3 && < 0.4
+  if impl(ghc >= 6.12)
+    Ghc-Options:     -Wall -fno-warn-unused-do-bind
+  else
+    Ghc-Options:     -Wall
+

@@ -1,5 +1,3 @@
-#!/usr/bin/env runghc
-
 > import Text.HeX
 > import Text.HeX.TeX as TeX
 > import Text.HeX.Html as Html
@@ -8,7 +6,7 @@
 >   c <- anyChar
 >   "html"  ==> Html.ch c & "tex" ==> TeX.ch c
 
-> main = use [oneChar]
+> parsers = [oneChar]
 
 Here's the text & that text.
 

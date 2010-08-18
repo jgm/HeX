@@ -13,7 +13,6 @@ formats can be supported by a single set of macros.
 
 module Text.HeX ( HeX
                 , use
-                , run
                 , setVar
                 , getVar
                 , updateVar
@@ -31,11 +30,6 @@ import Text.Blaze.Builder.Core
 import Text.Blaze.Builder.Utf8
 import qualified Data.Map as M
 import Data.Monoid
-import System.IO
-import System.Environment
-import System.Exit (ExitCode(..), exitWith)
-import System.FilePath
-import System.Directory
 
 data HeXState = HeXState { hexParsers :: [HeX Builder]
                          , hexFormat  :: String
@@ -78,23 +72,10 @@ run parsers format contents = do
        Left e    -> error (show e)
        Right res -> return $ toLazyByteString $ mconcat $ res
 
-usage :: IO ()
-usage = do
-  prog' <- getInputFilePath
-  hPutStrLn stderr $ "HeX (c) 2010 John MacFarlane\n" ++
-                     "Usage:  ./" ++ prog' ++ " FORMAT"
-
-use :: [HeX Builder] -> IO ()
-use parsers = do
-  prog' <- getInputFilePath
-  args <- getArgs
-  format <- case args of
-             [x]    -> return x
-             _      -> usage >> exitWith (ExitFailure 1)
-  txt <- liftM removeCode $ readFile prog'
-  res <- run parsers format txt
-  L.putStr res
-  exitWith ExitSuccess
+use :: [HeX Builder] -> FilePath -> String -> IO L.ByteString
+use parsers file fmt = do
+  txt <- liftM removeCode $ readFile file
+  run parsers fmt txt
 
 removeCode :: String -> String
 removeCode = unlines . map (\ln -> if isCommentLine ln then ln else "") . lines
@@ -102,13 +83,6 @@ removeCode = unlines . map (\ln -> if isCommentLine ln then ln else "") . lines
          isCommentLine ('>':_) = False
          isCommentLine ('#':_) = False
          isCommentLine _       = True
-
-getInputFilePath :: IO FilePath
-getInputFilePath = do
-  prog' <- getProgName >>= makeRelativeToCurrentDirectory
-  case takeExtension prog' of
-        ".lhs" -> return prog'
-        _      -> error $ "`" ++ prog' ++ "' is not a literate Haskell file."
 
 infixl 4 &
 (&) :: HeX Builder -> HeX Builder -> HeX Builder
