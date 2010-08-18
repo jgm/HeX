@@ -23,6 +23,7 @@ main = do
     L.hPut h code
     hClose h
     res <- runInterpreter $ do
+      set [languageExtensions := [OverloadedStrings]]
       loadModules [fp]
       setTopLevelModules ["Main"]
       setImports ["Data.ByteString.Lazy.Internal"]

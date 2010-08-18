@@ -16,6 +16,7 @@ module Text.HeX ( HeX
                 , setVar
                 , getVar
                 , updateVar
+                , (+++)
                 , (&)
                 , (==>)
                 , module Text.Parsec
@@ -71,6 +72,10 @@ run parsers format contents = do
   case result of
        Left e    -> error (show e)
        Right res -> return $ toLazyByteString $ mconcat $ res
+
+infix 8 +++
+(+++) :: Builder -> Builder -> Builder
+(+++) = mappend
 
 infixl 4 &
 (&) :: HeX Builder -> HeX Builder -> HeX Builder
