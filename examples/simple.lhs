@@ -6,7 +6,17 @@
 >   c <- anyChar
 >   "html"  ==> Html.ch c & "tex" ==> TeX.ch c
 
-> parsers = [oneChar]
+> emph = command "emph" $ do
+>   arg <- getNext
+>   "html"  ==> "<em>" +++ arg +++ "</em>" &
+>    "tex"  ==> "\\emph{" +++ arg +++ "}"
 
-Here's the text & that text.
+> group = do
+>   char '{'
+>   res <- manyTill getNext (char '}')
+>   return $ mconcat res
+
+> parsers = [group, emph, oneChar]
+
+Here's the text & that text and some *emph{emphasized text}.
 
