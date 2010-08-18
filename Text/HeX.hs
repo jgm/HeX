@@ -12,7 +12,7 @@ formats can be supported by a single set of macros.
 -}
 
 module Text.HeX ( HeX
-                , use
+                , run
                 , setVar
                 , getVar
                 , updateVar
@@ -71,18 +71,6 @@ run parsers format contents = do
   case result of
        Left e    -> error (show e)
        Right res -> return $ toLazyByteString $ mconcat $ res
-
-use :: [HeX Builder] -> FilePath -> String -> IO L.ByteString
-use parsers file fmt = do
-  txt <- liftM removeCode $ readFile file
-  run parsers fmt txt
-
-removeCode :: String -> String
-removeCode = unlines . map (\ln -> if isCommentLine ln then ln else "") . lines
-   where isCommentLine :: String -> Bool
-         isCommentLine ('>':_) = False
-         isCommentLine ('#':_) = False
-         isCommentLine _       = True
 
 infixl 4 &
 (&) :: HeX Builder -> HeX Builder -> HeX Builder

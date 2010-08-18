@@ -25,9 +25,9 @@ Library
 Executable hex
   Main-is:           hex.hs
   Build-depends:     parsec >= 3.1, base >= 4,
-                     filepath, directory, mtl, containers,
+                     filepath, directory, mtl, containers, directory,
                      bytestring, utf8-string, blaze-builder >= 0.1 && < 0.2,
-                     hint >= 0.3 && < 0.4
+                     hint >= 0.3 && < 0.4, split >= 0.1 && < 0.2
   if impl(ghc >= 6.12)
     Ghc-Options:     -Wall -fno-warn-unused-do-bind
   else
