@@ -1,4 +1,4 @@
-{-# LANGUAGE DeriveDataTypeable, OverloadedStrings #-}
+{-# LANGUAGE DeriveDataTypeable, OverloadedStrings, PatternGuards #-}
 {- |
    Module      : Text.HeX
    Copyright   : Copyright (C) 2010 John MacFarlane
@@ -16,11 +16,15 @@ module Text.HeX ( HeX
                 , setVar
                 , getVar
                 , updateVar
+                , getNext
+                , getOpt
+                , command
                 , (+++)
                 , (&)
                 , (==>)
                 , module Text.Parsec
                 , module Text.Blaze.Builder.Utf8
+                , module Data.Monoid
                 )
 where
 import Text.Parsec
@@ -73,7 +77,7 @@ run parsers format contents = do
        Left e    -> error (show e)
        Right res -> return $ toLazyByteString $ mconcat $ res
 
-infix 8 +++
+infixl 8 +++
 (+++) :: Builder -> Builder -> Builder
 (+++) = mappend
 
@@ -88,4 +92,26 @@ k ==> v = do
   if format == k
      then return v
      else fail $ "I don't know how to render this in " ++ format
+
+getNext :: HeX Builder
+getNext = do
+  parsers <- liftM hexParsers getState
+  choice parsers
+
+readM :: (Monad m, Read a) => String -> m a
+readM s | [x] <- parsed = return x
+        | otherwise     = fail $ "Failed to parse `" ++ s ++ "'"
+  where
+    parsed = [x | (x,_) <- reads s]
+
+getOpt :: Read a => HeX a
+getOpt = try $ do
+  char '['
+  res <- manyTill (noneOf "]\n" <|> (char '\\' >> anyChar)) (char ']')
+  readM res
+
+command :: String -> HeX Builder -> HeX Builder
+command name p = do
+  try $ char '*' >> string name >> notFollowedBy letter
+  p
 
