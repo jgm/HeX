@@ -1,39 +1,65 @@
-problem if you have a line beginning with > or # in a verbatim
-section.  these will be stripped out as code.
+Ideas:
 
-perhaps better to have a separate program that parses the input
-file into code + text, then uses the GHC API to construct a function out
-of the code, and finally parses the text with this function.
+* make commands with \ rather than *?
+  Joe and \emph{Sue} went to town.
 
-or, if not using the GHC API, we could simply construct a temporary
-file with a lhs program.
+* two kinds of groups:
+  {regular group !parsed{inside}}
 
-possible solution?
+  {|literal group !not parsed inside|}
+  {-|alternative|-}
+  {--|alternative|--}
 
-jgm@johnsmac:~/src/HeX [503]% cat t.sh
-#!/bin/sh
-# $1 is source file name, $2 is source contents, $3 is dest file name
-sed -e 's/Y/y/g' $2 > $3
-echo $4
-jgm@johnsmac:~/src/HeX [504]% runghc -F -pgmF=./t.sh -optF=--eek h.txt
---eek
-Hi you
-jgm@johnsmac:~/src/HeX [505]% 
+* commands need to be of the form:
+  emph :: Builder -> HeX Builder
+  or
+  emph' :: Maybe Int -> Builder -> HeX Builder
+  for a command with options
+  or
+  frac :: Builder -> Builder -> HeX Builder
+  for a command with two arguments.
 
-now we just need, instead of t.sh, something that strips out the
-code parts and puts in blank lines.
-striphex
+  Then make them into commands using:
+  command "emph" emph
+  or maybe just
+  command emph
+  if we can snarf the name
 
-Then a target hex file can look like this:
+  This is needed if we are to recombine them in other
+  commands.
 
-import Blah
+* math mode
+  should store math mode in state.
+  then certain commands can be marked ensureMath
+  and they will trigger math mode if it isn't already
 
-main = blah
+* add parsers for $..$, $$..$$
+  maybe these are just equiv to
+  *math{|..|}
+  *displaymath{|..|}
 
----
+* environments:
+  *quote{
+  blah blah
+  }
 
-The file starts here.
+  the quote command will strip off the initial newline.
 
-more text
+* escapes:
+  \x for any x is a literal x
+  \\ is a literal backslash
+  escape NEEDED for {}*|\
 
+* Writeup on motivations:
+
+  good things about pandoc:
+  - canonical document that can go into many formats
+  bad things:
+  - no extensibility
+  - no macros
+  good things about latex;
+  - extensibility through macros
+  - no limitations
+  bad things about latex:
+  - ugly language to program in, difficult to write macros
 
