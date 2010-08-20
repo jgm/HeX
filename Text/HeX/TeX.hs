@@ -7,14 +7,9 @@ module Text.HeX.TeX (
   )
 where
 import Text.Blaze.Builder.Core
-import qualified Text.Blaze.Builder.Utf8 as U
-import Text.Blaze.Builder.Utf8 (fromChar)
 import Data.Char
 import Data.Monoid
-import Data.String
-
-instance IsString Builder
-  where fromString = U.fromString
+import Text.HeX
 
 ctl :: String -> Builder
 ctl s | all isLetter s = (fromChar '\\') `mappend` (fromString s)

@@ -8,8 +8,8 @@
 
 > emph = command "emph" $ do
 >   arg <- getNext
->   "html"  ==> "<em>" +++ arg +++ "</em>" &
->    "tex"  ==> "\\emph{" +++ arg +++ "}"
+>   "html"  ==> inTags "em" [] arg &
+>    "tex"  ==> ctl "emph" +++ grp [arg]
 
 > group = do
 >   char '{'

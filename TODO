@@ -1,5 +1,10 @@
 Ideas:
 
+* reorganize modules:
+  Text.HeX  -- HeX, state, variables, run, +++, ==>
+  Text.HeX.TeX, Text.HeX.Html -- helpers for building
+  Text.HeX.Default -- latex like parsers
+
 * math mode
   should store math mode in state.
   then certain commands can be marked ensureMath

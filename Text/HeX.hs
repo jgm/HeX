@@ -35,6 +35,7 @@ import Text.Blaze.Builder.Core
 import Text.Blaze.Builder.Utf8
 import qualified Data.Map as M
 import Data.Monoid
+import Data.String
 
 data HeXState = HeXState { hexParsers :: [HeX Builder]
                          , hexFormat  :: String
@@ -92,6 +93,9 @@ k ==> v = do
   if format == k
      then return v
      else fail $ "I don't know how to render this in " ++ format
+
+instance IsString Builder
+  where fromString = Text.Blaze.Builder.Utf8.fromString
 
 getNext :: HeX Builder
 getNext = do
