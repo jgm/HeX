@@ -112,6 +112,6 @@ getOpt = try $ do
 
 command :: String -> HeX Builder -> HeX Builder
 command name p = do
-  try $ char '*' >> string name >> notFollowedBy letter
+  try $ char '\\' >> string name >> notFollowedBy letter
   p
 

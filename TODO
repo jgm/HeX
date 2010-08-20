@@ -1,33 +1,5 @@
 Ideas:
 
-* make commands with \ rather than *?
-  Joe and \emph{Sue} went to town.
-
-* two kinds of groups:
-  {regular group !parsed{inside}}
-
-  {|literal group !not parsed inside|}
-  {-|alternative|-}
-  {--|alternative|--}
-
-* commands need to be of the form:
-  emph :: Builder -> HeX Builder
-  or
-  emph' :: Maybe Int -> Builder -> HeX Builder
-  for a command with options
-  or
-  frac :: Builder -> Builder -> HeX Builder
-  for a command with two arguments.
-
-  Then make them into commands using:
-  command "emph" emph
-  or maybe just
-  command emph
-  if we can snarf the name
-
-  This is needed if we are to recombine them in other
-  commands.
-
 * math mode
   should store math mode in state.
   then certain commands can be marked ensureMath
@@ -35,11 +7,9 @@ Ideas:
 
 * add parsers for $..$, $$..$$
   maybe these are just equiv to
-  *math{|..|}
-  *displaymath{|..|}
 
 * environments:
-  *quote{
+  \quote{
   blah blah
   }
 
@@ -48,7 +18,7 @@ Ideas:
 * escapes:
   \x for any x is a literal x
   \\ is a literal backslash
-  escape NEEDED for {}*|\
+  escape NEEDED for {}|\$ and in some contexts []
 
 * Writeup on motivations:
 

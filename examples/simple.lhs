@@ -18,5 +18,5 @@
 
 > parsers = [group, emph, oneChar]
 
-Here's the text & that text and some *emph{emphasized text}.
+Here's the text & that text and some \emph{emphasized text}.
 
