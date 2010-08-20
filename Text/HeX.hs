@@ -12,6 +12,7 @@ formats can be supported by a single set of macros.
 -}
 
 module Text.HeX ( HeX
+                , HeXState(..)
                 , run
                 , setVar
                 , getVar
@@ -37,6 +38,7 @@ import Data.String
 
 data HeXState = HeXState { hexParsers :: [HeX Builder]
                          , hexFormat  :: String
+                         , hexMath    :: Bool
                          , hexVars    :: M.Map String Dynamic }
 
 type HeX = ParsecT String HeXState IO
@@ -71,6 +73,7 @@ run parsers format contents = do
                                      fail "No matching parser.")  eof)
                HeXState{ hexParsers = []
                        , hexFormat = format
+                       , hexMath = False
                        , hexVars = M.empty } "input" contents
   case result of
        Left e    -> error (show e)
