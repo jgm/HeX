@@ -14,11 +14,15 @@ import Data.List (intercalate)
 main :: IO ()
 main = do
   args <- getArgs
-  (file,fmt) <- case args of
+  (fmt,file) <- case args of
                      [x,y]   -> return (x,y)
-                     _       -> do hPutStrLn stderr $ "Usage:  hex FILE FORMAT"
+                     [x]     -> return (x,"-")
+                     _       -> do hPutStrLn stderr $
+                                      "Usage:  hex FORMAT [FILE]"
                                    exitWith $ ExitFailure 1
-  (code, txt) <- liftM splitSource $ L.readFile file
+  (code, txt) <- liftM splitSource $ if file == "-"
+                                        then L.getContents
+                                        else L.readFile file
   withTempFile "hextemph.lhs" $ \fp h -> do
     L.hPut h code
     hClose h
