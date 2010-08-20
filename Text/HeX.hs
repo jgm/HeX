@@ -17,8 +17,6 @@ module Text.HeX ( HeX
                 , getVar
                 , updateVar
                 , getNext
-                , getOpt
-                , command
                 , (+++)
                 , (&)
                 , (==>)
@@ -101,21 +99,3 @@ getNext :: HeX Builder
 getNext = do
   parsers <- liftM hexParsers getState
   choice parsers
-
-readM :: (Monad m, Read a) => String -> m a
-readM s | [x] <- parsed = return x
-        | otherwise     = fail $ "Failed to parse `" ++ s ++ "'"
-  where
-    parsed = [x | (x,_) <- reads s]
-
-getOpt :: Read a => HeX a
-getOpt = try $ do
-  char '['
-  res <- manyTill (noneOf "]\n" <|> (char '\\' >> anyChar)) (char ']')
-  readM res
-
-command :: String -> HeX Builder -> HeX Builder
-command name p = do
-  try $ char '\\' >> string name >> notFollowedBy letter
-  p
-

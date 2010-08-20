@@ -1,4 +1,4 @@
-> import Text.HeX
+> import Text.HeX.Default
 > import Text.HeX.TeX as TeX
 > import Text.HeX.Html as Html
 

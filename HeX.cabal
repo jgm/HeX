@@ -13,6 +13,7 @@ Extra-source-files:  examples/test.lhs
 Cabal-version:       >=1.2
 Library
   Exposed-modules:   Text.HeX
+                     Text.HeX.Default
                      Text.HeX.TeX
                      Text.HeX.Html
   Build-depends:     parsec >= 3.1, base >= 4,

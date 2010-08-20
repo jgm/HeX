@@ -1,9 +1,9 @@
 Ideas:
 
-* reorganize modules:
-  Text.HeX  -- HeX, state, variables, run, +++, ==>
-  Text.HeX.TeX, Text.HeX.Html -- helpers for building
-  Text.HeX.Default -- latex like parsers
+* should write all macros as functions
+  Builder -> HeX Builder etc.
+  and use command like functions to turn them into reg parsers.
+  this makes them recombinable.
 
 * math mode
   should store math mode in state.
