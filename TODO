@@ -5,14 +5,6 @@ Ideas:
   and use command like functions to turn them into reg parsers.
   this makes them recombinable.
 
-* math mode
-  should store math mode in state.
-  then certain commands can be marked ensureMath
-  and they will trigger math mode if it isn't already
-
-* add parsers for $..$, $$..$$
-  maybe these are just equiv to
-
 * environments:
   \quote{
   blah blah

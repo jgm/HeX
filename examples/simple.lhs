@@ -7,7 +7,14 @@
 >   "html"  ==> inTags "em" [] arg &
 >    "tex"  ==> ctl "emph" +++ grp [arg]
 
-> parsers = [group, math, emph, oneChar]
+> funny = ensureMath $ command "funny" $
+>   "html"  ==> "\\pi"
+>    & "tex" ==> "\\pi"
+
+> parsers = [group, funny, math, emph, oneChar]
 
 Here's the text & that text and some \emph{emphasized text}.
 And some math: $e=mc^2$. And some display math: $$e=mc^2$$.
+
+\funny and $y = \funny$.
+

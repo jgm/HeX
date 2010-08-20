@@ -17,6 +17,7 @@ module Text.HeX.Default
                 , command
                 , group
                 , math
+                , ensureMath
                 , module Text.HeX
                 )
 where
@@ -60,15 +61,33 @@ group = do
   res <- manyTill getNext (char '}')
   return $ mconcat res
 
+inMathMode :: HeX a -> HeX a
+inMathMode p = do
+  mathmode <- liftM hexMath getState
+  updateState $ \s -> s{ hexMath = True }
+  res <- p
+  updateState $ \s -> s { hexMath = mathmode }
+  return res
+
+emitMath :: Bool -> Builder -> HeX Builder
+emitMath display b = do
+  let tagtype = if display then "div" else "span"
+  let delim = if display then "$$" else "$"
+  "html" ==> Html.inTags tagtype [("class","math")] b
+   & "tex" ==> fromString delim +++ b +++ fromString delim
+
 math :: HeX Builder
 math = do
-  a <- char '$'
-  b <- option "" $ count 1 $ char '$'
-  let delim = a:b
-  updateState $ \s -> s{ hexMath = True }
-  raw <- liftM mconcat $ manyTill oneChar (try $ string delim)
-  updateState $ \s -> s { hexMath = False }
-  let tagtype = if delim == "$" then "span" else "div"
-  "html" ==> Html.inTags tagtype [("class","math")] raw
-   & "tex" ==> fromString delim +++ raw +++ fromString delim
+  char '$'
+  display <- option False $ char '$' >> return True
+  let delim = if display then try (string "$$") else count 1 (char '$')
+  raw <- inMathMode $ manyTill getNext delim
+  emitMath display $ mconcat raw
 
+ensureMath :: HeX Builder -> HeX Builder
+ensureMath p = do
+  mathmode <- liftM hexMath getState
+  res <- inMathMode p
+  if mathmode
+     then return res
+     else emitMath False res
