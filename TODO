@@ -16,11 +16,6 @@ Ideas:
 
   the quote command will strip off the initial newline.
 
-* escapes:
-  \x for any x is a literal x
-  \\ is a literal backslash
-  escape NEEDED for {}|\$ and in some contexts []
-
 * Writeup on motivations:
 
   good things about pandoc:
