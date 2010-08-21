@@ -1,4 +1,5 @@
-{-# LANGUAGE DeriveDataTypeable, OverloadedStrings, PatternGuards, StandaloneDeriving, FlexibleInstances, TypeSynonymInstances #-}
+{-# LANGUAGE DeriveDataTypeable, OverloadedStrings, PatternGuards,
+    TypeSynonymInstances, GeneralizedNewtypeDeriving #-}
 {- |
    Module      : Text.HeX
    Copyright   : Copyright (C) 2010 John MacFarlane
@@ -13,6 +14,7 @@ formats can be supported by a single set of macros.
 
 module Text.HeX ( HeX
                 , HeXState(..)
+                , Doc(..)
                 , run
                 , setVar
                 , getVar
@@ -39,15 +41,16 @@ import qualified Data.Map as M
 import Data.Monoid
 import Data.String
 
-data HeXState = HeXState { hexParsers :: [HeX Builder]
+newtype Doc = Doc { unDoc :: Builder }
+            deriving (Monoid, Typeable)
+
+data HeXState = HeXState { hexParsers :: [HeX Doc]
                          , hexFormat  :: String
                          , hexMath    :: Bool
                          , hexVars    :: M.Map String Dynamic }
               deriving (Typeable)
 
 type HeX = ParsecT String HeXState IO
-
-deriving instance Typeable Builder
 
 instance Typeable1 HeX
   where typeOf1 _ = mkTyConApp (mkTyCon "HeX") []
@@ -71,10 +74,10 @@ getVar name' = do
 updateVar :: Typeable a => String -> (a -> a) -> HeX a
 updateVar name' f = getVar name' >>= setVar name' . f
 
-setParsers :: [HeX Builder] -> HeX ()
+setParsers :: [HeX Doc] -> HeX ()
 setParsers parsers = updateState $ \s -> s{ hexParsers = parsers }
 
-run :: [HeX Builder] -> String -> String -> IO L.ByteString
+run :: [HeX Doc] -> String -> String -> IO L.ByteString
 run parsers format contents = do
   result <- runParserT (do setParsers parsers
                            spaces
@@ -88,38 +91,38 @@ run parsers format contents = do
        Left e    -> error (show e)
        Right res -> return $ renderBS $ cat $ res
 
-cat :: [Builder] -> Builder
-cat = mconcat
+cat :: [Doc] -> Doc
+cat = Doc . mconcat . map unDoc
 
-raws :: String -> Builder
-raws = BU.fromString
+raws :: String -> Doc
+raws = Doc . BU.fromString
 
-rawc :: Char -> Builder
-rawc = fromChar
+rawc :: Char -> Doc
+rawc = Doc . fromChar
 
-renderBS :: Builder -> L.ByteString
-renderBS = toLazyByteString
+renderBS :: Doc -> L.ByteString
+renderBS = toLazyByteString . unDoc
 
 infixl 8 +++
-(+++) :: Builder -> Builder -> Builder
-(+++) = mappend
+(+++) :: Doc -> Doc -> Doc
+Doc x +++ Doc y = Doc $ mappend x y
 
 infixl 4 &
-(&) :: HeX Builder -> HeX Builder -> HeX Builder
+(&) :: HeX Doc -> HeX Doc -> HeX Doc
 (&) = (<|>)
 
 infixr 7 ==>
-(==>) :: String -> Builder -> HeX Builder
+(==>) :: String -> Doc -> HeX Doc
 k ==> v = do
   format <- liftM hexFormat getState
   if format == k
      then return v
      else fail $ "I don't know how to render this in " ++ format
 
-instance IsString Builder
-  where fromString = BU.fromString
+instance IsString Doc
+  where fromString = Doc . BU.fromString
 
-getNext :: HeX Builder
+getNext :: HeX Doc
 getNext = do
   parsers <- liftM hexParsers getState
   choice parsers

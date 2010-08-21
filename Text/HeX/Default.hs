@@ -25,7 +25,6 @@ import Text.Parsec
 import Text.HeX
 import qualified Text.HeX.Html as Html
 import qualified Text.HeX.TeX as TeX
-import Text.Blaze.Builder.Core
 import Data.Typeable
 import Control.Monad
 
@@ -42,16 +41,16 @@ getOpt = try $ do
   readM res
 
 {-
-command :: String -> HeX Builder -> HeX Builder
+command :: String -> HeX Doc -> HeX Doc
 command name p = do
   try $ char '\\' >> string name >> notFollowedBy letter
   p
 -}
 
-command :: Typeable a => a -> HeX Builder
+command :: Typeable a => a -> HeX Doc
 command x = undefined
 
-oneChar :: HeX Builder
+oneChar :: HeX Doc
 oneChar = do
   mathmode <- liftM hexMath getState
   c <- (char '\\' >> anyChar) <|> anyChar
@@ -60,11 +59,11 @@ oneChar = do
                   then rawc c
                   else TeX.ch c
 
-group :: HeX Builder
+group :: HeX Doc
 group = do
   char '{'
   res <- manyTill getNext (char '}')
-  return $ mconcat res
+  return $ cat res
 
 inMathMode :: HeX a -> HeX a
 inMathMode p = do
@@ -74,22 +73,22 @@ inMathMode p = do
   updateState $ \s -> s { hexMath = mathmode }
   return res
 
-emitMath :: Bool -> Builder -> HeX Builder
+emitMath :: Bool -> Doc -> HeX Doc
 emitMath display b = do
   let tagtype = if display then "div" else "span"
   let delim = if display then "$$" else "$"
   "html" ==> Html.inTags tagtype [("class","math")] b
    & "tex" ==> raws delim +++ b +++ raws delim
 
-math :: HeX Builder
+math :: HeX Doc
 math = do
   char '$'
   display <- option False $ char '$' >> return True
   let delim = if display then try (string "$$") else count 1 (char '$')
   raw <- inMathMode $ manyTill getNext delim
-  emitMath display $ mconcat raw
+  emitMath display $ cat raw
 
-ensureMath :: HeX Builder -> HeX Builder
+ensureMath :: HeX Doc -> HeX Doc
 ensureMath p = do
   mathmode <- liftM hexMath getState
   res <- inMathMode p

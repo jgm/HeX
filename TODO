@@ -12,17 +12,6 @@ Ideas:
      y <- getArg
      p x y
 
-* Abstract out Builder -> Doc, so we can change implementation
-  later. (fromString, fromChar) (this will also let us get rid
-  of the orphan instance)
-
-  -- even better advantage:  we can have Doc, Math, Css, Note, etc.
-     these will be accumulated in a DList of Builders.  When we
-     consntruct the final document, they'll all be treated differently;
-     e.g. we'll ensure that Math gets surrounded by $$s, Css goes
-     at beginning, Note at end, etc. (Perhaps they need more generic
-     names.)
-
 * environments:
   \quote{
   blah blah

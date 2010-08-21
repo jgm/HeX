@@ -6,27 +6,24 @@ module Text.HeX.TeX (
   , parbreak
   )
 where
-import Text.Blaze.Builder.Core
 import Data.Char
-import Data.Monoid
 import Text.HeX
 
-ctl :: String -> Builder
-ctl s | all isLetter s = (rawc '\\') `mappend` (raws s)
-                          `mappend` (rawc ' ')
-ctl [c] = (rawc '\\') `mappend` (rawc c)
-ctl s   = error $ "`" ++ s ++ "' is not a valid Builder control sequence"
+ctl :: String -> Doc
+ctl s | all isLetter s = (rawc '\\') +++ (raws s) +++ (rawc ' ')
+ctl [c] = (rawc '\\') +++ (rawc c)
+ctl s   = error $ "`" ++ s ++ "' is not a valid Doc control sequence"
 
-str :: String -> Builder
-str = mconcat . map ch 
+str :: String -> Doc
+str = cat . map ch 
 
-grp :: [Builder] -> Builder
-grp xs = (rawc '{') `mappend` mconcat xs `mappend` (rawc '}')
+grp :: [Doc] -> Doc
+grp xs = (rawc '{') +++ cat xs +++ (rawc '}')
 
-parbreak :: Builder
+parbreak :: Doc
 parbreak = raws "\n\n"
 
-ch :: Char -> Builder
+ch :: Char -> Doc
 ch c | c `elem` "$#&%" = ctl [c]
 ch c | c `elem` "&~\\{}_^"= raws $ "{\\char`\\" ++ [c] ++ "}"
 ch c    = rawc c

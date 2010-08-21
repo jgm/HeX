@@ -7,35 +7,32 @@ module Text.HeX.Html (
   , inTags
   )
 where
-import Text.Blaze.Builder.Core
-import Text.Blaze.Builder.Utf8
-import Data.Monoid
 import Text.HeX
 
-str :: String -> Builder
-str = mconcat . map ch 
+str :: String -> Doc
+str = cat . map ch
 
-ch :: Char -> Builder
+ch :: Char -> Doc
 ch '&' = raws "&amp;"
 ch '<' = raws "&lt;"
 ch '>' = raws "&gt;"
 ch c   = rawc c
 
-tag :: Bool -> String -> [(String, String)] -> Builder
+tag :: Bool -> String -> [(String, String)] -> Doc
 tag selfclosing s attrs = "<" +++ raws s +++ toattrs attrs +++ ending
-  where toattrs = mconcat . map toattr
+  where toattrs = cat . map toattr
         toattr (k,v) = " " +++ raws k +++ ch '=' +++ ch '"' +++
                         str v +++ ch '"'
         ending = raws $ if selfclosing then " />" else ">"
 
-tagOpen :: String -> [(String, String)] -> Builder
+tagOpen :: String -> [(String, String)] -> Doc
 tagOpen = tag False
 
-tagSelfClosing :: String -> [(String, String)] -> Builder
+tagSelfClosing :: String -> [(String, String)] -> Doc
 tagSelfClosing = tag True
 
-tagClose :: String -> Builder
+tagClose :: String -> Doc
 tagClose s = "</" +++ raws s +++ ">"
 
-inTags :: String -> [(String, String)] -> Builder -> Builder
+inTags :: String -> [(String, String)] -> Doc -> Doc
 inTags s attrs x = tagOpen s attrs +++ x +++ tagClose s
