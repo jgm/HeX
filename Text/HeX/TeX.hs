@@ -12,22 +12,22 @@ import Data.Monoid
 import Text.HeX
 
 ctl :: String -> Builder
-ctl s | all isLetter s = (fromChar '\\') `mappend` (fromString s)
-                          `mappend` (fromChar ' ')
-ctl [c] = (fromChar '\\') `mappend` (fromChar c)
+ctl s | all isLetter s = (rawc '\\') `mappend` (raws s)
+                          `mappend` (rawc ' ')
+ctl [c] = (rawc '\\') `mappend` (rawc c)
 ctl s   = error $ "`" ++ s ++ "' is not a valid Builder control sequence"
 
 str :: String -> Builder
 str = mconcat . map ch 
 
 grp :: [Builder] -> Builder
-grp xs = (fromChar '{') `mappend` mconcat xs `mappend` (fromChar '}')
+grp xs = (rawc '{') `mappend` mconcat xs `mappend` (rawc '}')
 
 parbreak :: Builder
-parbreak = fromString "\n\n"
+parbreak = raws "\n\n"
 
 ch :: Char -> Builder
 ch c | c `elem` "$#&%" = ctl [c]
-ch c | c `elem` "&~\\{}_^"= fromString $ "{\\char`\\" ++ [c] ++ "}"
-ch c    = fromChar c
+ch c | c `elem` "&~\\{}_^"= raws $ "{\\char`\\" ++ [c] ++ "}"
+ch c    = rawc c
 

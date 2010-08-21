@@ -18,11 +18,14 @@ module Text.HeX ( HeX
                 , getVar
                 , updateVar
                 , getNext
+                , cat
+                , renderBS
                 , (+++)
+                , raws
+                , rawc
                 , (&)
                 , (==>)
                 , module Text.Parsec
-                , module Text.Blaze.Builder.Utf8
                 , module Data.Monoid
                 )
 where
@@ -31,7 +34,7 @@ import Control.Monad
 import Data.Dynamic
 import qualified Data.ByteString.Lazy as L
 import Text.Blaze.Builder.Core
-import Text.Blaze.Builder.Utf8
+import Text.Blaze.Builder.Utf8 as BU
 import qualified Data.Map as M
 import Data.Monoid
 import Data.String
@@ -83,7 +86,19 @@ run parsers format contents = do
                        , hexVars = M.empty } "input" contents
   case result of
        Left e    -> error (show e)
-       Right res -> return $ toLazyByteString $ mconcat $ res
+       Right res -> return $ renderBS $ cat $ res
+
+cat :: [Builder] -> Builder
+cat = mconcat
+
+raws :: String -> Builder
+raws = BU.fromString
+
+rawc :: Char -> Builder
+rawc = fromChar
+
+renderBS :: Builder -> L.ByteString
+renderBS = toLazyByteString
 
 infixl 8 +++
 (+++) :: Builder -> Builder -> Builder
@@ -102,7 +117,7 @@ k ==> v = do
      else fail $ "I don't know how to render this in " ++ format
 
 instance IsString Builder
-  where fromString = Text.Blaze.Builder.Utf8.fromString
+  where fromString = BU.fromString
 
 getNext :: HeX Builder
 getNext = do

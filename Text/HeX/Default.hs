@@ -57,7 +57,7 @@ oneChar = do
   c <- (char '\\' >> anyChar) <|> anyChar
   "html"  ==> Html.ch c
    & "tex" ==> if mathmode
-                  then fromChar c
+                  then rawc c
                   else TeX.ch c
 
 group :: HeX Builder
@@ -79,7 +79,7 @@ emitMath display b = do
   let tagtype = if display then "div" else "span"
   let delim = if display then "$$" else "$"
   "html" ==> Html.inTags tagtype [("class","math")] b
-   & "tex" ==> fromString delim +++ b +++ fromString delim
+   & "tex" ==> raws delim +++ b +++ raws delim
 
 math :: HeX Builder
 math = do

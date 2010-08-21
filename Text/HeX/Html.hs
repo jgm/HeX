@@ -16,17 +16,17 @@ str :: String -> Builder
 str = mconcat . map ch 
 
 ch :: Char -> Builder
-ch '&' = fromString "&amp;"
-ch '<' = fromString "&lt;"
-ch '>' = fromString "&gt;"
-ch c   = fromChar c
+ch '&' = raws "&amp;"
+ch '<' = raws "&lt;"
+ch '>' = raws "&gt;"
+ch c   = rawc c
 
 tag :: Bool -> String -> [(String, String)] -> Builder
-tag selfclosing s attrs = "<" +++ fromString s +++ toattrs attrs +++ ending
+tag selfclosing s attrs = "<" +++ raws s +++ toattrs attrs +++ ending
   where toattrs = mconcat . map toattr
-        toattr (k,v) = " " +++ fromString k +++ ch '=' +++ ch '"' +++
+        toattr (k,v) = " " +++ raws k +++ ch '=' +++ ch '"' +++
                         str v +++ ch '"'
-        ending = fromString $ if selfclosing then " />" else ">"
+        ending = raws $ if selfclosing then " />" else ">"
 
 tagOpen :: String -> [(String, String)] -> Builder
 tagOpen = tag False
@@ -35,7 +35,7 @@ tagSelfClosing :: String -> [(String, String)] -> Builder
 tagSelfClosing = tag True
 
 tagClose :: String -> Builder
-tagClose s = "</" +++ fromString s +++ ">"
+tagClose s = "</" +++ raws s +++ ">"
 
 inTags :: String -> [(String, String)] -> Builder -> Builder
 inTags s attrs x = tagOpen s attrs +++ x +++ tagClose s
