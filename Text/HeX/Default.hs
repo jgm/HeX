@@ -26,7 +26,7 @@ import Text.HeX
 import qualified Text.HeX.Html as Html
 import qualified Text.HeX.TeX as TeX
 import Text.Blaze.Builder.Core
-import Data.Typeable ()
+import Data.Typeable
 import Control.Monad
 
 readM :: (Monad m, Read a) => String -> m a
@@ -41,10 +41,15 @@ getOpt = try $ do
   res <- manyTill (noneOf "]\n" <|> (char '\\' >> anyChar)) (char ']')
   readM res
 
+{-
 command :: String -> HeX Builder -> HeX Builder
 command name p = do
   try $ char '\\' >> string name >> notFollowedBy letter
   p
+-}
+
+command :: Typeable a => a -> HeX Builder
+command x = undefined
 
 oneChar :: HeX Builder
 oneChar = do

@@ -1,4 +1,4 @@
-{-# LANGUAGE DeriveDataTypeable, OverloadedStrings, PatternGuards #-}
+{-# LANGUAGE DeriveDataTypeable, OverloadedStrings, PatternGuards, StandaloneDeriving, FlexibleInstances, TypeSynonymInstances #-}
 {- |
    Module      : Text.HeX
    Copyright   : Copyright (C) 2010 John MacFarlane
@@ -40,8 +40,14 @@ data HeXState = HeXState { hexParsers :: [HeX Builder]
                          , hexFormat  :: String
                          , hexMath    :: Bool
                          , hexVars    :: M.Map String Dynamic }
+              deriving (Typeable)
 
 type HeX = ParsecT String HeXState IO
+
+deriving instance Typeable Builder
+
+instance Typeable1 HeX
+  where typeOf1 _ = mkTyConApp (mkTyCon "HeX") []
 
 setVar :: Typeable a => String -> a -> HeX a
 setVar name' v = do
