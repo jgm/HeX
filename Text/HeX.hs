@@ -53,7 +53,7 @@ data HeXState = HeXState { hexParsers :: [HeX Doc]
 type HeX = ParsecT String HeXState IO
 
 instance Typeable1 HeX
-  where typeOf1 _ = mkTyConApp (mkTyCon "HeX") []
+  where typeOf1 _ = mkTyConApp (mkTyCon "Text.HeX") []
 
 setVar :: Typeable a => String -> a -> HeX a
 setVar name' v = do
