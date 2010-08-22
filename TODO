@@ -1,7 +1,7 @@
 Ideas:
 
-* See comment in simple.lhs:
-  better to have the format the argument of the function.
+* need a new system for multiple arguments. see simple.lhs
+  for one that doesn't work.
 
 * environments:
   \quote{
