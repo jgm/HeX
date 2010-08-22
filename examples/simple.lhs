@@ -2,18 +2,26 @@
 > import Text.HeX.TeX as TeX
 > import Text.HeX.Html as Html
 
-> emph = command "emph" $ do
->   arg <- getNext
+> emph arg =
 >   "html"  ==> inTags "em" [] arg &
 >    "tex"  ==> ctl "emph" +++ grp [arg]
 
-> funny = ensureMath $ command "funny" $
+> funny =
 >   "html"  ==> "\\pi"
 >    & "tex" ==> "\\pi"
 
-> parsers = [group, funny, math, emph, oneChar]
+> -- Wouldn't be even better if it were:
+> -- funny "html" = "\\pi"
+> -- funny "tex"  = "\\pi"
+> -- or funny _ = "\\pi"
 
-Here's the text & that text and some \emph{emphasized text}.
+> parsers = [ group
+>           , command "funny" $ ensureMath funny
+>           , math
+>           , command "em" $ withArg emph
+>           , oneChar]
+
+Here's the text & that text and some \em{emphasized text}.
 And some math: $e=mc^2$. And some display math: $$e=mc^2$$.
 
 \funny and $y = \funny$.

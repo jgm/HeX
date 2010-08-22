@@ -12,9 +12,10 @@ formats can be supported by a single set of macros.
 -}
 
 module Text.HeX.Default
-                ( getOpt
-                , oneChar
+                ( oneChar
                 , command
+                , withOpt
+                , withArg
                 , group
                 , math
                 , ensureMath
@@ -23,32 +24,45 @@ module Text.HeX.Default
 where
 import Text.Parsec
 import Text.HeX
+import qualified Data.ByteString.Lazy.UTF8 as U
 import qualified Text.HeX.Html as Html
 import qualified Text.HeX.TeX as TeX
 import Data.Typeable
 import Control.Monad
 
-readM :: (Monad m, Read a) => String -> m a
+readM :: (Read a, Monad m) => String -> m a
 readM s | [x] <- parsed = return x
         | otherwise     = fail $ "Failed to parse `" ++ s ++ "'"
   where
     parsed = [x | (x,_) <- reads s]
 
-getOpt :: Read a => HeX a
+getOpt :: HeX Doc
 getOpt = try $ do
   char '['
-  res <- manyTill (noneOf "]\n" <|> (char '\\' >> anyChar)) (char ']')
-  readM res
+  liftM cat $ manyTill oneChar (char ']')
 
-{-
+blankline :: HeX Char
+blankline = try $ many (oneOf " \t") >> newline
+
+skipBlank :: HeX ()
+skipBlank = do many $ (newline >> notFollowedBy blankline >> return "\n") <|>
+                      (many1 (oneOf " \t")) <|>
+                      (char '%' >> manyTill anyChar newline)
+               return ()
+
 command :: String -> HeX Doc -> HeX Doc
-command name p = do
-  try $ char '\\' >> string name >> notFollowedBy letter
-  p
--}
+command name x = try $ do
+  char '\\'
+  string name
+  notFollowedBy letter
+  skipBlank
+  x
 
-command :: Typeable a => a -> HeX Doc
-command x = undefined
+withOpt :: (Read a, Typeable a) => (Maybe a -> HeX Doc) -> HeX Doc
+withOpt x = getOpt >>= x . readM . U.toString . renderBS
+
+withArg :: (Doc -> HeX Doc) -> HeX Doc
+withArg x = getNext >>= x
 
 oneChar :: HeX Doc
 oneChar = do

@@ -1,16 +1,7 @@
 Ideas:
 
-* should write all macros as functions
-  Builder -> HeX Builder etc.
-  and use command like functions to turn them into reg parsers.
-  this makes them recombinable.
-
-  use typeable.
-  if f is f :: Maybe a -> Builder -> HeX Builder, e.g.,
-  then we get:
-  do x <- getOpt
-     y <- getArg
-     p x y
+* See comment in simple.lhs:
+  better to have the format the argument of the function.
 
 * environments:
   \quote{
