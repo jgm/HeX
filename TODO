@@ -3,6 +3,11 @@ Ideas:
 * need a new system for multiple arguments. see simple.lhs
   for one that doesn't work.
 
+  I think the best solution is to have a typeclass,
+  ToCommand.  functions of various types will be instances.
+  and the method will be:  toCommand.  This should be fairly
+  simple.
+
 * environments:
   \quote{
   blah blah
