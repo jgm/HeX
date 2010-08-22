@@ -50,19 +50,22 @@ skipBlank = do many $ (newline >> notFollowedBy blankline >> return "\n") <|>
                       (char '%' >> manyTill anyChar newline)
                return ()
 
-command :: String -> HeX Doc -> HeX Doc
+command :: String -> (Format -> HeX Doc) -> HeX Doc
 command name x = try $ do
   char '\\'
   string name
   notFollowedBy letter
   skipBlank
-  x
+  format <- liftM hexFormat getState
+  x format
 
-withOpt :: (Read a, Typeable a) => (Maybe a -> HeX Doc) -> HeX Doc
-withOpt x = getOpt >>= x . readM . U.toString . renderBS
+withOpt :: (Read a, Typeable a) 
+        => (Format -> Maybe a -> HeX Doc)
+        -> Format -> HeX Doc
+withOpt x f = getOpt >>= x f . readM . U.toString . renderBS
 
-withArg :: (Doc -> HeX Doc) -> HeX Doc
-withArg x = getNext >>= x
+withArg :: (Format -> Doc -> HeX Doc) -> Format -> HeX Doc
+withArg x f = getNext >>= x f
 
 oneChar :: HeX Doc
 oneChar = do
@@ -102,10 +105,10 @@ math = do
   raw <- inMathMode $ manyTill getNext delim
   emitMath display $ cat raw
 
-ensureMath :: HeX Doc -> HeX Doc
-ensureMath p = do
+ensureMath :: (Format -> HeX Doc) -> Format -> HeX Doc
+ensureMath p f = do
   mathmode <- liftM hexMath getState
-  res <- inMathMode p
+  res <- inMathMode $ p f
   if mathmode
      then return res
      else emitMath False res

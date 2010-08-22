@@ -14,6 +14,7 @@ formats can be supported by a single set of macros.
 
 module Text.HeX ( HeX
                 , HeXState(..)
+                , Format
                 , Doc(..)
                 , run
                 , setVar

@@ -2,18 +2,12 @@
 > import Text.HeX.TeX as TeX
 > import Text.HeX.Html as Html
 
-> emph arg =
->   "html"  ==> inTags "em" [] arg &
->    "tex"  ==> ctl "emph" +++ grp [arg]
+> emph :: Format -> Doc -> HeX Doc
+> emph "html" arg = return $ inTags "em" [] arg
+> emph "tex"  arg = return $ ctl "emph" +++ grp [arg]
 
-> funny =
->   "html"  ==> "\\pi"
->    & "tex" ==> "\\pi"
-
-> -- Wouldn't be even better if it were:
-> -- funny "html" = "\\pi"
-> -- funny "tex"  = "\\pi"
-> -- or funny _ = "\\pi"
+> funny :: Format -> HeX Doc
+> funny _ = return "\\pi"
 
 > parsers = [ group
 >           , command "funny" $ ensureMath funny
