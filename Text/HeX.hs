@@ -47,11 +47,7 @@ newtype Doc = Doc { unDoc :: Builder }
 instance IsString Doc
   where fromString = Doc . BU.fromString
 
-newtype Format = Format { unFormat :: String }
-               deriving (IsString, Typeable, Eq)
-
-instance Show Format where
-  show = unFormat
+type Format = String
 
 data HeXState = HeXState { hexParsers :: [HeX Doc]
                          , hexFormat  :: Format
@@ -93,7 +89,7 @@ run parsers format contents = do
                            manyTill (choice parsers <|>
                                      fail "No matching parser.")  eof)
                HeXState{ hexParsers = []
-                       , hexFormat = Format format
+                       , hexFormat = format
                        , hexMath = False
                        , hexVars = M.empty } "input" contents
   case result of
@@ -126,7 +122,7 @@ k ==> v = do
   format <- liftM hexFormat getState
   if format == k
      then return v
-     else fail $ "I don't know how to render this in " ++ show format
+     else fail $ "I don't know how to render this in " ++ format
 
 getNext :: HeX Doc
 getNext = do
