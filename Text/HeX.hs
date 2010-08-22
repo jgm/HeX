@@ -44,8 +44,17 @@ import Data.String
 newtype Doc = Doc { unDoc :: Builder }
             deriving (Monoid, Typeable)
 
+instance IsString Doc
+  where fromString = Doc . BU.fromString
+
+newtype Format = Format { unFormat :: String }
+               deriving (IsString, Typeable, Eq)
+
+instance Show Format where
+  show = unFormat
+
 data HeXState = HeXState { hexParsers :: [HeX Doc]
-                         , hexFormat  :: String
+                         , hexFormat  :: Format
                          , hexMath    :: Bool
                          , hexVars    :: M.Map String Dynamic }
               deriving (Typeable)
@@ -84,7 +93,7 @@ run parsers format contents = do
                            manyTill (choice parsers <|>
                                      fail "No matching parser.")  eof)
                HeXState{ hexParsers = []
-                       , hexFormat = format
+                       , hexFormat = Format format
                        , hexMath = False
                        , hexVars = M.empty } "input" contents
   case result of
@@ -112,15 +121,12 @@ infixl 4 &
 (&) = (<|>)
 
 infixr 7 ==>
-(==>) :: String -> Doc -> HeX Doc
+(==>) :: Format -> Doc -> HeX Doc
 k ==> v = do
   format <- liftM hexFormat getState
   if format == k
      then return v
-     else fail $ "I don't know how to render this in " ++ format
-
-instance IsString Doc
-  where fromString = Doc . BU.fromString
+     else fail $ "I don't know how to render this in " ++ show format
 
 getNext :: HeX Doc
 getNext = do
