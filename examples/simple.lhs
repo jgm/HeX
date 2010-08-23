@@ -1,3 +1,4 @@
+> import Prelude hiding (repeat, pi)
 > import Text.HeX.Default
 > import Text.HeX.TeX as TeX
 > import Text.HeX.Html as Html
@@ -6,15 +7,15 @@
 > emph arg "html" = return $ inTags "em" [] arg
 > emph arg "tex"  = return $ ctl "emph" +++ grp [arg]
 
-> funny :: Format -> HeX Doc
-> funny _ = ensureMath $ return "\\pi"
+> pi :: Format -> HeX Doc
+> pi _ = ensureMath $ return "\\pi"
 
-> two :: Doc -> Doc -> Format -> HeX Doc
-> two x1 x2 _ = return $ x1 +++ ".." +++ x2
+> repeat :: Maybe Int -> Doc -> Format -> HeX Doc
+> repeat (Just n) d _ = return $ cat (replicate n d)
 
 > parsers = [ group
->           , command "two" two
->           , command "funny" funny
+>           , command "repeat" repeat
+>           , command "pi" pi
 >           , math
 >           , command "em" emph
 >           , oneChar]
@@ -22,7 +23,7 @@
 Here's the text & that text and some \em{emphasized text}.
 And some math: $e=mc^2$. And some display math: $$e=mc^2$$.
 
-\funny and $y = \funny$.
+\pi\ and $y = \pi$.
 
-\two{one}{two}
+\repeat[3]{hi there!}
 
