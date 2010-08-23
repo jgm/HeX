@@ -51,6 +51,9 @@ skipBlank = do many $ (newline >> notFollowedBy blankline >> return "\n") <|>
 class ToCommand a where
   toCommand :: a -> HeX Doc
 
+instance ToCommand (HeX Doc) where
+  toCommand x = x
+
 instance ToCommand (Format -> HeX Doc) where
   toCommand x = do format <- liftM hexFormat getState
                    x format

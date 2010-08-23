@@ -7,11 +7,11 @@
 > emph arg "html" = return $ inTags "em" [] arg
 > emph arg "tex"  = return $ ctl "emph" +++ grp [arg]
 
-> pi :: Format -> HeX Doc
-> pi _ = ensureMath $ return "\\pi"
+> pi :: HeX Doc
+> pi = ensureMath $ return "\\pi"
 
-> repeat :: Maybe Int -> Doc -> Format -> HeX Doc
-> repeat (Just n) d _ = return $ cat (replicate n d)
+> repeat :: Maybe Int -> Doc -> HeX Doc
+> repeat (Just n) d = return $ cat (replicate n d)
 
 > parsers = [ group
 >           , command "repeat" repeat
@@ -25,5 +25,5 @@ And some math: $e=mc^2$. And some display math: $$e=mc^2$$.
 
 \pi\ and $y = \pi$.
 
-\repeat[3]{hi there!}
+\repeat[3]{hi there! }
 
