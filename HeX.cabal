@@ -23,8 +23,8 @@ Library
     Ghc-Options:     -Wall -fno-warn-unused-do-bind
   else
     Ghc-Options:     -Wall
-Executable hex
-  Main-is:           hex.hs
+Executable hexto
+  Main-is:           hexto.hs
   Build-depends:     parsec >= 3.1, base >= 4,
                      filepath, directory, mtl, containers, directory,
                      bytestring, utf8-string, blaze-builder >= 0.1 && < 0.2,

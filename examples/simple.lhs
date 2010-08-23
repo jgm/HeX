@@ -2,21 +2,21 @@
 > import Text.HeX.TeX as TeX
 > import Text.HeX.Html as Html
 
-> emph :: Format -> Doc -> HeX Doc
-> emph "html" arg = return $ inTags "em" [] arg
-> emph "tex"  arg = return $ ctl "emph" +++ grp [arg]
+> emph :: Doc -> Format -> HeX Doc
+> emph arg "html" = return $ inTags "em" [] arg
+> emph arg "tex"  = return $ ctl "emph" +++ grp [arg]
 
 > funny :: Format -> HeX Doc
-> funny _ = return "\\pi"
+> funny _ = ensureMath $ return "\\pi"
 
-> two :: Format -> Doc -> Doc -> HeX Doc
-> two _ x1 x2 = return $ x1 +++ ".." +++ x2
+> two :: Doc -> Doc -> Format -> HeX Doc
+> two x1 x2 _ = return $ x1 +++ ".." +++ x2
 
 > parsers = [ group
->           , command "two" $ withArg $ withArg $ two
->           , command "funny" $ ensureMath funny
+>           , command "two" two
+>           , command "funny" funny
 >           , math
->           , command "em" $ withArg emph
+>           , command "em" emph
 >           , oneChar]
 
 Here's the text & that text and some \em{emphasized text}.

@@ -1,4 +1,5 @@
-{-# LANGUAGE DeriveDataTypeable, OverloadedStrings, PatternGuards #-}
+{-# LANGUAGE OverloadedStrings, PatternGuards,
+    FlexibleInstances, TypeSynonymInstances #-}
 {- |
    Module      : Text.HeX.Default
    Copyright   : Copyright (C) 2010 John MacFarlane
@@ -14,8 +15,6 @@ formats can be supported by a single set of macros.
 module Text.HeX.Default
                 ( oneChar
                 , command
-                , withOpt
-                , withArg
                 , group
                 , math
                 , ensureMath
@@ -27,7 +26,6 @@ import Text.HeX
 import qualified Data.ByteString.Lazy.UTF8 as U
 import qualified Text.HeX.Html as Html
 import qualified Text.HeX.TeX as TeX
-import Data.Typeable
 import Control.Monad
 
 readM :: (Read a, Monad m) => String -> m a
@@ -36,10 +34,10 @@ readM s | [x] <- parsed = return x
   where
     parsed = [x | (x,_) <- reads s]
 
-getOpt :: HeX Doc
+getOpt :: Read a => HeX (Maybe a)
 getOpt = try $ do
   char '['
-  liftM cat $ manyTill oneChar (char ']')
+  liftM (readM . U.toString . renderBS . cat) $ manyTill oneChar (char ']')
 
 blankline :: HeX Char
 blankline = try $ many (oneOf " \t") >> newline
@@ -50,31 +48,43 @@ skipBlank = do many $ (newline >> notFollowedBy blankline >> return "\n") <|>
                       (char '%' >> manyTill anyChar newline)
                return ()
 
-command :: String -> (Format -> HeX Doc) -> HeX Doc
+class ToCommand a where
+  toCommand :: a -> HeX Doc
+
+instance ToCommand (Format -> HeX Doc) where
+  toCommand x = do format <- liftM hexFormat getState
+                   x format
+
+instance ToCommand b => ToCommand (Doc -> b) where
+  toCommand x = do arg <- getNext
+                   toCommand (x arg)
+
+instance (Read a, ToCommand b) => ToCommand (Maybe a -> b) where
+  toCommand x = do opt <- getOpt
+                   toCommand (x opt)
+
+command :: ToCommand a => String -> a -> HeX Doc
 command name x = try $ do
   char '\\'
   string name
   notFollowedBy letter
   skipBlank
-  format <- liftM hexFormat getState
-  x format
+  toCommand x
 
-withOpt :: (Read a, Typeable a) 
-        => (Format -> Maybe a -> HeX Doc)
-        -> Format -> HeX Doc
-withOpt x f = getOpt >>= x f . readM . U.toString . renderBS
-
-withArg :: (Format -> Doc -> HeX Doc) -> Format -> HeX Doc
-withArg x f = getNext >>= x f
+getFormat :: HeX Format
+getFormat = liftM hexFormat getState
 
 oneChar :: HeX Doc
 oneChar = do
   mathmode <- liftM hexMath getState
   c <- (char '\\' >> anyChar) <|> anyChar
-  "html"  ==> Html.ch c
-   & "tex" ==> if mathmode
-                  then rawc c
-                  else TeX.ch c
+  format <- getFormat
+  case format of
+       "html" -> return $ Html.ch c
+       "tex"  -> if mathmode
+                  then return $ rawc c
+                  else return $ TeX.ch c
+       _      -> fail $ "oneChar: don't know how to handle " ++ format
 
 group :: HeX Doc
 group = do
@@ -94,8 +104,11 @@ emitMath :: Bool -> Doc -> HeX Doc
 emitMath display b = do
   let tagtype = if display then "div" else "span"
   let delim = if display then "$$" else "$"
-  "html" ==> Html.inTags tagtype [("class","math")] b
-   & "tex" ==> raws delim +++ b +++ raws delim
+  format <- getFormat
+  case format of
+       "html" -> return $ Html.inTags tagtype [("class","math")] b
+       "tex"  -> return $ raws delim +++ b +++ raws delim
+       _      -> fail $ "emitMath: don't know how to handle " ++ format
 
 math :: HeX Doc
 math = do
@@ -105,10 +118,10 @@ math = do
   raw <- inMathMode $ manyTill getNext delim
   emitMath display $ cat raw
 
-ensureMath :: (Format -> HeX Doc) -> Format -> HeX Doc
-ensureMath p f = do
+ensureMath :: HeX Doc -> HeX Doc
+ensureMath p = do
   mathmode <- liftM hexMath getState
-  res <- inMathMode $ p f
+  res <- inMathMode p
   if mathmode
      then return res
      else emitMath False res
