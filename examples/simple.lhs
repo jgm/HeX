@@ -13,12 +13,10 @@
 > repeat :: Maybe Int -> Doc -> HeX Doc
 > repeat (Just n) d = return $ cat (replicate n d)
 
-> parsers = [ group
->           , command "repeat" repeat
+> parsers = [ command "repeat" repeat
 >           , command "pi" pi
->           , math
 >           , command "em" emph
->           , oneChar]
+>           , base ]
 
 Here's the text & that text and some \em{emphasized text}.
 And some math: $e=mc^2$. And some display math: $$e=mc^2$$.

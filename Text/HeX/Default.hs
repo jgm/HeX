@@ -18,6 +18,7 @@ module Text.HeX.Default
                 , group
                 , math
                 , ensureMath
+                , base
                 , module Text.HeX
                 )
 where
@@ -128,3 +129,6 @@ ensureMath p = do
   if mathmode
      then return res
      else emitMath False res
+
+base :: HeX Doc
+base = math <|> group <|> oneChar
