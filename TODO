@@ -1,5 +1,12 @@
 Ideas:
 
+* currently we have a problem with stuff like this:
+\begin{Verbatim}
+> quoted
+\end{Verbatim}
+since the > line is interpreted as Haskell. We need a convention
+for "stop interpreting as literate Haskell after this line."
+
 * environments:
   \quote{
   blah blah

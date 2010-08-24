@@ -67,6 +67,9 @@ instance (Read a, ToCommand b) => ToCommand (Maybe a -> b) where
   toCommand x = do opt <- getOpt
                    toCommand (x opt)
 
+instance ToCommand Doc where
+  toCommand x = return x
+
 command :: ToCommand a => String -> a -> HeX Doc
 command name x = try $ do
   char '\\'

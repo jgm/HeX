@@ -10,8 +10,8 @@
 > pi :: HeX Doc
 > pi = ensureMath $ return "\\pi"
 
-> repeat :: Maybe Int -> Doc -> HeX Doc
-> repeat (Just n) d = return $ cat (replicate n d)
+> repeat :: Maybe Int -> Doc -> Doc
+> repeat (Just n) = cat . replicate n
 
 > parsers = [ command "repeat" repeat
 >           , command "pi" pi
