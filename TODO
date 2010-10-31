@@ -14,16 +14,3 @@ for "stop interpreting as literate Haskell after this line."
 
   the quote command will strip off the initial newline.
 
-* Writeup on motivations:
-
-  good things about pandoc:
-  - canonical document that can go into many formats
-  bad things:
-  - no extensibility
-  - no macros
-  good things about latex;
-  - extensibility through macros
-  - no limitations
-  bad things about latex:
-  - ugly language to program in, difficult to write macros
-
