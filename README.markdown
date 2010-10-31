@@ -1,5 +1,5 @@
-HeX - an extensible text macro language targetting multiple formats
-===================================================================
+HeX - a flexible text macro system
+==================================
 
 Good things about TeX/LaTeX:
 
