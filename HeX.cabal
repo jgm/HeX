@@ -1,7 +1,7 @@
 Name:                HeX
 Version:             0.1
 Synopsis:            A flexible text macro system.
--- Description:
+Description:         A flexible text macro system.
 License:             BSD3
 License-file:        LICENSE
 Author:              John MacFarlane
@@ -16,7 +16,7 @@ Library
                      Text.HeX.Default
                      Text.HeX.TeX
                      Text.HeX.Html
-  Build-depends:     parsec >= 3.1, base >= 4,
+  Build-depends:     parsec >= 3.1, base >= 4 && < 5,
                      mtl, containers,
                      bytestring, utf8-string, blaze-builder >= 0.1 && < 0.2
   if impl(ghc >= 6.12)
@@ -25,7 +25,7 @@ Library
     Ghc-Options:     -Wall
 Executable hexto
   Main-is:           hexto.hs
-  Build-depends:     parsec >= 3.1, base >= 4,
+  Build-depends:     parsec >= 3.1, base >= 4 && < 5,
                      filepath, directory, mtl, containers, directory,
                      bytestring, utf8-string, blaze-builder >= 0.1 && < 0.2,
                      hint >= 0.3 && < 0.4, split >= 0.1 && < 0.2
