@@ -1,5 +1,27 @@
 Ideas:
 
+* hugs w/ no fanciness:
+
+  runhugs test.txt
+
+  is all you need. put the source is comments!
+
+* Forget ghc!  Use HUGS!
+  hugs +l loads ANY file as literate Haskell.
+
+       -Fcmd  Set  preprocessor  filter  for  source  files  to  cmd (unset by
+              default).  Instead of reading a source file directly, Hugs  will
+              read the standard output of cmd run with the source file name as
+              argument.
+
+So, I could have a preprocessor, docproc, that parses the document &
+converts it into a Haskell program, and a shell script, docrun,
+that calls runhugs +Fdocproc on the document.
+
+docrun -t html mydoc.txt
+
+produces HTML!
+
 * currently we have a problem with stuff like this:
 \begin{Verbatim}
 > quoted
