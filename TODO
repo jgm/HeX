@@ -14,6 +14,9 @@ Ideas:
               read the standard output of cmd run with the source file name as
               argument.
 
+Note: -pgmL cmd in ghc will use a custom "unlit" program.
+
+
 So, I could have a preprocessor, docproc, that parses the document &
 converts it into a Haskell program, and a shell script, docrun,
 that calls runhugs +Fdocproc on the document.
