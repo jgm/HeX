@@ -14,7 +14,7 @@ formats can be supported by a single set of macros.
 
 module Text.HeX ( HeX
                 , HeXState(..)
-                , Format
+                , Format(..)
                 , Doc(..)
                 , run
                 , setVar
@@ -48,7 +48,8 @@ newtype Doc = Doc { unDoc :: Builder }
 instance IsString Doc
   where fromString = Doc . BU.fromString
 
-type Format = String
+data Format = Html | LaTeX
+            deriving (Read, Show, Eq)
 
 data HeXState = HeXState { hexParsers :: [HeX Doc]
                          , hexFormat  :: Format
@@ -83,7 +84,7 @@ updateVar name' f = getVar name' >>= setVar name' . f
 setParsers :: [HeX Doc] -> HeX ()
 setParsers parsers = updateState $ \s -> s{ hexParsers = parsers }
 
-run :: [HeX Doc] -> String -> String -> IO L.ByteString
+run :: [HeX Doc] -> Format -> String -> IO L.ByteString
 run parsers format contents = do
   result <- runParserT (do setParsers parsers
                            spaces
@@ -123,7 +124,7 @@ k ==> v = do
   format <- liftM hexFormat getState
   if format == k
      then return v
-     else fail $ "I don't know how to render this in " ++ format
+     else fail $ "I don't know how to render this in " ++ show format
 
 getNext :: HeX Doc
 getNext = do

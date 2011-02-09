@@ -32,6 +32,8 @@ import System.Environment
 import qualified Text.HeX.Html as Html
 import qualified Text.HeX.TeX as TeX
 import Control.Monad
+import Data.Char (toLower)
+import Blaze.ByteString.Builder (toLazyByteString)
 
 readM :: (Read a, Monad m) => String -> m a
 readM s | [x] <- parsed = return x
@@ -67,6 +69,10 @@ instance ToCommand b => ToCommand (Doc -> b) where
   toCommand x = do arg <- getNext
                    toCommand (x arg)
 
+instance ToCommand b => ToCommand (String -> b) where
+  toCommand x = toCommand $ x . docToStr
+    where docToStr = U.toString . toLazyByteString . unDoc
+
 instance (Read a, ToCommand b) => ToCommand (Maybe a -> b) where
   toCommand x = do opt <- getOpt
                    toCommand (x opt)
@@ -94,11 +100,10 @@ oneChar = do
   c <- (char '\\' >> anyChar) <|> anyChar
   format <- getFormat
   case format of
-       "html" -> return $ Html.ch c
-       "tex"  -> if mathmode
-                  then return $ rawc c
-                  else return $ TeX.ch c
-       _      -> fail $ "oneChar: don't know how to handle " ++ format
+       Html -> return $ Html.ch c
+       LaTeX -> if mathmode
+                   then return $ rawc c
+                   else return $ TeX.ch c
 
 group :: HeX Doc
 group = do
@@ -120,9 +125,8 @@ emitMath display b = do
   let delim = if display then "$$" else "$"
   format <- getFormat
   case format of
-       "html" -> return $ Html.inTags tagtype [("class","math")] b
-       "tex"  -> return $ raws delim +++ b +++ raws delim
-       _      -> fail $ "emitMath: don't know how to handle " ++ format
+       Html  -> return $ Html.inTags tagtype [("class","math")] b
+       LaTeX -> return $ raws delim +++ b +++ raws delim
 
 math :: HeX Doc
 math = do
@@ -147,8 +151,11 @@ defaultMain :: [HeX Doc] -> IO ()
 defaultMain parsers = do
   inp <- getContents
   args <- getArgs
-  when (null args) $ error "Specify output format"
-  let (format:_) = args
+  when (null args) $ error "Specify output format."
+  let format = case map toLower $ head args of
+                 "html"  -> Html
+                 "latex" -> LaTeX
+                 x       -> error $ "Unknown output format: " ++ x
   L.putStrLn =<< run (parsers ++ [base]) format inp
 
 
