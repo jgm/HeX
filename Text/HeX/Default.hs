@@ -19,12 +19,15 @@ module Text.HeX.Default
                 , math
                 , ensureMath
                 , base
+                , defaultMain
                 , module Text.HeX
                 )
 where
 import Text.Parsec
 import Text.HeX
 import qualified Data.ByteString.Lazy.UTF8 as U
+import qualified Data.ByteString.Lazy as L
+import System.Environment
 import qualified Text.HeX.Html as Html
 import qualified Text.HeX.TeX as TeX
 import Control.Monad
@@ -55,9 +58,9 @@ class ToCommand a where
 instance ToCommand (HeX Doc) where
   toCommand x = x
 
-instance ToCommand (Format -> HeX Doc) where
+instance ToCommand a => ToCommand (Format -> a) where
   toCommand x = do format <- liftM hexFormat getState
-                   x format
+                   toCommand (x format)
 
 instance ToCommand b => ToCommand (Doc -> b) where
   toCommand x = do arg <- getNext
@@ -135,3 +138,13 @@ ensureMath p = do
 
 base :: HeX Doc
 base = math <|> group <|> oneChar
+
+defaultMain :: [HeX Doc] -> IO ()
+defaultMain parsers = do
+  inp <- getContents
+  args <- getArgs
+  when (null args) $ error "Specify output format"
+  let (format:_) = args
+  L.putStrLn =<< run (parsers ++ [base]) format inp
+
+

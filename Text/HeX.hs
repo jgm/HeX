@@ -1,5 +1,5 @@
 {-# LANGUAGE DeriveDataTypeable, OverloadedStrings, PatternGuards,
-    TypeSynonymInstances, GeneralizedNewtypeDeriving #-}
+    TypeSynonymInstances, GeneralizedNewtypeDeriving, TemplateHaskell #-}
 {- |
    Module      : Text.HeX
    Copyright   : Copyright (C) 2010 John MacFarlane
@@ -36,8 +36,8 @@ import Text.Parsec
 import Control.Monad
 import Data.Dynamic
 import qualified Data.ByteString.Lazy as L
-import Text.Blaze.Builder.Core
-import Text.Blaze.Builder.Utf8 as BU
+import Blaze.ByteString.Builder
+import Blaze.ByteString.Builder.Char.Utf8 as BU
 import qualified Data.Map as M
 import Data.Monoid
 import Data.String
@@ -129,3 +129,4 @@ getNext :: HeX Doc
 getNext = do
   parsers <- liftM hexParsers getState
   choice parsers
+

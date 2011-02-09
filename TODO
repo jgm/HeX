@@ -1,41 +1,25 @@
-Ideas:
+my.hex:
+------------
+\title{This is my document!}
 
-* hugs w/ no fanciness:
+Here's my \emph{text}.
+------------
 
-  runhugs test.txt
+my.hs:
+------------
+import Text.HeX
 
-  is all you need. put the source is comments!
-
-* Forget ghc!  Use HUGS!
-  hugs +l loads ANY file as literate Haskell.
-
-       -Fcmd  Set  preprocessor  filter  for  source  files  to  cmd (unset by
-              default).  Instead of reading a source file directly, Hugs  will
-              read the standard output of cmd run with the source file name as
-              argument.
-
-Note: -pgmL cmd in ghc will use a custom "unlit" program.
+main = defaultMain parsers
+------------
 
 
-So, I could have a preprocessor, docproc, that parses the document &
-converts it into a Haskell program, and a shell script, docrun,
-that calls runhugs +Fdocproc on the document.
+hexto html /dir/my.hex:
+- looks for /dir/my.hex
+- if found, looks for /dir/my.hs
+- else error
+- if found, runs it with: 'runghc $OPTS /dir/my.hs html',
+  taking input from /dir/my.hex, output to --output file
+  if specified or stdout
+- else create it using default, then run as above
 
-docrun -t html mydoc.txt
-
-produces HTML!
-
-* currently we have a problem with stuff like this:
-\begin{Verbatim}
-> quoted
-\end{Verbatim}
-since the > line is interpreted as Haskell. We need a convention
-for "stop interpreting as literate Haskell after this line."
-
-* environments:
-  \quote{
-  blah blah
-  }
-
-  the quote command will strip off the initial newline.
 
