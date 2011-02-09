@@ -15,6 +15,7 @@ formats can be supported by a single set of macros.
 module Text.HeX.Default
                 ( oneChar
                 , command
+                , (=:)
                 , group
                 , math
                 , ensureMath
@@ -72,6 +73,9 @@ instance (Read a, ToCommand b) => ToCommand (Maybe a -> b) where
 
 instance ToCommand Doc where
   toCommand x = return x
+
+(=:) :: ToCommand a => String -> a -> HeX Doc
+x =: y = command x y
 
 command :: ToCommand a => String -> a -> HeX Doc
 command name x = try $ do

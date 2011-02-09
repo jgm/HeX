@@ -15,6 +15,9 @@ rpt :: Maybe Int -> Doc -> Doc
 rpt (Just n) d = mconcat $ replicate n d
 rpt Nothing  d = d
 
-main = defaultMain [ command "emph" emph, command "name" name,
-                     command "rpt" rpt ]
+main = defaultMain [
+            "emph" =: emph
+          , "name" =: name
+          , "rpt"  =: rpt
+          ]
 
