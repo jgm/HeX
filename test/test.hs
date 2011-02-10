@@ -16,6 +16,9 @@ rpt :: Maybe Int -> Doc -> Doc
 rpt (Just n) d = mconcat $ replicate n d
 rpt Nothing  d = d
 
+rev :: [Doc] -> Doc
+rev = mconcat . reverse
+
 include :: FilePath -> HeX Doc
 include f = do
   contents <- liftIO $ readFile f
@@ -27,6 +30,7 @@ main = defaultMain $ do
   addCommand "emph" emph
   addCommand "name" name
   addCommand "rpt"  rpt
+  addCommand "rev"  rev
   addCommand "include" include
   parseDoc
 

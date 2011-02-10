@@ -24,7 +24,6 @@ module Text.HeX ( run
                 , command
                 , addCommand
                 , parseDoc
-                , group
                 , math
                 , ensureMath
                 , defaultMain
@@ -110,11 +109,6 @@ oneChar = try $ do
        LaTeX -> if mathmode
                    then return $ rawc c
                    else return $ TeX.ch c
-group :: HeX Doc
-group = do
-  char '{'
-  res <- manyTill getNext (char '}')
-  return $ cat res
 
 inMathMode :: HeX a -> HeX a
 inMathMode p = do

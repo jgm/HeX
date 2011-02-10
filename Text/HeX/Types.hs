@@ -45,12 +45,21 @@ instance ToCommand a => ToCommand (Format -> a) where
                    toCommand (x format)
 
 instance ToCommand b => ToCommand (Doc -> b) where
-  toCommand x = do arg <- getNext
+  toCommand x = do arg <- group
                    toCommand (x arg)
 
-instance ToCommand b => ToCommand (String -> b) where
-  toCommand x = toCommand $ x . docToStr
-    where docToStr = U.toString . toLazyByteString . unDoc
+instance (ToCommand b) => ToCommand ([Doc] -> b) where
+  toCommand x = do args <- many group
+                   toCommand (x args)
+
+instance (ToCommand b) => ToCommand (Integer -> b) where
+  toCommand x = do arg <- group
+                   arg' <- readM (docToStr arg)
+                   toCommand (x arg')
+
+instance (ToCommand b) => ToCommand (String -> b) where
+  toCommand x = do arg <- group
+                   toCommand (x $ docToStr arg)
 
 instance (Read a, ToCommand b) => ToCommand (Maybe a -> b) where
   toCommand x = do opt <- getOpt
@@ -59,10 +68,19 @@ instance (Read a, ToCommand b) => ToCommand (Maybe a -> b) where
 instance ToCommand Doc where
   toCommand x = return x
 
+docToStr :: Doc -> String
+docToStr = U.toString . toLazyByteString . unDoc
+
 getNext :: HeX Doc
 getNext = do
   parsers <- liftM hexParsers getState
   choice parsers
+
+group :: HeX Doc
+group = do
+  char '{'
+  res <- manyTill getNext (char '}')
+  return $ cat res
 
 readM :: (Read a, Monad m) => String -> m a
 readM s | [x] <- parsed = return x
@@ -70,7 +88,7 @@ readM s | [x] <- parsed = return x
   where
     parsed = [x | (x,_) <- reads s]
 
-getOpt :: Read a => HeX (Maybe a)
+getOpt :: (Monad m, Read a) => HeX (m a)
 getOpt = try $ do
   char '['
   liftM readM $ manyTill anyChar (char ']')
