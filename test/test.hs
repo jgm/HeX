@@ -17,11 +17,11 @@ rpt :: Maybe Int -> Doc -> Doc
 rpt (Just n) d = mconcat $ replicate n d
 rpt Nothing  d = d
 
-rev :: [Doc] -> [Doc]
-rev = reverse
+rev :: [Doc] -> Doc
+rev = mconcat . reverse
 
-capitalize :: String -> String
-capitalize = unwords . map cap . words
+capitalize :: String -> Doc
+capitalize = raws . unwords . map cap . words
   where cap (x:xs) = toUpper x : xs
         cap []     = []
 
@@ -32,6 +32,13 @@ include f = do
   setInput $ contents ++ rest
   return mempty
 
+doub :: Double -> Double
+doub = (* 2.0)
+
+even' :: Integer -> Maybe Doc
+even' x | x `mod` 2 == 0 = Just "even"
+even' _                  = Nothing
+
 main = defaultMain $ do
   addCommand "emph" emph
   addCommand "name" name
@@ -39,5 +46,7 @@ main = defaultMain $ do
   addCommand "rev"  rev
   addCommand "include" include
   addCommand "capitalize" capitalize
+  addCommand "doub" doub
+  addCommand "even" even'
   parseDoc
 

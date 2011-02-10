@@ -34,23 +34,27 @@ type HeX = ParsecT String HeXState IO
 instance Typeable1 HeX
   where typeOf1 _ = mkTyConApp (mkTyCon "Text.HeX") []
 
+class ToCommand a where
+  toCommand :: a -> HeX Doc
+
 instance ToCommand Doc where
   toCommand = return
-
-instance ToCommand String where
-  toCommand = return . raws
 
 instance ToCommand [Doc] where
   toCommand = return . mconcat
 
-class ToCommand a where
-  toCommand :: a -> HeX Doc
+instance ToCommand Integer where
+  toCommand = return . raws . show
 
-instance ToCommand (HeX Doc) where
-  toCommand = id
+instance ToCommand Double where
+  toCommand = return . raws . show
 
-instance ToCommand (HeX [Doc]) where
-  toCommand = liftM mconcat
+instance ToCommand a => ToCommand (Maybe a) where
+  toCommand (Just x) = toCommand x
+  toCommand Nothing  = return mempty
+
+instance ToCommand a => ToCommand (HeX a) where
+  toCommand = toCommand
 
 instance ToCommand a => ToCommand (Format -> a) where
   toCommand x = do format <- liftM hexFormat getState
@@ -64,7 +68,12 @@ instance (ToCommand b) => ToCommand ([Doc] -> b) where
   toCommand x = do args <- many group
                    toCommand (x args)
 
-instance (ToCommand b) => ToCommand (Integer -> b) where
+instance ToCommand b => ToCommand (Integer -> b) where
+  toCommand x = do arg <- group
+                   arg' <- readM (docToStr arg)
+                   toCommand (x arg')
+
+instance ToCommand b => ToCommand (Double -> b) where
   toCommand x = do arg <- group
                    arg' <- readM (docToStr arg)
                    toCommand (x arg')
