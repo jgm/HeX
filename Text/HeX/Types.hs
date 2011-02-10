@@ -121,7 +121,6 @@ rawc :: Char -> Doc
 rawc = Doc . fromChar
 
 infixl 8 +++
-(+++) :: Doc -> Doc -> Doc
-Doc x +++ Doc y = Doc $ mappend x y
-
+(+++) :: Monoid a => a -> a -> a
+(+++) = mappend
 
