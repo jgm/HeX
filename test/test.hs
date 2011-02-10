@@ -3,6 +3,7 @@ import Text.HeX
 import Text.HeX.TeX as TeX
 import Text.HeX.Html as Html
 import "mtl" Control.Monad.Trans (liftIO)
+import Data.Char (toUpper)
 
 emph :: Format -> Doc -> Doc
 emph Html arg  = inTags "em" [] arg
@@ -16,8 +17,13 @@ rpt :: Maybe Int -> Doc -> Doc
 rpt (Just n) d = mconcat $ replicate n d
 rpt Nothing  d = d
 
-rev :: [Doc] -> Doc
-rev = mconcat . reverse
+rev :: [Doc] -> [Doc]
+rev = reverse
+
+capitalize :: String -> String
+capitalize = unwords . map cap . words
+  where cap (x:xs) = toUpper x : xs
+        cap []     = []
 
 include :: FilePath -> HeX Doc
 include f = do
@@ -32,5 +38,6 @@ main = defaultMain $ do
   addCommand "rpt"  rpt
   addCommand "rev"  rev
   addCommand "include" include
+  addCommand "capitalize" capitalize
   parseDoc
 
