@@ -7,7 +7,7 @@ module Text.HeX.TeX (
   )
 where
 import Data.Char
-import Text.HeX
+import Text.HeX.Types
 
 ctl :: String -> Doc
 ctl s | all isLetter s = (rawc '\\') +++ (raws s) +++ (rawc ' ')

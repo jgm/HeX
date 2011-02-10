@@ -1,5 +1,5 @@
 {-# LANGUAGE DeriveDataTypeable, OverloadedStrings, PatternGuards,
-    TypeSynonymInstances, GeneralizedNewtypeDeriving, TemplateHaskell #-}
+    TypeSynonymInstances, GeneralizedNewtypeDeriving #-}
 {- |
    Module      : Text.HeX
    Copyright   : Copyright (C) 2010 John MacFarlane
@@ -12,55 +12,36 @@ TeX-like macros (with arbitrary syntax).  Multiple output
 formats can be supported by a single set of macros.
 -}
 
-module Text.HeX ( HeX
-                , HeXState(..)
-                , Format(..)
-                , Doc(..)
-                , run
+module Text.HeX ( run
                 , setVar
                 , getVar
                 , updateVar
-                , getNext
-                , cat
                 , renderBS
-                , (+++)
-                , raws
-                , rawc
-                , (&)
-                , (==>)
+                , module Text.HeX.Types
                 , module Text.Parsec
                 , module Data.Monoid
+                , oneChar
+                , command
+                , addCommand
+                , parseDoc
+                , group
+                , math
+                , ensureMath
+                , defaultMain
                 )
 where
+import Text.HeX.Types
+import Text.HeX.TeX as TeX
+import Text.HeX.Html as Html
 import Text.Parsec
-import Control.Monad
-import Data.Dynamic
 import qualified Data.ByteString.Lazy as L
+import System.Environment
+import Control.Monad
+import Data.Char (toLower, isLetter)
+import Data.Dynamic
 import Blaze.ByteString.Builder
-import Blaze.ByteString.Builder.Char.Utf8 as BU
 import qualified Data.Map as M
 import Data.Monoid
-import Data.String
-
-newtype Doc = Doc { unDoc :: Builder }
-            deriving (Monoid, Typeable)
-
-instance IsString Doc
-  where fromString = Doc . BU.fromString
-
-data Format = Html | LaTeX
-            deriving (Read, Show, Eq)
-
-data HeXState = HeXState { hexParsers :: [HeX Doc]
-                         , hexFormat  :: Format
-                         , hexMath    :: Bool
-                         , hexVars    :: M.Map String Dynamic }
-              deriving (Typeable)
-
-type HeX = ParsecT String HeXState IO
-
-instance Typeable1 HeX
-  where typeOf1 _ = mkTyConApp (mkTyCon "Text.HeX") []
 
 setVar :: Typeable a => String -> a -> HeX a
 setVar name' v = do
@@ -81,53 +62,112 @@ getVar name' = do
 updateVar :: Typeable a => String -> (a -> a) -> HeX a
 updateVar name' f = getVar name' >>= setVar name' . f
 
-setParsers :: [HeX Doc] -> HeX ()
-setParsers parsers = updateState $ \s -> s{ hexParsers = parsers }
-
-run :: [HeX Doc] -> Format -> String -> IO L.ByteString
-run parsers format contents = do
-  result <- runParserT (do setParsers parsers
-                           spaces
-                           manyTill (choice parsers <|>
-                                     fail "No matching parser.")  eof)
-               HeXState{ hexParsers = []
+run :: HeX Doc -> Format -> String -> IO L.ByteString
+run parser format contents = do
+  result <- runParserT parser
+               HeXState{ hexParsers = [math, group, oneChar, command]
+                       , hexCommands = M.empty
                        , hexFormat = format
                        , hexMath = False
                        , hexVars = M.empty } "input" contents
   case result of
        Left e    -> error (show e)
-       Right res -> return $ renderBS $ cat $ res
-
-cat :: [Doc] -> Doc
-cat = Doc . mconcat . map unDoc
-
-raws :: String -> Doc
-raws = Doc . BU.fromString
-
-rawc :: Char -> Doc
-rawc = Doc . fromChar
+       Right res -> return $ renderBS res
 
 renderBS :: Doc -> L.ByteString
 renderBS = toLazyByteString . unDoc
 
-infixl 8 +++
-(+++) :: Doc -> Doc -> Doc
-Doc x +++ Doc y = Doc $ mappend x y
+blankline :: HeX Char
+blankline = try $ many (oneOf " \t") >> newline
 
-infixl 4 &
-(&) :: HeX Doc -> HeX Doc -> HeX Doc
-(&) = (<|>)
+skipBlank :: HeX ()
+skipBlank = do many $ (newline >> notFollowedBy blankline >> return "\n") <|>
+                      (many1 (oneOf " \t")) <|>
+                      (char '%' >> manyTill anyChar newline)
+               return ()
 
-infixr 7 ==>
-(==>) :: Format -> Doc -> HeX Doc
-k ==> v = do
-  format <- liftM hexFormat getState
-  if format == k
-     then return v
-     else fail $ "I don't know how to render this in " ++ show format
+addCommand :: ToCommand a => String -> a -> HeX ()
+addCommand name x = updateState $ \s ->
+    s{ hexCommands = M.insert name (toCommand x) (hexCommands s) }
 
-getNext :: HeX Doc
-getNext = do
-  parsers <- liftM hexParsers getState
-  choice parsers
+parseDoc :: HeX Doc
+parseDoc = do
+  results <- spaces >> many getNext
+  spaces
+  eof
+  return $ mconcat results
+
+getFormat :: HeX Format
+getFormat = liftM hexFormat getState
+
+oneChar :: HeX Doc
+oneChar = try $ do
+  mathmode <- liftM hexMath getState
+  c <- (try $ char '\\' >> (satisfy (not . isLetter))) <|> satisfy (/='\\')
+  format <- getFormat
+  case format of
+       Html -> return $ Html.ch c
+       LaTeX -> if mathmode
+                   then return $ rawc c
+                   else return $ TeX.ch c
+group :: HeX Doc
+group = do
+  char '{'
+  res <- manyTill getNext (char '}')
+  return $ cat res
+
+inMathMode :: HeX a -> HeX a
+inMathMode p = do
+  mathmode <- liftM hexMath getState
+  updateState $ \s -> s{ hexMath = True }
+  res <- p
+  updateState $ \s -> s { hexMath = mathmode }
+  return res
+
+emitMath :: Bool -> Doc -> HeX Doc
+emitMath display b = do
+  let tagtype = if display then "div" else "span"
+  let delim = if display then "$$" else "$"
+  format <- getFormat
+  case format of
+       Html  -> return $ Html.inTags tagtype [("class","math")] b
+       LaTeX -> return $ raws delim +++ b +++ raws delim
+
+math :: HeX Doc
+math = do
+  char '$'
+  display <- option False $ char '$' >> return True
+  let delim = if display then try (string "$$") else count 1 (char '$')
+  raw <- inMathMode $ manyTill getNext delim
+  emitMath display $ cat raw
+
+ensureMath :: HeX Doc -> HeX Doc
+ensureMath p = do
+  mathmode <- liftM hexMath getState
+  res <- inMathMode p
+  if mathmode
+     then return res
+     else emitMath False res
+
+command :: HeX Doc
+command = do
+  char '\\'
+  cmd <- many1 letter
+  skipBlank
+  commands <- liftM hexCommands getState
+  case M.lookup cmd commands of
+        Just p  -> p
+        Nothing -> fail $ ('\\':cmd) ++ " is not defined"
+
+defaultMain :: HeX Doc -> IO ()
+defaultMain parser = do
+  inp <- getContents
+  args <- getArgs
+  when (null args) $ error "Specify output format."
+  let format = case map toLower $ head args of
+                 "html"  -> Html
+                 "latex" -> LaTeX
+                 x       -> error $ "Unknown output format: " ++ x
+  L.putStrLn =<< run parser format inp
+
 

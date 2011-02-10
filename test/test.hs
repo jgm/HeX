@@ -1,5 +1,5 @@
 {-# LANGUAGE PackageImports, OverloadedStrings #-}
-import Text.HeX.Default
+import Text.HeX
 import Text.HeX.TeX as TeX
 import Text.HeX.Html as Html
 import "mtl" Control.Monad.Trans (liftIO)
@@ -23,10 +23,10 @@ include f = do
   setInput $ contents ++ rest
   return mempty
 
-main = defaultMain [
-            "emph" =: emph
-          , "name" =: name
-          , "rpt"  =: rpt
-          , "include" =: include
-          ]
+main = defaultMain $ do
+  addCommand "emph" emph
+  addCommand "name" name
+  addCommand "rpt"  rpt
+  addCommand "include" include
+  parseDoc
 

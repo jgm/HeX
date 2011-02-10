@@ -7,7 +7,7 @@ module Text.HeX.Html (
   , inTags
   )
 where
-import Text.HeX
+import Text.HeX.Types
 
 str :: String -> Doc
 str = cat . map ch
