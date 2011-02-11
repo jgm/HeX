@@ -8,6 +8,7 @@ module Text.HeX.TeX (
 where
 import Data.Char
 import Text.HeX.Types
+import Data.Monoid
 
 ctl :: String -> Doc
 ctl s | all isLetter s = (rawc '\\') +++ (raws s) +++ (rawc ' ')
@@ -15,10 +16,10 @@ ctl [c] = (rawc '\\') +++ (rawc c)
 ctl s   = error $ "`" ++ s ++ "' is not a valid Doc control sequence"
 
 str :: String -> Doc
-str = cat . map ch 
+str = mconcat . map ch 
 
 grp :: [Doc] -> Doc
-grp xs = (rawc '{') +++ cat xs +++ (rawc '}')
+grp xs = (rawc '{') +++ mconcat xs +++ (rawc '}')
 
 parbreak :: Doc
 parbreak = raws "\n\n"

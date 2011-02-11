@@ -8,9 +8,10 @@ module Text.HeX.Html (
   )
 where
 import Text.HeX.Types
+import Data.Monoid
 
 str :: String -> Doc
-str = cat . map ch
+str = mconcat . map ch
 
 ch :: Char -> Doc
 ch '&' = raws "&amp;"
@@ -20,7 +21,7 @@ ch c   = rawc c
 
 tag :: Bool -> String -> [(String, String)] -> Doc
 tag selfclosing s attrs = "<" +++ raws s +++ toattrs attrs +++ ending
-  where toattrs = cat . map toattr
+  where toattrs = mconcat . map toattr
         toattr (k,v) = " " +++ raws k +++ ch '=' +++ ch '"' +++
                         str v +++ ch '"'
         ending = raws $ if selfclosing then " />" else ">"

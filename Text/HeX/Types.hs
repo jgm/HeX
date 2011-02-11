@@ -1,5 +1,5 @@
-{-# LANGUAGE FlexibleInstances, TypeSynonymInstances, GeneralizedNewtypeDeriving,
-    PatternGuards #-}
+{-# LANGUAGE FlexibleInstances, TypeSynonymInstances,
+    GeneralizedNewtypeDeriving, PatternGuards #-}
 module Text.HeX.Types
 where
 import Blaze.ByteString.Builder
@@ -13,7 +13,7 @@ import Data.Dynamic
 
 
 data Doc = Doc Builder
-         | Fut (Labels -> Builder)
+         | Fut (HeXState -> Builder)
 
 instance Monoid Doc where
   mempty = Doc mempty
@@ -28,14 +28,12 @@ instance IsString Doc
 data Format = Html | LaTeX
             deriving (Read, Show, Eq)
 
-newtype Labels = Labels { unLabels :: M.Map String String }
-
 data HeXState = HeXState { hexParsers  :: [HeX Doc]
                          , hexCommands :: M.Map String (HeX Doc)
                          , hexFormat   :: Format
                          , hexMath     :: Bool
                          , hexVars     :: M.Map String Dynamic
-                         , hexLabels   :: Labels }
+                         , hexLabels   :: M.Map String String }
 
 type HeX = ParsecT String HeXState IO
 
@@ -54,12 +52,14 @@ instance ToCommand Integer where
 instance ToCommand Double where
   toCommand = return . raws . show
 
-instance ToCommand a => ToCommand (Maybe a) where
-  toCommand (Just x) = toCommand x
-  toCommand Nothing  = return mempty
+instance ToCommand (HeX Doc) where
+  toCommand = id
 
-instance ToCommand a => ToCommand (HeX a) where
-  toCommand = toCommand
+instance ToCommand (HeX [Doc]) where
+  toCommand = liftM mconcat
+
+instance ToCommand (HeX Integer) where
+  toCommand = liftM (raws . show)
 
 instance ToCommand a => ToCommand (Format -> a) where
   toCommand x = do format <- liftM hexFormat getState
@@ -76,6 +76,11 @@ instance (ToCommand b) => ToCommand ([Doc] -> b) where
 instance (Read a, ToCommand b) => ToCommand (Maybe a -> b) where
   toCommand x = do opt <- getOpt
                    toCommand (x opt)
+
+instance ToCommand b => ToCommand (String -> b) where
+  toCommand x = do char '{'
+                   arg <- manyTill anyChar (char '}')
+                   toCommand (x arg)
 
 getNext :: HeX Doc
 getNext = do

@@ -16,7 +16,6 @@ module Text.HeX ( run
                 , setVar
                 , getVar
                 , updateVar
-                , renderBS
                 , module Text.HeX.Types
                 , module Text.Parsec
                 , module Data.Monoid
@@ -63,18 +62,19 @@ updateVar name' f = getVar name' >>= setVar name' . f
 
 run :: HeX Doc -> Format -> String -> IO L.ByteString
 run parser format contents = do
-  result <- runParserT parser
+  result <- runParserT (do res <- parser
+                           case res of
+                                Doc b  -> return b
+                                Fut f  -> getState >>= return . f)
                HeXState{ hexParsers = [math, group, oneChar, command]
                        , hexCommands = M.empty
                        , hexFormat = format
                        , hexMath = False
-                       , hexVars = M.empty } "input" contents
+                       , hexVars = M.empty
+                       , hexLabels = M.empty } "input" contents
   case result of
-       Left e    -> error (show e)
-       Right res -> return $ renderBS res
-
-renderBS :: Doc -> L.ByteString
-renderBS = toLazyByteString . unDoc
+       Left e          -> error (show e)
+       Right b         -> return $ toLazyByteString b
 
 blankline :: HeX Char
 blankline = try $ many (oneOf " \t") >> newline
@@ -133,7 +133,7 @@ math = do
   display <- option False $ char '$' >> return True
   let delim = if display then try (string "$$") else count 1 (char '$')
   raw <- inMathMode $ manyTill getNext delim
-  emitMath display $ cat raw
+  emitMath display $ mconcat raw
 
 ensureMath :: HeX Doc -> HeX Doc
 ensureMath p = do
