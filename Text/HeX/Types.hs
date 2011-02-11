@@ -4,6 +4,7 @@ module Text.HeX.Types
 where
 import Blaze.ByteString.Builder
 import Blaze.ByteString.Builder.Char.Utf8 as BU
+import Data.ByteString.Lazy.UTF8 (toString)
 import qualified Data.Map as M
 import Data.Monoid
 import Data.String
@@ -13,14 +14,14 @@ import Data.Dynamic
 
 
 data Doc = Doc Builder
-         | Fut (HeXState -> Builder)
+         | Fut (HeXState -> HeX Builder)
 
 instance Monoid Doc where
   mempty = Doc mempty
   mappend (Doc x) (Doc y) = Doc (mappend x y)
-  mappend (Doc x) (Fut f) = Fut (\l -> mappend x (f l))
-  mappend (Fut f) (Doc x) = Fut (\l -> mappend (f l) x)
-  mappend (Fut f) (Fut g) = Fut (\l -> mappend (f l) (g l))
+  mappend (Doc x) (Fut f) = Fut $ \st -> liftM (x `mappend`) $ f st
+  mappend (Fut f) (Doc x) = Fut $ \st -> liftM (`mappend` x) $ f st
+  mappend (Fut f) (Fut g) = Fut $ \st -> liftM2 mappend (f st) (g st)
 
 instance IsString Doc
   where fromString = Doc . BU.fromString
@@ -65,22 +66,75 @@ instance ToCommand a => ToCommand (Format -> a) where
   toCommand x = do format <- liftM hexFormat getState
                    toCommand (x format)
 
+instance ToCommand b => ToCommand (Maybe String -> b) where
+  toCommand = withOpt
+
+instance ToCommand b => ToCommand (Maybe Int -> b) where
+  toCommand = withOpt
+
+instance ToCommand b => ToCommand (Maybe Integer -> b) where
+  toCommand = withOpt
+
+instance ToCommand b => ToCommand (Maybe Double -> b) where
+  toCommand = withOpt
+
 instance ToCommand b => ToCommand (Doc -> b) where
   toCommand x = do arg <- group
                    toCommand (x arg)
 
-instance (ToCommand b) => ToCommand ([Doc] -> b) where
-  toCommand x = do args <- many group
-                   toCommand (x args)
-
-instance (Read a, Typeable a, ToCommand b) => ToCommand (Maybe a -> b) where
-  toCommand x = do opt <- getOpt
-                   toCommand (x opt)
-
 instance ToCommand b => ToCommand (String -> b) where
-  toCommand x = do char '{'
-                   arg <- manyTill anyChar (char '}')
+  toCommand x = group >>= withArg x
+
+instance ToCommand b => ToCommand (Int -> b) where
+  toCommand x = group >>= withArg x
+
+instance ToCommand b => ToCommand (Integer -> b) where
+  toCommand x = group >>= withArg x
+
+instance ToCommand b => ToCommand (Double -> b) where
+  toCommand x = group >>= withArg x
+
+instance ToCommand b => ToCommand ([Doc] -> b) where
+  toCommand x = do arg <- sepBy group spaces
                    toCommand (x arg)
+
+withOpt :: (ToCommand b, ReadString a)
+        => (Maybe a -> b) -> HeX Doc
+withOpt f = option mempty
+            $ try $ do char '['
+                       arg <- liftM mconcat $ manyTill getNext (char ']')
+                       withArg (f . Just) arg
+
+withArg :: (ToCommand b, ReadString a)
+        => (a -> b) -> Doc -> HeX Doc
+withArg x arg = do
+     let bToS = toString . toLazyByteString
+     let bToA d = case readString (bToS d) of
+                       Just r  -> return r
+                       Nothing -> unexpected (bToS d)
+     case arg of
+          (Doc d) -> bToA d >>= toCommand . x
+          (Fut f) -> return $ Fut $ \st -> do
+                       d <- f st
+                       res <- bToA d >>= toCommand . x
+                       case res of
+                            (Doc b) -> return b
+                            (Fut _) -> error "Unexpected Fut"
+
+class ReadString a where
+  readString :: String -> Maybe a
+
+instance ReadString String where
+  readString = Just
+
+instance ReadString Int where
+  readString = readM
+
+instance ReadString Integer where
+  readString = readM
+
+instance ReadString Double where
+  readString = readM
 
 getNext :: HeX Doc
 getNext = do
@@ -93,19 +147,11 @@ group = do
   res <- manyTill getNext (char '}')
   return $ mconcat res
 
--- If input is a string, return the string; otherwise, use read
-readM :: (Read a, Typeable a, Monad m) => String -> m a
-readM s | typeOf s == typeOf "", [x] <- parsed' = return x
-        | [x] <- parsed = return x
+readM :: (Read a, Monad m) => String -> m a
+readM s | [x] <- parsed = return x
         | otherwise     = fail $ "Failed to parse `" ++ s ++ "'"
   where
     parsed = [x | (x,_) <- reads s]
-    parsed' = [x | (x,_) <- reads (show s)]
-
-getOpt :: (Typeable a, Read a) => HeX (Maybe a)
-getOpt = option Nothing $ try $ do
-  char '['
-  liftM readM $ manyTill anyChar (char ']')
 
 raws :: String -> Doc
 raws = Doc . BU.fromString

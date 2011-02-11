@@ -65,7 +65,7 @@ run parser format contents = do
   result <- runParserT (do res <- parser
                            case res of
                                 Doc b  -> return b
-                                Fut f  -> getState >>= return . f)
+                                Fut f  -> getState >>= f)
                HeXState{ hexParsers = [math, group, oneChar, command]
                        , hexCommands = M.empty
                        , hexFormat = format
