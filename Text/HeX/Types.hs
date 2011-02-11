@@ -73,7 +73,7 @@ instance (ToCommand b) => ToCommand ([Doc] -> b) where
   toCommand x = do args <- many group
                    toCommand (x args)
 
-instance (Read a, ToCommand b) => ToCommand (Maybe a -> b) where
+instance (Read a, Typeable a, ToCommand b) => ToCommand (Maybe a -> b) where
   toCommand x = do opt <- getOpt
                    toCommand (x opt)
 
@@ -93,14 +93,17 @@ group = do
   res <- manyTill getNext (char '}')
   return $ mconcat res
 
-readM :: (Read a, Monad m) => String -> m a
-readM s | [x] <- parsed = return x
+-- If input is a string, return the string; otherwise, use read
+readM :: (Read a, Typeable a, Monad m) => String -> m a
+readM s | typeOf s == typeOf "", [x] <- parsed' = return x
+        | [x] <- parsed = return x
         | otherwise     = fail $ "Failed to parse `" ++ s ++ "'"
   where
     parsed = [x | (x,_) <- reads s]
+    parsed' = [x | (x,_) <- reads (show s)]
 
-getOpt :: (Monad m, Read a) => HeX (m a)
-getOpt = try $ do
+getOpt :: (Typeable a, Read a) => HeX (Maybe a)
+getOpt = option Nothing $ try $ do
   char '['
   liftM readM $ manyTill anyChar (char ']')
 

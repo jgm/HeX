@@ -27,11 +27,16 @@ include f = do
   setInput $ contents ++ rest
   return mempty
 
+test :: Maybe FilePath -> HeX Doc
+test (Just f) = include f
+test (Nothing) = return mempty
+
 main = defaultMain $ do
   addCommand "emph" emph
   addCommand "name" name
   addCommand "rpt"  rpt
   addCommand "rev"  rev
   addCommand "include" include
+  addCommand "test" test
   parseDoc
 
