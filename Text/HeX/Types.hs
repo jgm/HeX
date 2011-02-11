@@ -1,5 +1,5 @@
-{-# LANGUAGE DeriveDataTypeable, FlexibleInstances,
-    TypeSynonymInstances, GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE FlexibleInstances, TypeSynonymInstances, GeneralizedNewtypeDeriving,
+    PatternGuards #-}
 module Text.HeX.Types
 where
 import Blaze.ByteString.Builder
@@ -8,13 +8,19 @@ import qualified Data.Map as M
 import Data.Monoid
 import Data.String
 import Text.Parsec
-import qualified Data.ByteString.Lazy.UTF8 as U
 import Control.Monad
 import Data.Dynamic
 
 
-newtype Doc = Doc { unDoc :: Builder }
-            deriving (Monoid, Typeable)
+data Doc = Doc Builder
+         | Fut (Labels -> Builder)
+
+instance Monoid Doc where
+  mempty = Doc mempty
+  mappend (Doc x) (Doc y) = Doc (mappend x y)
+  mappend (Doc x) (Fut f) = Fut (\l -> mappend x (f l))
+  mappend (Fut f) (Doc x) = Fut (\l -> mappend (f l) x)
+  mappend (Fut f) (Fut g) = Fut (\l -> mappend (f l) (g l))
 
 instance IsString Doc
   where fromString = Doc . BU.fromString
@@ -22,17 +28,16 @@ instance IsString Doc
 data Format = Html | LaTeX
             deriving (Read, Show, Eq)
 
+newtype Labels = Labels { unLabels :: M.Map String String }
+
 data HeXState = HeXState { hexParsers  :: [HeX Doc]
                          , hexCommands :: M.Map String (HeX Doc)
                          , hexFormat   :: Format
                          , hexMath     :: Bool
-                         , hexVars     :: M.Map String Dynamic }
-              deriving (Typeable)
+                         , hexVars     :: M.Map String Dynamic
+                         , hexLabels   :: Labels }
 
 type HeX = ParsecT String HeXState IO
-
-instance Typeable1 HeX
-  where typeOf1 _ = mkTyConApp (mkTyCon "Text.HeX") []
 
 class ToCommand a where
   toCommand :: a -> HeX Doc
@@ -68,26 +73,9 @@ instance (ToCommand b) => ToCommand ([Doc] -> b) where
   toCommand x = do args <- many group
                    toCommand (x args)
 
-instance ToCommand b => ToCommand (Integer -> b) where
-  toCommand x = do arg <- group
-                   arg' <- readM (docToStr arg)
-                   toCommand (x arg')
-
-instance ToCommand b => ToCommand (Double -> b) where
-  toCommand x = do arg <- group
-                   arg' <- readM (docToStr arg)
-                   toCommand (x arg')
-
-instance (ToCommand b) => ToCommand (String -> b) where
-  toCommand x = do arg <- group
-                   toCommand (x $ docToStr arg)
-
 instance (Read a, ToCommand b) => ToCommand (Maybe a -> b) where
   toCommand x = do opt <- getOpt
                    toCommand (x opt)
-
-docToStr :: Doc -> String
-docToStr = U.toString . toLazyByteString . unDoc
 
 getNext :: HeX Doc
 getNext = do
@@ -98,7 +86,7 @@ group :: HeX Doc
 group = do
   char '{'
   res <- manyTill getNext (char '}')
-  return $ cat res
+  return $ mconcat res
 
 readM :: (Read a, Monad m) => String -> m a
 readM s | [x] <- parsed = return x
@@ -110,9 +98,6 @@ getOpt :: (Monad m, Read a) => HeX (m a)
 getOpt = try $ do
   char '['
   liftM readM $ manyTill anyChar (char ']')
-
-cat :: [Doc] -> Doc
-cat = Doc . mconcat . map unDoc
 
 raws :: String -> Doc
 raws = Doc . BU.fromString
