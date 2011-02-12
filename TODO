@@ -1,7 +1,7 @@
 _ headers, labels, refs
 _ math in both formats (mathml?)
 _ bibliography w/ citeproc
-
+_ add Pandoc as an output format
 
 
 hexto
