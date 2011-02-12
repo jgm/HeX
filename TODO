@@ -7,7 +7,6 @@ _ figure out how to do environments (do we need them? why not just use
 _ headers, labels, refs
 _ math in both formats (mathml?)
 _ bibliography w/ citeproc
-_ add Pandoc as an output format
 _ syntactic macros (why not? in many cases going to Haskell is overkill)
 
 
