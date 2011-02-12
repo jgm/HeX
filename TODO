@@ -1,7 +1,38 @@
+_ Maybe better to have:
+  'register (Format Html) name function'.
+  'register AnyFormat   name function'.
+  The commands are then stored in a lookup table with the formats.
+  ((name, formatspec), function)
+  search for name and formatspec: AnyFormat will match anything.
+  Advantage of this would be that you could more easily add a module
+  that adds the format-specific commands for your output format.
+  Then the user could simply import the modules needed for the
+  output formats they want.
+
+  (With the current system, you can do this, but it's more cumbersome:
+
+  command format = case format of
+                        NewFormat -> doNewStuff
+                        f         -> OldModule.command f
+
+  though perhaps this pattern could simply be encapsulated in
+  a function:
+
+  command = addFormat NewFormat OldModule.command $ \d ->
+              "*" +++ d +++ "*"
+
+  the limitation here is that if you have several modules for
+  new formats, they have to import each other sequentially.
+
+_ change math mode so it allows a large list of latex commands
+_ figure out how to do verbatims
+_ figure out how to do environments (do we need them? why not just use
+  {} for grouping?)
 _ headers, labels, refs
 _ math in both formats (mathml?)
 _ bibliography w/ citeproc
 _ add Pandoc as an output format
+_ syntactic macros (why not? in many cases going to Haskell is overkill)
 
 
 hexto
