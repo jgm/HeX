@@ -1,5 +1,5 @@
 {-# LANGUAGE OverloadedStrings, ScopedTypeVariables #-}
-module Text.HeX.Standard.Html (commands) where
+module Text.HeX.Standard.Html (commands, str, ch, tagOpen, tagClose, tagSelfClosing, inTags, emitMath) where
 
 import Text.HeX
 import Text.HeX.Standard.Generic (getSectionNum)

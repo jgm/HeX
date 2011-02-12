@@ -148,7 +148,7 @@ addParser :: HeX Doc -> HeX ()
 addParser p = updateState $ \st -> st{ hexParsers = p : hexParsers st }
 
 command :: HeX Doc
-command = do
+command = try $ do
   char '\\'
   cmd <- many1 letter
   skipBlank

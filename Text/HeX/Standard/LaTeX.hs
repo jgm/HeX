@@ -17,6 +17,7 @@ commands = do
   registerFor "latex" "paragraph" (section 4)
   registerFor "latex" "subparagraph" (section 5)
 
+ctl :: String -> Doc
 ctl s | all isLetter s = (rawc '\\') +++ (raws s) +++ (rawc ' ')
 ctl [c] = (rawc '\\') +++ (rawc c)
 ctl s   = error $ "`" ++ s ++ "' is not a valid Doc control sequence"
