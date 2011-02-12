@@ -1,8 +1,8 @@
 {-# LANGUAGE PackageImports, OverloadedStrings #-}
 import Text.HeX
-import Text.HeX.Standard (addCommands)
+import Text.HeX.Standard (commands)
 
 main = defaultMain $ do
-  addCommands
+  commands
   parseDoc
 

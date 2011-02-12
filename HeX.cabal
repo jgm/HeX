@@ -13,10 +13,11 @@ Extra-source-files:  examples/test.lhs
 Cabal-version:       >=1.2
 Library
   Exposed-modules:   Text.HeX
-                     Text.HeX.TeX
                      Text.HeX.Types
-                     Text.HeX.Html
                      Text.HeX.Standard
+                     Text.HeX.Standard.Generic
+                     Text.HeX.Standard.Html
+                     Text.HeX.Standard.LaTeX
   Build-depends:     parsec >= 3.1, base >= 4 && < 5,
                      mtl, containers,
                      bytestring, utf8-string, blaze-builder >= 0.2 && < 0.3,
