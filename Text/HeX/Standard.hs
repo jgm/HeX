@@ -10,6 +10,10 @@ emph :: Format -> Doc -> Doc
 emph Html arg  = inTags "em" [] arg
 emph LaTeX arg  = ctl "emph" +++ grp [arg]
 
+strong :: Format -> Doc -> Doc
+strong Html arg  = inTags "strong" [] arg
+strong LaTeX arg  = ctl "textbf" +++ grp [arg]
+
 name :: Format -> Doc -> Doc -> Doc
 name Html f l = inTags "span" [("class","firstname")] f +++ " "
                    +++ inTags "span" [("class","lastname")] l
@@ -41,7 +45,7 @@ section f n d = do
              _      -> return d
   return $ case f of
            Html    -> inTags "h1" [] d'
-           LaTeX   -> ctl "section" +++ grp [d']
+           LaTeX   -> ctl "section" +++ grp [d]
 
 lab :: String -> HeX Doc
 lab s = addLabel s >> return mempty
@@ -52,6 +56,7 @@ ref s = lookupLabel s
 addCommands :: HeX ()
 addCommands = do
   addCommand "emph" emph
+  addCommand "strong" strong
   addCommand "name" name
   addCommand "rpt"  rpt
   addCommand "rev"  rev
