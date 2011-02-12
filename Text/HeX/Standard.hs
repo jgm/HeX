@@ -1,10 +1,10 @@
-{-# LANGUAGE PackageImports, OverloadedStrings #-}
+{-# LANGUAGE OverloadedStrings #-}
 module Text.HeX.Standard ( addCommands ) where
 
 import Text.HeX
 import Text.HeX.TeX as TeX
 import Text.HeX.Html as Html
-import "mtl" Control.Monad.Trans (liftIO)
+import Control.Monad.Trans (liftIO)
 
 emph :: Format -> Doc -> Doc
 emph Html arg  = inTags "em" [] arg
