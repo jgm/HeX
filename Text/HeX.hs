@@ -21,7 +21,6 @@ module Text.HeX ( run
                 , module Data.Monoid
                 , oneChar
                 , command
-                , addCommand
                 , parseDoc
                 , setTarget
                 , addLabel
@@ -107,10 +106,6 @@ skipBlank = do many $ (newline >> notFollowedBy blankline >> return "\n") <|>
                       (char '%' >> manyTill anyChar newline)
                return ()
 
-addCommand :: ToCommand a => String -> a -> HeX ()
-addCommand name x = updateState $ \s ->
-    s{ hexCommands = M.insert name (toCommand x) (hexCommands s) }
-
 parseDoc :: HeX Doc
 parseDoc = do
   results <- spaces >> many getNext
@@ -170,10 +165,14 @@ command = do
   char '\\'
   cmd <- many1 letter
   skipBlank
-  commands <- liftM hexCommands getState
-  case M.lookup cmd commands of
+  st <- getState
+  let commands = hexCommands st
+  let format = hexFormat st
+  case M.lookup (cmd, Just format) commands of
         Just p  -> p
-        Nothing -> fail $ ('\\':cmd) ++ " is not defined"
+        Nothing -> case M.lookup (cmd, Nothing) commands of
+                        Just q  -> q
+                        Nothing -> fail $ ('\\':cmd) ++ " is not defined"
 
 defaultMain :: HeX Doc -> IO ()
 defaultMain parser = do

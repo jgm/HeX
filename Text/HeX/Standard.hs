@@ -1,19 +1,20 @@
-{-# LANGUAGE OverloadedStrings, ScopedTypeVariables #-}
+{-# LANGUAGE OverloadedStrings, ScopedTypeVariables, PackageImports #-}
 module Text.HeX.Standard ( addCommands ) where
 
 import Text.HeX
 import Text.HeX.TeX as TeX
 import Text.HeX.Html as Html
 import Data.List (intercalate)
-import Control.Monad.Trans (liftIO)
+import "mtl" Control.Monad.Trans (liftIO)
+import Control.Monad (forM_)
 
-emph :: Format -> Doc -> Doc
-emph Html arg  = inTags "em" [] arg
-emph LaTeX arg  = ctl "emph" +++ grp [arg]
+emphHtml, emphLaTeX :: Doc -> Doc
+emphHtml arg  = inTags "em" [] arg
+emphLaTeX arg  = ctl "emph" +++ grp [arg]
 
-strong :: Format -> Doc -> Doc
-strong Html arg  = inTags "strong" [] arg
-strong LaTeX arg  = ctl "textbf" +++ grp [arg]
+strongHtml, strongLaTeX :: Doc -> Doc
+strongHtml arg  = inTags "strong" [] arg
+strongLaTeX arg  = ctl "textbf" +++ grp [arg]
 
 rpt :: Maybe Int -> Doc -> Doc
 rpt (Just n) d = mconcat $ replicate n d
@@ -60,16 +61,19 @@ ref s = lookupLabel s
 addCommands :: HeX ()
 addCommands = do
   setVar "secnum" ([] :: [Int])
-  addCommand "emph" emph
-  addCommand "strong" strong
-  addCommand "rpt"  rpt
-  addCommand "rev"  rev
-  addCommand "include" include
-  addCommand "test" test
-  addCommand "section" (section 1)
-  addCommand "subsection" (section 2)
-  addCommand "subsubsection" (section 3)
-  addCommand "paragraph" (section 4)
-  addCommand "subparagraph" (section 5)
-  addCommand "label" label'
-  addCommand "ref" ref
+  registerFor Html "emph" emphHtml
+  registerFor LaTeX "emph" emphLaTeX
+  registerFor Html "strong" strongHtml
+  registerFor LaTeX "strong" strongLaTeX
+  register "rpt" rpt
+  register "rev" rev
+  register "include" include
+  register "test" test
+  forM_ [Html, LaTeX] $ \f -> do
+    registerFor f "section" (section 1 f)
+    registerFor f "subsection" (section 2 f)
+    registerFor f "subsubsection" (section 3 f)
+    registerFor f "paragraph" (section 4 f)
+    registerFor f "subparagraph" (section 5 f)
+  register "label" label'
+  register "ref" ref

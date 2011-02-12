@@ -24,6 +24,7 @@ _ Maybe better to have:
   the limitation here is that if you have several modules for
   new formats, they have to import each other sequentially.
 
+_ system for warnings; e.g. warn if a label is redefined.
 _ change math mode so it allows a large list of latex commands
 _ figure out how to do verbatims
 _ figure out how to do environments (do we need them? why not just use

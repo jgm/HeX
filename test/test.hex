@@ -1,1 +1,13 @@
-Hi \emph{there}.
+\section{First section}\label{sec1}
+
+Hi \emph{there}.  We're in section \ref{sec1}.
+
+Next we'll be in section \ref{sec1.1}.
+
+\subsection{Second \emph{section}}
+\label{sec1.1}
+
+\rpt[5]{Hi there \emph{world}.
+
+}
+

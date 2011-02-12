@@ -27,10 +27,11 @@ instance IsString Doc
   where fromString = Doc . BU.fromString
 
 data Format = Html | LaTeX
-            deriving (Read, Show, Eq)
+            deriving (Read, Show, Eq, Ord)
 
 data HeXState = HeXState { hexParsers   :: [HeX Doc]
-                         , hexCommands  :: M.Map String (HeX Doc)
+                         , hexCommands  :: M.Map (String, (Maybe Format))
+                                            (HeX Doc)
                          , hexFormat    :: Format
                          , hexMath      :: Bool
                          , hexVars      :: M.Map String Dynamic
@@ -40,7 +41,15 @@ data HeXState = HeXState { hexParsers   :: [HeX Doc]
 type HeX = ParsecT String HeXState IO
 
 class ToCommand a where
-  toCommand :: a -> HeX Doc
+  toCommand   :: a -> HeX Doc
+  register    :: String -> a -> HeX ()
+  registerFor :: Format -> String -> a -> HeX ()
+
+  register name x = updateState $ \s ->
+    s{ hexCommands = M.insert (name, Nothing) (toCommand x) (hexCommands s) }
+
+  registerFor f name x = updateState $ \s ->
+    s{ hexCommands = M.insert (name, Just f) (toCommand x) (hexCommands s) }
 
 instance ToCommand Doc where
   toCommand = return
