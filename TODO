@@ -1,20 +1,8 @@
-Need to figure out how to handle forward references.
-Perhaps Doc needs to be
-Chunk Builder | Future (HeXState -> Builder)
+_ headers, labels, refs
+_ math in both formats (mathml?)
+_ bibliography w/ citeproc
 
-can define Monoid for this.
 
-then run the parser, and at the end feed the final HEXState
-into the future.
-
-problem:  We'd have to give up converting Docs to strings, etc.
-Perhaps the easiest solution is just to add new parsers for
-a group containing a string, a number, etc.
-
-but then you couldn't do things like \double{\triple{5}}
-
-another alternative would be to just fail parsing the argument
-if it's a Future...
 
 hexto
 -----
