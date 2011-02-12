@@ -23,6 +23,9 @@ module Text.HeX ( run
                 , command
                 , addCommand
                 , parseDoc
+                , setTarget
+                , addLabel
+                , lookupLabel
                 , math
                 , ensureMath
                 , defaultMain
@@ -33,6 +36,7 @@ import Text.HeX.TeX as TeX
 import Text.HeX.Html as Html
 import Text.Parsec
 import qualified Data.ByteString.Lazy as L
+import Blaze.ByteString.Builder.Char.Utf8 as BU
 import System.Environment
 import Control.Monad
 import Data.Char (toLower, isLetter)
@@ -40,6 +44,7 @@ import Data.Dynamic
 import Blaze.ByteString.Builder
 import qualified Data.Map as M
 import Data.Monoid
+import Data.Maybe (fromMaybe)
 
 setVar :: Typeable a => String -> a -> HeX a
 setVar name' v = do
@@ -60,6 +65,22 @@ getVar name' = do
 updateVar :: Typeable a => String -> (a -> a) -> HeX a
 updateVar name' f = getVar name' >>= setVar name' . f
 
+setTarget :: String -> HeX ()
+setTarget s = updateState $ \st -> st{ hexTarget = s }
+
+addLabel :: String -> HeX ()
+addLabel s = do
+  st' <- getState
+  let target = hexTarget st'
+  let labs = hexLabels st'
+  guard $ not (null target)
+  updateState $ \st -> st{ hexLabels = M.insert s target labs }
+
+lookupLabel :: String -> HeX Doc
+lookupLabel lab = return $ Fut $ \st -> do
+  let labs = hexLabels st
+  return $ BU.fromString $ fromMaybe "??" $ M.lookup lab labs
+
 run :: HeX Doc -> Format -> String -> IO L.ByteString
 run parser format contents = do
   result <- runParserT (do res <- parser
@@ -71,6 +92,7 @@ run parser format contents = do
                        , hexFormat = format
                        , hexMath = False
                        , hexVars = M.empty
+                       , hexTarget = ""
                        , hexLabels = M.empty } "input" contents
   case result of
        Left e          -> error (show e)

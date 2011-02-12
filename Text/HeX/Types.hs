@@ -29,12 +29,13 @@ instance IsString Doc
 data Format = Html | LaTeX
             deriving (Read, Show, Eq)
 
-data HeXState = HeXState { hexParsers  :: [HeX Doc]
-                         , hexCommands :: M.Map String (HeX Doc)
-                         , hexFormat   :: Format
-                         , hexMath     :: Bool
-                         , hexVars     :: M.Map String Dynamic
-                         , hexLabels   :: M.Map String String }
+data HeXState = HeXState { hexParsers   :: [HeX Doc]
+                         , hexCommands  :: M.Map String (HeX Doc)
+                         , hexFormat    :: Format
+                         , hexMath      :: Bool
+                         , hexVars      :: M.Map String Dynamic
+                         , hexTarget    :: String
+                         , hexLabels    :: M.Map String String }
 
 type HeX = ParsecT String HeXState IO
 
@@ -67,16 +68,16 @@ instance ToCommand a => ToCommand (Format -> a) where
                    toCommand (x format)
 
 instance ToCommand b => ToCommand (Maybe String -> b) where
-  toCommand = withOpt
+  toCommand x = withOpt x <|> toCommand (x Nothing)
 
 instance ToCommand b => ToCommand (Maybe Int -> b) where
-  toCommand = withOpt
+  toCommand x = withOpt x <|> toCommand (x Nothing)
 
 instance ToCommand b => ToCommand (Maybe Integer -> b) where
-  toCommand = withOpt
+  toCommand x = withOpt x <|> toCommand (x Nothing)
 
 instance ToCommand b => ToCommand (Maybe Double -> b) where
-  toCommand = withOpt
+  toCommand x = withOpt x <|> toCommand (x Nothing)
 
 instance ToCommand b => ToCommand (Doc -> b) where
   toCommand x = do arg <- group
@@ -100,10 +101,9 @@ instance ToCommand b => ToCommand ([Doc] -> b) where
 
 withOpt :: (ToCommand b, ReadString a)
         => (Maybe a -> b) -> HeX Doc
-withOpt f = option mempty
-            $ try $ do char '['
-                       arg <- liftM mconcat $ manyTill getNext (char ']')
-                       withArg (f . Just) arg
+withOpt f = try $ do char '['
+                     arg <- liftM mconcat $ manyTill getNext (char ']')
+                     withArg (f . Just) arg
 
 withArg :: (ToCommand b, ReadString a)
         => (a -> b) -> Doc -> HeX Doc

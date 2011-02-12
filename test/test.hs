@@ -4,6 +4,7 @@ import Text.HeX.TeX as TeX
 import Text.HeX.Html as Html
 import "mtl" Control.Monad.Trans (liftIO)
 import Data.Char (toUpper)
+import Control.Monad (liftM)
 
 emph :: Format -> Doc -> Doc
 emph Html arg  = inTags "em" [] arg
@@ -31,6 +32,23 @@ test :: Maybe FilePath -> HeX Doc
 test (Just f) = include f
 test (Nothing) = return mempty
 
+section :: Format -> Maybe Integer -> Doc -> HeX Doc
+section f n d = do
+  d' <- case n of
+             Just x -> do
+               setTarget (show x)
+               return (raws (show x) +++ ". " +++ d)
+             _      -> return d
+  return $ case f of
+           Html    -> inTags "h1" [] d'
+           LaTeX   -> ctl "section" +++ grp [d']
+
+lab :: String -> HeX Doc
+lab s = addLabel s >> return mempty
+
+ref :: String -> HeX Doc
+ref s = lookupLabel s
+
 main = defaultMain $ do
   addCommand "emph" emph
   addCommand "name" name
@@ -38,5 +56,8 @@ main = defaultMain $ do
   addCommand "rev"  rev
   addCommand "include" include
   addCommand "test" test
+  addCommand "section" section
+  addCommand "lab" lab
+  addCommand "ref" ref
   parseDoc
 
