@@ -31,6 +31,7 @@ module Text.HeX ( run
                 , ensureMath
                 , inMathMode
                 , registerEmitMathFor
+                , warn
                 , defaultMain
                 )
 where
@@ -47,6 +48,8 @@ import qualified Data.Map as M
 import Data.Monoid
 import Data.Maybe (fromMaybe)
 import qualified Data.CaseInsensitive as CI
+import Control.Monad.Trans (liftIO)
+import System.IO
 
 setVar :: Typeable a => String -> a -> HeX a
 setVar name' v = do
@@ -75,7 +78,11 @@ addLabel s = do
   st' <- getState
   let target = hexTarget st'
   let labs = hexLabels st'
-  guard $ not (null target)
+  when (null s) $
+    warn "Ignoring empty label."
+  case M.lookup s labs of
+       Just _  -> warn $ "Label " ++ show s ++ " redefined."
+       Nothing -> return ()
   updateState $ \st -> st{ hexLabels = M.insert s target labs }
 
 lookupLabel :: String -> HeX Doc
@@ -193,6 +200,12 @@ registerEmitMathFor :: Format -> (Bool -> Doc -> HeX Doc) -> HeX ()
 registerEmitMathFor format emitter =
   updateState $ \st -> st{ hexEmitMath = M.insert format emitter
                                          $ hexEmitMath st }
+
+warn :: String -> HeX ()
+warn msg = do
+  pos <- getPosition
+  liftIO $ hPutStrLn stderr $
+    "Warning " ++ show pos ++ ": " ++ msg
 
 defaultMain :: HeX Doc -> IO ()
 defaultMain parser = do

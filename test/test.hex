@@ -11,6 +11,8 @@ $2+2=4$
 
 $$2=2$$
 
+\label{sec1.1}
+\label{}
 \rpt[5]{Hi there \emph{world}.
 
 }
