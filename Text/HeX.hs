@@ -21,6 +21,7 @@ module Text.HeX ( run
                 , module Data.Monoid
                 , registerEscaperFor
                 , oneChar
+                , addParser
                 , command
                 , parseDoc
                 , setTarget
@@ -28,12 +29,12 @@ module Text.HeX ( run
                 , lookupLabel
                 , math
                 , ensureMath
+                , inMathMode
+                , registerEmitMathFor
                 , defaultMain
                 )
 where
 import Text.HeX.Types
-import Text.HeX.TeX as TeX
-import Text.HeX.Html as Html
 import Text.Parsec
 import qualified Data.ByteString.Lazy as L
 import Blaze.ByteString.Builder.Char.Utf8 as BU
@@ -90,6 +91,7 @@ run parser format contents = do
                                 Fut f  -> getState >>= f)
                HeXState{ hexParsers = [math, group, oneChar, command]
                        , hexEscapers = M.empty
+                       , hexEmitMath = M.empty
                        , hexCommands = M.empty
                        , hexFormat = format
                        , hexMath = False
@@ -135,38 +137,8 @@ oneChar = try $ do
        Nothing -> fail $ "No character escaper registered for format " ++
                      show format
 
-inMathMode :: HeX a -> HeX a
-inMathMode p = do
-  mathmode <- liftM hexMath getState
-  updateState $ \s -> s{ hexMath = True }
-  res <- p
-  updateState $ \s -> s { hexMath = mathmode }
-  return res
-
-emitMath :: Bool -> Doc -> HeX Doc
-emitMath display b = do
-  let tagtype = if display then "div" else "span"
-  let delim = if display then "$$" else "$"
-  format <- getFormat
-  case format of
-       "html"  -> return $ Html.inTags tagtype [("class","math")] b
-       "latex" -> return $ raws delim +++ b +++ raws delim
-
-math :: HeX Doc
-math = do
-  char '$'
-  display <- option False $ char '$' >> return True
-  let delim = if display then try (string "$$") else count 1 (char '$')
-  raw <- inMathMode $ manyTill getNext delim
-  emitMath display $ mconcat raw
-
-ensureMath :: HeX Doc -> HeX Doc
-ensureMath p = do
-  mathmode <- liftM hexMath getState
-  res <- inMathMode p
-  if mathmode
-     then return res
-     else emitMath False res
+addParser :: HeX Doc -> HeX ()
+addParser p = updateState $ \st -> st{ hexParsers = p : hexParsers st }
 
 command :: HeX Doc
 command = do
@@ -180,7 +152,47 @@ command = do
         Just p  -> p
         Nothing -> case M.lookup (cmd, Nothing) commands of
                         Just q  -> q
-                        Nothing -> fail $ ('\\':cmd) ++ " is not defined"
+                        Nothing -> fail $ ('\\':cmd) ++
+                                     " is not defined for " ++ show format
+
+math :: HeX Doc
+math = do
+  char '$'
+  display <- option False $ char '$' >> return True
+  let delim = if display then try (string "$$") else count 1 (char '$')
+  raw <- inMathMode $ manyTill getNext delim
+  format <- getFormat
+  emitMath format display $ mconcat raw
+
+emitMath :: Format -> Bool -> Doc -> HeX Doc
+emitMath format display d = do
+  st <- getState
+  let emitters = hexEmitMath st
+  case M.lookup format emitters of
+       Just emitter  -> emitter display d
+       Nothing       -> fail $ "No math emitter for format " ++ show format
+
+inMathMode :: HeX a -> HeX a
+inMathMode p = do
+  mathmode <- liftM hexMath getState
+  updateState $ \s -> s{ hexMath = True }
+  res <- p
+  updateState $ \s -> s { hexMath = mathmode }
+  return res
+
+ensureMath :: HeX Doc -> HeX Doc
+ensureMath p = do
+  mathmode <- liftM hexMath getState
+  res <- inMathMode p
+  format <- getFormat
+  if mathmode
+     then return res
+     else emitMath format False res
+
+registerEmitMathFor :: Format -> (Bool -> Doc -> HeX Doc) -> HeX ()
+registerEmitMathFor format emitter =
+  updateState $ \st -> st{ hexEmitMath = M.insert format emitter
+                                         $ hexEmitMath st }
 
 defaultMain :: HeX Doc -> IO ()
 defaultMain parser = do
@@ -189,5 +201,4 @@ defaultMain parser = do
   when (null args) $ error "Specify output format."
   let format = CI.mk $ head args
   L.putStrLn =<< run parser format inp
-
 

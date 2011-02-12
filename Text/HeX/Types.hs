@@ -30,6 +30,7 @@ type Format = CI String
 
 data HeXState = HeXState { hexParsers   :: [HeX Doc]
                          , hexEscapers  :: M.Map Format (Char -> HeX Doc)
+                         , hexEmitMath  :: M.Map Format (Bool -> Doc -> HeX Doc)
                          , hexCommands  :: M.Map (String, (Maybe Format))
                                             (HeX Doc)
                          , hexFormat    :: Format
