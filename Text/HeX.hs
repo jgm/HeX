@@ -19,6 +19,7 @@ module Text.HeX ( run
                 , module Text.HeX.Types
                 , module Text.Parsec
                 , module Data.Monoid
+                , registerEscaperFor
                 , oneChar
                 , command
                 , parseDoc
@@ -38,12 +39,13 @@ import qualified Data.ByteString.Lazy as L
 import Blaze.ByteString.Builder.Char.Utf8 as BU
 import System.Environment
 import Control.Monad
-import Data.Char (toLower, isLetter)
+import Data.Char (isLetter)
 import Data.Dynamic
 import Blaze.ByteString.Builder
 import qualified Data.Map as M
 import Data.Monoid
 import Data.Maybe (fromMaybe)
+import qualified Data.CaseInsensitive as CI
 
 setVar :: Typeable a => String -> a -> HeX a
 setVar name' v = do
@@ -87,6 +89,7 @@ run parser format contents = do
                                 Doc b  -> return b
                                 Fut f  -> getState >>= f)
                HeXState{ hexParsers = [math, group, oneChar, command]
+                       , hexEscapers = M.empty
                        , hexCommands = M.empty
                        , hexFormat = format
                        , hexMath = False
@@ -116,16 +119,21 @@ parseDoc = do
 getFormat :: HeX Format
 getFormat = liftM hexFormat getState
 
+registerEscaperFor :: Format -> (Char -> HeX Doc) -> HeX ()
+registerEscaperFor format escaper =
+  updateState $ \st -> st{ hexEscapers = M.insert format escaper
+                                         $ hexEscapers st }
+
 oneChar :: HeX Doc
 oneChar = try $ do
-  mathmode <- liftM hexMath getState
   c <- (try $ char '\\' >> (satisfy (not . isLetter))) <|> satisfy (/='\\')
-  format <- getFormat
-  case format of
-       Html -> return $ Html.ch c
-       LaTeX -> if mathmode
-                   then return $ rawc c
-                   else return $ TeX.ch c
+  st <- getState
+  let format = hexFormat st
+  let escapers = hexEscapers st
+  case M.lookup format escapers of
+       Just f  -> f c
+       Nothing -> fail $ "No character escaper registered for format " ++
+                     show format
 
 inMathMode :: HeX a -> HeX a
 inMathMode p = do
@@ -141,8 +149,8 @@ emitMath display b = do
   let delim = if display then "$$" else "$"
   format <- getFormat
   case format of
-       Html  -> return $ Html.inTags tagtype [("class","math")] b
-       LaTeX -> return $ raws delim +++ b +++ raws delim
+       "html"  -> return $ Html.inTags tagtype [("class","math")] b
+       "latex" -> return $ raws delim +++ b +++ raws delim
 
 math :: HeX Doc
 math = do
@@ -179,10 +187,7 @@ defaultMain parser = do
   inp <- getContents
   args <- getArgs
   when (null args) $ error "Specify output format."
-  let format = case map toLower $ head args of
-                 "html"  -> Html
-                 "latex" -> LaTeX
-                 x       -> error $ "Unknown output format: " ++ x
+  let format = CI.mk $ head args
   L.putStrLn =<< run parser format inp
 
 

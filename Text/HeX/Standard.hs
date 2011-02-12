@@ -49,8 +49,8 @@ section lev f d = do
                         4 -> "paragraph"
                         _ -> "subparagraph"
   return $ case f of
-           Html    -> inTags ("h" ++ show lev) [] (raws num +++ ". " +++ d)
-           LaTeX   -> ctl secheading +++ grp [d]
+           "html"    -> inTags ("h" ++ show lev) [] (raws num +++ ". " +++ d)
+           "latex"   -> ctl secheading +++ grp [d]
 
 label' :: String -> HeX Doc
 label' s = addLabel s >> return mempty
@@ -61,15 +61,17 @@ ref s = lookupLabel s
 addCommands :: HeX ()
 addCommands = do
   setVar "secnum" ([] :: [Int])
-  registerFor Html "emph" emphHtml
-  registerFor LaTeX "emph" emphLaTeX
-  registerFor Html "strong" strongHtml
-  registerFor LaTeX "strong" strongLaTeX
+  registerEscaperFor "html" (return . Html.ch)
+  registerEscaperFor "latex" (return . TeX.ch)
+  registerFor "html" "emph" emphHtml
+  registerFor "latex" "emph" emphLaTeX
+  registerFor "html" "strong" strongHtml
+  registerFor "latex" "strong" strongLaTeX
   register "rpt" rpt
   register "rev" rev
   register "include" include
   register "test" test
-  forM_ [Html, LaTeX] $ \f -> do
+  forM_ ["html","latex"] $ \f -> do
     registerFor f "section" (section 1 f)
     registerFor f "subsection" (section 2 f)
     registerFor f "subsubsection" (section 3 f)

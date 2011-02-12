@@ -11,7 +11,7 @@ import Data.String
 import Text.Parsec
 import Control.Monad
 import Data.Dynamic
-
+import Data.CaseInsensitive (CI)
 
 data Doc = Doc Builder
          | Fut (HeXState -> HeX Builder)
@@ -26,10 +26,10 @@ instance Monoid Doc where
 instance IsString Doc
   where fromString = Doc . BU.fromString
 
-data Format = Html | LaTeX
-            deriving (Read, Show, Eq, Ord)
+type Format = CI String
 
 data HeXState = HeXState { hexParsers   :: [HeX Doc]
+                         , hexEscapers  :: M.Map Format (Char -> HeX Doc)
                          , hexCommands  :: M.Map (String, (Maybe Format))
                                             (HeX Doc)
                          , hexFormat    :: Format
@@ -71,10 +71,6 @@ instance ToCommand (HeX [Doc]) where
 
 instance ToCommand (HeX Integer) where
   toCommand = liftM (raws . show)
-
-instance ToCommand a => ToCommand (Format -> a) where
-  toCommand x = do format <- liftM hexFormat getState
-                   toCommand (x format)
 
 instance ToCommand b => ToCommand (Maybe String -> b) where
   toCommand x = withOpt x <|> toCommand (x Nothing)
