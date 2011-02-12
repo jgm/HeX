@@ -1,4 +1,5 @@
-_ system for warnings; e.g. warn if a label is redefined.
+x system for warnings; e.g. warn if a label is redefined.
+_ jail for IO?
 _ change math mode so it allows a large list of latex commands
 _ figure out how to do verbatims
 _ figure out how to do environments (do we need them? why not just use
