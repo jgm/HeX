@@ -17,8 +17,11 @@ Library
                      Text.HeX.Standard
                      Text.HeX.Standard.Generic
                      Text.HeX.Standard.Xml
+                     Text.HeX.Standard.TeX
                      Text.HeX.Standard.Html
                      Text.HeX.Standard.LaTeX
+                     Text.HeX.Math.Html
+                     Text.HeX.Math.LaTeX
   Build-depends:     parsec >= 3.1, base >= 4 && < 5,
                      mtl, containers,
                      bytestring, utf8-string, blaze-builder >= 0.2 && < 0.3,

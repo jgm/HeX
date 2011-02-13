@@ -3,7 +3,7 @@ module Docbook (commands) where
 
 import Text.HeX.Standard.Xml (str, ch, inTags, tagSelfClosing)
 import Text.HeX.Standard.Generic (getSectionNum)
-import Text.HeX.Standard.Html (emitMath)
+import Text.HeX.Math.Html (emitMath)
 import Text.HeX
 import Text.Parsec
 import Control.Monad

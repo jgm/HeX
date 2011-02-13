@@ -1,5 +1,5 @@
 {-# LANGUAGE OverloadedStrings, ScopedTypeVariables #-}
-module Text.HeX.Standard.Html (commands, emitMath) where
+module Text.HeX.Standard.Html (commands) where
 
 import Text.HeX
 import Text.HeX.Standard.Xml (ch, inTags)
@@ -8,7 +8,6 @@ import Text.HeX.Standard.Generic (getSectionNum)
 commands :: HeX ()
 commands = do
   registerEscaperFor "html" (return . ch)
-  registerEmitMathFor "html" emitMath
   registerFor "html" "emph" emph
   registerFor "html" "strong" strong
   registerFor "html" "section" (section 1)
@@ -16,11 +15,6 @@ commands = do
   registerFor "html" "subsubsection" (section 3)
   registerFor "html" "paragraph" (section 4)
   registerFor "html" "subparagraph" (section 5)
-
-emitMath :: Bool -> Doc -> HeX Doc
-emitMath display b = do
-  let tagtype = if display then "div" else "span"
-  return $ inTags tagtype [("class","math")] b
 
 emph :: Doc -> Doc
 emph arg  = inTags "em" [] arg
