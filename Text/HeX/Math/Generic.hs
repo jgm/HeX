@@ -10,13 +10,23 @@ import qualified Text.ParserCombinators.Parsec.Token as P
 import Text.ParserCombinators.Parsec.Language
 import Text.HeX
 
-math :: HeX Doc -> (Bool -> Doc -> HeX Doc) -> HeX Doc
-math parseToken emitter = do
+data MathWriter = MathWriter{
+       displayMath :: Doc -> Doc
+     , inlineMath  :: Doc -> Doc
+     }
+
+math :: MathWriter -> HeX Doc
+math writer = do
   char '$'
   display <- option False $ char '$' >> return True
   let delim = if display then try (string "$$") else count 1 (char '$')
-  raw <- inMathMode $ manyTill parseToken delim
-  emitter display $ mconcat raw
+  raw <- inMathMode $ manyTill (parseToken writer) delim
+  return $ if display
+              then displayMath writer $ mconcat raw
+              else inlineMath writer  $ mconcat raw
+
+parseToken :: MathWriter -> HeX Doc
+parseToken _ = oneChar -- FOR NOW
 
 inMathMode :: HeX a -> HeX a
 inMathMode p = do

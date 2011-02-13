@@ -1,19 +1,22 @@
 {-# LANGUAGE OverloadedStrings, ScopedTypeVariables #-}
-module Text.HeX.Math.Html (commands) where
+module Text.HeX.Math.Html (writer, commands) where
 
 import Text.HeX
 import Text.HeX.Standard.Xml (inTags)
-import Text.HeX.Math.Generic (math)
+import Text.HeX.Math.Generic (math, MathWriter(..))
 
 commands :: HeX ()
 commands = do
-  addParser (math parseToken emitMath)
+  addParser (math writer)
 
-parseToken :: HeX Doc
-parseToken = oneChar -- TODO
+writer :: MathWriter
+writer = MathWriter{
+   displayMath = display
+ , inlineMath  = inline
+ }
 
-emitMath :: Bool -> Doc -> HeX Doc
-emitMath display b = do
-  let tagtype = if display then "div" else "span"
-  return $ inTags tagtype [("class","math")] b
+display :: Doc -> Doc
+display = inTags "div" [("class","math")]
 
+inline :: Doc -> Doc
+inline = inTags "span" [("class","math")]

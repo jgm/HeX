@@ -1,18 +1,21 @@
 {-# LANGUAGE OverloadedStrings, ScopedTypeVariables #-}
-module Text.HeX.Math.LaTeX (commands) where
+module Text.HeX.Math.LaTeX (writer, commands) where
 
 import Text.HeX
-import Text.HeX.Math.Generic (math)
+import Text.HeX.Math.Generic (math, MathWriter(..))
 
 commands :: HeX ()
 commands = do
-  addParser (math parseToken emitMath)
+  addParser (math writer)
 
-parseToken :: HeX Doc
-parseToken = oneChar -- TODO
+writer :: MathWriter
+writer = MathWriter{
+   displayMath = display
+ , inlineMath  = inline
+ }
 
-emitMath :: Bool -> Doc -> HeX Doc
-emitMath display b = do
-  let delim = if display then "$$" else "$"
-  return $ raws delim +++ b +++ raws delim
+display :: Doc -> Doc
+display b = "$$" +++ b +++ "$$"
 
+inline :: Doc -> Doc
+inline b = "$" +++ b +++ "$"
