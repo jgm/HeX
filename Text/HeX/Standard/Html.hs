@@ -1,7 +1,8 @@
 {-# LANGUAGE OverloadedStrings, ScopedTypeVariables #-}
-module Text.HeX.Standard.Html (commands, str, ch, tagOpen, tagClose, tagSelfClosing, inTags, emitMath) where
+module Text.HeX.Standard.Html (commands, emitMath) where
 
 import Text.HeX
+import Text.HeX.Standard.Xml (ch, inTags)
 import Text.HeX.Standard.Generic (getSectionNum)
 
 commands :: HeX ()
@@ -15,34 +16,6 @@ commands = do
   registerFor "html" "subsubsection" (section 3)
   registerFor "html" "paragraph" (section 4)
   registerFor "html" "subparagraph" (section 5)
-
-str :: String -> Doc
-str = mconcat . map ch
-
-ch :: Char -> Doc
-ch '&' = raws "&amp;"
-ch '<' = raws "&lt;"
-ch '>' = raws "&gt;"
-ch c   = rawc c
-
-tag :: Bool -> String -> [(String, String)] -> Doc
-tag selfclosing s attrs = "<" +++ raws s +++ toattrs attrs +++ ending
-  where toattrs = mconcat . map toattr
-        toattr (k,v) = " " +++ raws k +++ ch '=' +++ ch '"' +++
-                        str v +++ ch '"'
-        ending = raws $ if selfclosing then " />" else ">"
-
-tagOpen :: String -> [(String, String)] -> Doc
-tagOpen = tag False
-
-tagSelfClosing :: String -> [(String, String)] -> Doc
-tagSelfClosing = tag True
-
-tagClose :: String -> Doc
-tagClose s = "</" +++ raws s +++ ">"
-
-inTags :: String -> [(String, String)] -> Doc -> Doc
-inTags s attrs x = tagOpen s attrs +++ x +++ tagClose s
 
 emitMath :: Bool -> Doc -> HeX Doc
 emitMath display b = do
