@@ -3,7 +3,7 @@ module Docbook (commands) where
 
 import Text.HeX.Standard.Xml (str, ch, inTags, tagSelfClosing)
 import Text.HeX.Standard.Generic (getSectionNum)
-import Text.HeX.Math.Html (emitMath)
+import qualified Text.HeX.Math.Html as HtmlMath
 import Text.HeX
 import Text.Parsec
 import Control.Monad
@@ -12,7 +12,7 @@ import qualified Data.Map as M
 commands :: HeX ()
 commands = do
   registerEscaperFor "docbook" (return . ch)
-  registerEmitMathFor "docbook" emitMath
+  HtmlMath.commands
   registerFor "docbook" "emph" emph
   registerFor "docbook" "strong" strong
   registerFor "docbook" "section" (section 1)

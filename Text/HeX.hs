@@ -24,13 +24,10 @@ module Text.HeX ( run
                 , addParser
                 , command
                 , parseDoc
+                , getFormat
                 , setTarget
                 , addLabel
                 , lookupLabel
-                , math
-                , ensureMath
-                , inMathMode
-                , registerEmitMathFor
                 , warn
                 , defaultMain
                 )
@@ -96,9 +93,8 @@ run parser format contents = do
                            case res of
                                 Doc b  -> return b
                                 Fut f  -> getState >>= f)
-               HeXState{ hexParsers = [math, group, oneChar, command]
+               HeXState{ hexParsers = [group, oneChar, command]
                        , hexEscapers = M.empty
-                       , hexEmitMath = M.empty
                        , hexCommands = M.empty
                        , hexFormat = format
                        , hexMath = False
@@ -161,46 +157,6 @@ command = try $ do
                         Just q  -> q
                         Nothing -> fail $ ('\\':cmd) ++
                                      " is not defined for " ++ show format
-
-math :: HeX Doc
-math = do
-  char '$'
-  display <- option False $ char '$' >> return True
-  let delim = if display then try (string "$$") else count 1 (char '$')
-  raw <- inMathMode $ manyTill getNext delim
-  format <- getFormat
-  emitMath format display $ mconcat raw
-
-emitMath :: Format -> Bool -> Doc -> HeX Doc
-emitMath format display d = do
-  st <- getState
-  let emitters = hexEmitMath st
-  case M.lookup format emitters of
-       Just emitter  -> emitter display d
-       Nothing       -> fail $ "No math emitter for format " ++ show format
-
-inMathMode :: HeX a -> HeX a
-inMathMode p = do
-  mathmode <- liftM hexMath getState
-  updateState $ \s -> s{ hexMath = True }
-  res <- p
-  updateState $ \s -> s { hexMath = mathmode }
-  return res
-
-ensureMath :: HeX Doc -> HeX Doc
-ensureMath p = do
-  mathmode <- liftM hexMath getState
-  res <- inMathMode p
-  format <- getFormat
-  if mathmode
-     then return res
-     else emitMath format False res
-
-registerEmitMathFor :: Format -> (Bool -> Doc -> HeX Doc) -> HeX ()
-registerEmitMathFor format emitter =
-  updateState $ \st -> st{ hexEmitMath = M.insert format emitter
-                                         $ hexEmitMath st }
-
 warn :: String -> HeX ()
 warn msg = do
   pos <- getPosition

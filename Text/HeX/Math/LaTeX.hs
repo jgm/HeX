@@ -1,11 +1,15 @@
 {-# LANGUAGE OverloadedStrings, ScopedTypeVariables #-}
-module Text.HeX.Math.LaTeX (commands, emitMath) where
+module Text.HeX.Math.LaTeX (commands) where
 
 import Text.HeX
+import Text.HeX.Math.Generic (math)
 
 commands :: HeX ()
 commands = do
-  registerEmitMathFor "latex" emitMath
+  addParser (math parseToken emitMath)
+
+parseToken :: HeX Doc
+parseToken = oneChar -- TODO
 
 emitMath :: Bool -> Doc -> HeX Doc
 emitMath display b = do
