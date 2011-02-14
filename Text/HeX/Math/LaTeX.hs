@@ -12,6 +12,7 @@ writer :: MathWriter
 writer = MathWriter{
    displayMath = display
  , inlineMath  = inline
+ , grouped = \d -> "{" +++ d +++ "}"
  }
 
 display :: Doc -> Doc

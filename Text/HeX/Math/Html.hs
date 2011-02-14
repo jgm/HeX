@@ -13,6 +13,7 @@ writer :: MathWriter
 writer = MathWriter{
    displayMath = display
  , inlineMath  = inline
+ , grouped = inTags "mrow" []
  }
 
 display :: Doc -> Doc
@@ -20,3 +21,5 @@ display = inTags "div" [("class","math")]
 
 inline :: Doc -> Doc
 inline = inTags "span" [("class","math")]
+
+
