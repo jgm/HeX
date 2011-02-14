@@ -14,6 +14,21 @@ data MathWriter = MathWriter{
      , grouped     :: Doc -> Doc
      }
 
+-- TODO: this needs rearranging.
+-- perhaps MathWriter should go in HeXState
+-- we'd need a registerMathWriter.
+-- then, this module can register generic math commands.
+-- when these commands go into math mode, they put a bunch
+-- of new parsers into play; when out of math mode, they
+-- remove them.
+-- How do the new parsers come into play? If we put them
+-- at the beginning of the parser list, they'll overshadow
+-- macros etc.
+-- Maybe we need separate lists of math-commands and non-math-commands
+-- in hexState, and separate registerMathCommand etc.
+-- then math writer can simply registerMathCommand for all the commands
+-- appropriate for the writer.
+
 math :: MathWriter -> HeX Doc
 math writer = do
   char '$'

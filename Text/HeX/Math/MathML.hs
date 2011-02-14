@@ -1,5 +1,5 @@
 {-# LANGUAGE OverloadedStrings, ScopedTypeVariables #-}
-module Text.HeX.Math.Html (writer, commands) where
+module Text.HeX.Math.MathML (writer, commands) where
 
 import Text.HeX
 import Text.HeX.Standard.Xml (inTags)
