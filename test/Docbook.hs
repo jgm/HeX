@@ -41,7 +41,7 @@ section lev d = do
                      do guard False
                         section n mempty
   let unRemapCmd n = let old = case M.lookup
-                                (sectionCmd n, Just "docbook", Normal)
+                                (sectionCmd n, Just "docbook")
                                 (hexCommands st) of
                                   Just x  -> x
                                   Nothing -> error "Something happened"

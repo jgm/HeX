@@ -2,24 +2,28 @@
 module Text.HeX.Math.MathML (writer, commands) where
 
 import Text.HeX
-import Text.HeX.Standard.Xml (inTags)
+import Text.HeX.Standard.Xml (ch, inTags)
 import Text.HeX.Math.Generic (math, MathWriter(..))
+import Control.Monad (liftM)
 
 commands :: HeX ()
 commands = do
+  registerEscaperFor "mathml" (return . ch)
   addParser (math writer)
 
 writer :: MathWriter
 writer = MathWriter{
-   displayMath = display
- , inlineMath  = inline
+   displayMath = mathenv True
+ , inlineMath  = mathenv False
  , grouped = inTags "mrow" []
  }
 
-display :: Doc -> Doc
-display = inTags "div" [("class","math")]
-
-inline :: Doc -> Doc
-inline = inTags "span" [("class","math")]
-
-
+mathenv :: Bool -> HeX Doc -> HeX Doc
+mathenv display p = do
+  oldformat <- liftM hexFormat getState
+  updateState $ \st -> st{ hexFormat = "mathml" }
+  res <- p
+  updateState $ \st -> st{ hexFormat = oldformat }
+  return $ if display
+              then inTags "div" [("class","math")] res
+              else inTags "span" [("class","math")] res

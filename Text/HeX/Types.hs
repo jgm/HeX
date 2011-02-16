@@ -28,18 +28,14 @@ instance IsString Doc
 
 type Format = CI String
 
-data Mode = Math | Normal
-          deriving (Eq, Ord)
-
-data HeXState = HeXState { hexParsers   :: [HeX Doc]
-                         , hexEscapers  :: M.Map Format (Char -> HeX Doc)
-                         , hexCommands  :: M.Map (String, (Maybe Format), Mode)
-                                            (HeX Doc)
-                         , hexFormat    :: Format
-                         , hexMode      :: Mode
-                         , hexVars      :: M.Map String Dynamic
-                         , hexTarget    :: String
-                         , hexLabels    :: M.Map String String }
+data HeXState = HeXState { hexParsers     :: [HeX Doc]
+                         , hexEscapers    :: M.Map Format (Char -> HeX Doc)
+                         , hexCommands    :: M.Map (String, (Maybe Format))
+                                              (HeX Doc)
+                         , hexFormat      :: Format
+                         , hexVars        :: M.Map String Dynamic
+                         , hexTarget      :: String
+                         , hexLabels      :: M.Map String String }
 
 type HeX = ParsecT String HeXState IO
 
@@ -49,11 +45,11 @@ class ToCommand a where
   registerFor :: Format -> String -> a -> HeX ()
 
   register name x = updateState $ \s ->
-    s{ hexCommands = M.insert (name, Nothing, Normal)
+    s{ hexCommands = M.insert (name, Nothing)
        (toCommand x) (hexCommands s) }
 
   registerFor f name x = updateState $ \s ->
-    s{ hexCommands = M.insert (name, Just f, Normal)
+    s{ hexCommands = M.insert (name, Just f)
        (toCommand x) (hexCommands s) }
 
 instance ToCommand Doc where

@@ -8,12 +8,6 @@ import Data.Char (isAlphaNum, isDigit, isAscii)
 import qualified Data.Map as M
 import Text.HeX
 
-data MathWriter = MathWriter{
-       displayMath :: Doc -> Doc
-     , inlineMath  :: Doc -> Doc
-     , grouped     :: Doc -> Doc
-     }
-
 -- TODO: this needs rearranging.
 -- perhaps MathWriter should go in HeXState
 -- we'd need a registerMathWriter.
@@ -29,33 +23,26 @@ data MathWriter = MathWriter{
 -- then math writer can simply registerMathCommand for all the commands
 -- appropriate for the writer.
 
+data MathWriter = MathWriter{
+       displayMath :: HeX Doc -> HeX Doc
+     , inlineMath  :: HeX Doc -> HeX Doc
+     , grouped     :: Doc -> Doc
+     }
+
+
 math :: MathWriter -> HeX Doc
 math writer = do
   char '$'
   display <- option False $ char '$' >> return True
-  let delim = if display then try (string "$$") else count 1 (char '$')
-  raw <- inMathMode $ manyTill (parseToken writer) delim
-  return $ if display
-              then displayMath writer $ mconcat raw
-              else inlineMath writer  $ mconcat raw
+  let delim = if display
+                 then try (string "$$") >> return ()
+                 else char '$' >> return ()
+  let env = if display
+               then displayMath writer
+               else inlineMath writer
+  env $ liftM mconcat $ manyTill (parseToken writer) delim
 
 parseToken :: MathWriter -> HeX Doc
 parseToken writer =  liftM (grouped writer) group
                  <|> oneChar -- FOR NOW
-
-inMathMode :: HeX a -> HeX a
-inMathMode p = do
-  mathmode <- liftM ((== Math) . hexMode) getState
-  updateState $ \s -> s{ hexMode = Math }
-  res <- p
-  updateState $ \s -> s { hexMode = Math }
-  return res
-
-ensureMath :: (Bool -> Doc -> HeX Doc) -> HeX Doc -> HeX Doc
-ensureMath emitter p = do
-  mathmode <- liftM ((== Math) . hexMode) getState
-  res <- inMathMode p
-  if mathmode
-     then return res
-     else emitter False res
 
