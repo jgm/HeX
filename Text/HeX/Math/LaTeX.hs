@@ -3,7 +3,7 @@ module Text.HeX.Math.LaTeX (writer, commands) where
 
 import Text.HeX
 import Text.HeX.Standard.TeX (ch)
-import Text.HeX.Math.Generic (math, MathWriter(..))
+import Text.HeX.Math.Generic (math)
 import Control.Monad (liftM)
 
 commands :: HeX ()

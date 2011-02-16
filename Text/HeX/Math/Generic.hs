@@ -23,12 +23,6 @@ import Text.HeX
 -- then math writer can simply registerMathCommand for all the commands
 -- appropriate for the writer.
 
-data MathWriter = MathWriter{
-       displayMath :: HeX Doc -> HeX Doc
-     , inlineMath  :: HeX Doc -> HeX Doc
-     , grouped     :: Doc -> Doc
-     }
-
 
 math :: MathWriter -> HeX Doc
 math writer = do

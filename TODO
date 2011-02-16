@@ -1,9 +1,3 @@
-_ think through:  we really need different parsers, not just different
-  commands, in math mode ; e.g. for '
-  maybe in addition to registerCommand and registerEscaper, we need
-  registerTokenParser or something like that... perhaps that could replace
-  the character escaper.
-
 _ see notes in TExt.Math.Generic
 x system for warnings; e.g. warn if a label is redefined.
 _ jail for IO?

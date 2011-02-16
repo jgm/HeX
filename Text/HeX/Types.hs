@@ -32,6 +32,7 @@ data HeXState = HeXState { hexParsers     :: [HeX Doc]
                          , hexEscapers    :: M.Map Format (Char -> HeX Doc)
                          , hexCommands    :: M.Map (String, (Maybe Format))
                                               (HeX Doc)
+                         , hexMathWriters :: M.Map Format MathWriter
                          , hexFormat      :: Format
                          , hexVars        :: M.Map String Dynamic
                          , hexTarget      :: String
@@ -168,4 +169,11 @@ rawc = Doc . fromChar
 infixl 8 +++
 (+++) :: Monoid a => a -> a -> a
 (+++) = mappend
+
+data MathWriter = MathWriter{
+       displayMath :: HeX Doc -> HeX Doc
+     , inlineMath  :: HeX Doc -> HeX Doc
+     , grouped     :: Doc -> Doc
+     }
+
 

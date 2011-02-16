@@ -96,6 +96,7 @@ run parser format contents = do
                HeXState{ hexParsers = [group, oneChar, command]
                        , hexEscapers = M.empty
                        , hexCommands = M.empty
+                       , hexMathWriters = M.empty
                        , hexFormat = format
                        , hexVars = M.empty
                        , hexTarget = ""
