@@ -45,15 +45,15 @@ parseToken writer =  liftM (grouped writer) group
 
 inMathMode :: HeX a -> HeX a
 inMathMode p = do
-  mathmode <- liftM hexMath getState
-  updateState $ \s -> s{ hexMath = True }
+  mathmode <- liftM ((== Math) . hexMode) getState
+  updateState $ \s -> s{ hexMode = Math }
   res <- p
-  updateState $ \s -> s { hexMath = mathmode }
+  updateState $ \s -> s { hexMode = Math }
   return res
 
 ensureMath :: (Bool -> Doc -> HeX Doc) -> HeX Doc -> HeX Doc
 ensureMath emitter p = do
-  mathmode <- liftM hexMath getState
+  mathmode <- liftM ((== Math) . hexMode) getState
   res <- inMathMode p
   if mathmode
      then return res

@@ -3,7 +3,7 @@ module Docbook (commands) where
 
 import Text.HeX.Standard.Xml (str, ch, inTags, tagSelfClosing)
 import Text.HeX.Standard.Generic (getSectionNum)
-import qualified Text.HeX.Math.Html as HtmlMath
+import qualified Text.HeX.Math.MathML as MathML
 import Text.HeX
 import Text.Parsec
 import Control.Monad
@@ -12,7 +12,7 @@ import qualified Data.Map as M
 commands :: HeX ()
 commands = do
   registerEscaperFor "docbook" (return . ch)
-  HtmlMath.commands
+  MathML.commands
   registerFor "docbook" "emph" emph
   registerFor "docbook" "strong" strong
   registerFor "docbook" "section" (section 1)
@@ -40,7 +40,8 @@ section lev d = do
   let remapCmd n = registerFor "docbook" (sectionCmd n) $
                      do guard False
                         section n mempty
-  let unRemapCmd n = let old = case M.lookup (sectionCmd n, Just "docbook")
+  let unRemapCmd n = let old = case M.lookup
+                                (sectionCmd n, Just "docbook", Normal)
                                 (hexCommands st) of
                                   Just x  -> x
                                   Nothing -> error "Something happened"
