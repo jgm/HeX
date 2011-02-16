@@ -97,7 +97,7 @@ run parser format contents = do
                        , hexEscapers = M.empty
                        , hexCommands = M.empty
                        , hexFormat = format
-                       , hexMath = False
+                       , hexMode = Normal
                        , hexVars = M.empty
                        , hexTarget = ""
                        , hexLabels = M.empty } "input" contents
@@ -151,9 +151,10 @@ command = try $ do
   st <- getState
   let commands = hexCommands st
   let format = hexFormat st
-  case M.lookup (cmd, Just format) commands of
+  let mode = hexMode st
+  case M.lookup (cmd, Just format, mode) commands of
         Just p  -> p
-        Nothing -> case M.lookup (cmd, Nothing) commands of
+        Nothing -> case M.lookup (cmd, Nothing, mode) commands of
                         Just q  -> q
                         Nothing -> fail $ ('\\':cmd) ++
                                      " is not defined for " ++ show format

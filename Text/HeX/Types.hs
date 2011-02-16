@@ -28,12 +28,15 @@ instance IsString Doc
 
 type Format = CI String
 
+data Mode = Math | Normal
+          deriving (Eq, Ord)
+
 data HeXState = HeXState { hexParsers   :: [HeX Doc]
                          , hexEscapers  :: M.Map Format (Char -> HeX Doc)
-                         , hexCommands  :: M.Map (String, (Maybe Format))
+                         , hexCommands  :: M.Map (String, (Maybe Format), Mode)
                                             (HeX Doc)
                          , hexFormat    :: Format
-                         , hexMath      :: Bool
+                         , hexMode      :: Mode
                          , hexVars      :: M.Map String Dynamic
                          , hexTarget    :: String
                          , hexLabels    :: M.Map String String }
