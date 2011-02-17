@@ -175,5 +175,3 @@ data MathWriter = MathWriter{
      , inlineMath  :: HeX Doc -> HeX Doc
      , grouped     :: Doc -> Doc
      }
-
-

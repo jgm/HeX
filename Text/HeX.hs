@@ -20,14 +20,17 @@ module Text.HeX ( run
                 , module Text.Parsec
                 , module Data.Monoid
                 , registerEscaperFor
+                , registerMathWriterFor
                 , oneChar
                 , addParser
                 , command
                 , parseDoc
                 , getFormat
+                , getMathWriter
                 , setTarget
                 , addLabel
                 , lookupLabel
+                , math
                 , warn
                 , defaultMain
                 )
@@ -93,7 +96,7 @@ run parser format contents = do
                            case res of
                                 Doc b  -> return b
                                 Fut f  -> getState >>= f)
-               HeXState{ hexParsers = [group, oneChar, command]
+               HeXState{ hexParsers = [group, math, command, oneChar]
                        , hexEscapers = M.empty
                        , hexCommands = M.empty
                        , hexMathWriters = M.empty
@@ -124,10 +127,23 @@ parseDoc = do
 getFormat :: HeX Format
 getFormat = liftM hexFormat getState
 
+getMathWriter :: HeX MathWriter
+getMathWriter = do
+  format <- getFormat
+  mathwriters <- liftM hexMathWriters getState
+  case M.lookup format mathwriters of
+       Just w   -> return w
+       Nothing  -> fail $ "No math writer defined for format " ++ show format
+
 registerEscaperFor :: Format -> (Char -> HeX Doc) -> HeX ()
 registerEscaperFor format escaper =
   updateState $ \st -> st{ hexEscapers = M.insert format escaper
                                          $ hexEscapers st }
+
+registerMathWriterFor :: Format -> MathWriter -> HeX ()
+registerMathWriterFor format writer =
+  updateState $ \st -> st{ hexMathWriters = M.insert format writer
+                                           $ hexMathWriters st }
 
 oneChar :: HeX Doc
 oneChar = try $ do
@@ -162,6 +178,24 @@ warn msg = do
   pos <- getPosition
   liftIO $ hPutStrLn stderr $
     "Warning " ++ show pos ++ ": " ++ msg
+
+math :: HeX Doc
+math = do
+  char '$'
+  display <- option False $ char '$' >> return True
+  st <- getState
+  writer <- getMathWriter
+  let delim = if display
+                 then try (string "$$") >> return ()
+                 else char '$' >> return ()
+  let env = if display
+               then displayMath writer
+               else inlineMath writer
+  env $ liftM mconcat $ manyTill (mathParser writer) delim
+
+mathParser :: MathWriter -> HeX Doc
+mathParser writer =  liftM (grouped writer) group
+                   <|> oneChar -- FOR NOW
 
 defaultMain :: HeX Doc -> IO ()
 defaultMain parser = do

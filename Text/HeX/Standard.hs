@@ -11,8 +11,8 @@ import qualified Text.HeX.Math.LaTeX as LaTeXMath
 commands :: HeX ()
 commands = do
   setVar "secnum" ([] :: [Int])
-  MathML.commands
-  LaTeXMath.commands
+  registerMathWriterFor "html" MathML.writer
+  registerMathWriterFor "latex" LaTeXMath.writer
   Html.commands
   LaTeX.commands
   Generic.commands

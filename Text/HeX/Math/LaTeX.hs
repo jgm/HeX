@@ -1,15 +1,9 @@
 {-# LANGUAGE OverloadedStrings, ScopedTypeVariables #-}
-module Text.HeX.Math.LaTeX (writer, commands) where
+module Text.HeX.Math.LaTeX (writer) where
 
 import Text.HeX
 import Text.HeX.Standard.TeX (ch)
-import Text.HeX.Math.Generic (math)
 import Control.Monad (liftM)
-
-commands :: HeX ()
-commands = do
-  registerEscaperFor "latexmath" (return . ch)
-  addParser (math writer)
 
 writer :: MathWriter
 writer = MathWriter{
@@ -20,10 +14,7 @@ writer = MathWriter{
 
 mathenv :: Bool -> HeX Doc -> HeX Doc
 mathenv display p = do
-  oldformat <- liftM hexFormat getState
-  updateState $ \st -> st{ hexFormat = "latexmath" }
   res <- p
-  updateState $ \st -> st{ hexFormat = oldformat }
   return $ if display
               then "$$" +++ res +++ "$$"
               else "$"  +++ res +++ "$"
