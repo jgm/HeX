@@ -17,8 +17,9 @@ mathenv :: Bool -> HeX Doc -> HeX Doc
 mathenv display p = do
   res <- p
   let xmlns = "http://www.w3.org/1998/Math/MathML"
+  let res' = inTags "mrow" [] res
   return $ if display
               then inTags "math" [("display","block"),
-                                  ("xmlns",xmlns)] res
+                                  ("xmlns",xmlns)] res'
               else inTags "math" [("display","inline"),
-                                  ("xmlns",xmlns)] res
+                                  ("xmlns",xmlns)] res'
