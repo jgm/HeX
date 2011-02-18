@@ -6,23 +6,6 @@ import Data.Monoid
 import qualified Data.Map as M
 import Data.Char (isLetter)
 
-math :: HeX Doc
-math = do
-  char '$'
-  display <- option False $ char '$' >> return True
-  writer <- getMathWriter
-  let delim = if display
-                 then try (string "$$") >> return ()
-                 else char '$' >> return ()
-  let env = if display
-               then displayMath writer
-               else inlineMath writer
-  env $ liftM mconcat $ manyTill (mathParser writer) delim
-
-mathParser :: MathWriter -> HeX Doc
-mathParser writer =  liftM (grouped writer) group
-                   <|> aChar -- FOR NOW
-
 registerMathWriterFor :: Format -> MathWriter -> HeX ()
 registerMathWriterFor format writer =
   updateState $ \st -> st{ hexMathWriters = M.insert format writer
@@ -37,6 +20,27 @@ getMathWriter = do
        Just w   -> return w
        Nothing  -> fail $ "No math writer defined for format " ++ show format
 
+math :: HeX Doc
+math = do
+  char '$'
+  display <- option False $ char '$' >> return True
+  spaces
+  writer <- getMathWriter
+  let delim = if display
+                 then try (string "$$") >> return ()
+                 else char '$' >> return ()
+  let env = if display
+               then displayMath writer
+               else inlineMath writer
+  env $ liftM mconcat $ manyTill (mathParser writer) delim
+
+mathParser :: MathWriter -> HeX Doc
+mathParser writer = do
+  res <- liftM (grouped writer) group
+      <|> aChar -- FOR NOW
+  spaces
+  return res
+
 -- TODO - this is just for now, replace w/ something better
 aChar :: HeX Doc
 aChar = try $ do
@@ -48,5 +52,6 @@ aChar = try $ do
        Just f  -> f c
        Nothing -> fail $ "No character escaper registered for format " ++
                      show format
+
 
 

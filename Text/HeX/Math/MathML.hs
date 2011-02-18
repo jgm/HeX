@@ -15,6 +15,9 @@ writer = MathWriter{
 mathenv :: Bool -> HeX Doc -> HeX Doc
 mathenv display p = do
   res <- p
+  let xmlns = "http://www.w3.org/1998/Math/MathML"
   return $ if display
-              then inTags "div" [("class","math")] res
-              else inTags "span" [("class","math")] res
+              then inTags "math" [("display","block"),
+                                  ("xmlns",xmlns)] res
+              else inTags "math" [("display","inline"),
+                                  ("xmlns",xmlns)] res
