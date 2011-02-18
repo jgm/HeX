@@ -32,7 +32,11 @@ math = do
   let env = if display
                then displayMath writer
                else inlineMath writer
-  env $ liftM mconcat $ manyTill (mathParser writer) delim
+  parsers <- liftM hexParsers getState
+  updateState $ \st -> st{ hexParsers = mathParser writer : parsers }
+  res <- env $ liftM mconcat $ manyTill getNext delim
+  updateState $ \st -> st{ hexParsers = parsers }
+  return res
 
 mathParser :: MathWriter -> HeX Doc
 mathParser writer = do
