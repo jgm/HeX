@@ -37,9 +37,13 @@ math = do
 mathParser :: MathWriter -> HeX Doc
 mathParser writer = do
   res <- liftM (grouped writer) group
+      <|> liftM (number writer) pNumber
       <|> aChar -- FOR NOW
   spaces
   return res
+
+pNumber :: HeX Doc
+pNumber = liftM raws $ many1 digit
 
 -- TODO - this is just for now, replace w/ something better
 aChar :: HeX Doc

@@ -10,6 +10,7 @@ writer = MathWriter{
    displayMath = mathenv True
  , inlineMath  = mathenv False
  , grouped = inTags "mrow" []
+ , number = inTags "mn" []
  }
 
 mathenv :: Bool -> HeX Doc -> HeX Doc

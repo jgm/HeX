@@ -10,6 +10,7 @@ writer = MathWriter{
    displayMath = mathenv True
  , inlineMath  = mathenv False
  , grouped = \d -> "{" +++ d +++ "}"
+ , number = id
  }
 
 mathenv :: Bool -> HeX Doc -> HeX Doc
