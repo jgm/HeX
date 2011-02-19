@@ -131,6 +131,11 @@ registerEscaperFor format escaper =
   updateState $ \st -> st{ hexEscapers = M.insert format escaper
                                          $ hexEscapers st }
 
+registerMathWriterFor :: Format -> MathWriter -> HeX ()
+registerMathWriterFor format writer =
+  updateState $ \st -> st{ hexMathWriters = M.insert format writer
+                                           $ hexMathWriters st }
+
 oneChar :: HeX Doc
 oneChar = try $ do
   c <- (try $ char '\\' >> (satisfy (not . isLetter))) <|> satisfy (/='\\')

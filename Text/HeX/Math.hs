@@ -6,11 +6,6 @@ import Data.Monoid
 import qualified Data.Map as M
 import Data.Char (isAscii, isAlphaNum)
 
-registerMathWriterFor :: Format -> MathWriter -> HeX ()
-registerMathWriterFor format writer =
-  updateState $ \st -> st{ hexMathWriters = M.insert format writer
-                                           $ hexMathWriters st }
-
 getMathWriter :: HeX MathWriter
 getMathWriter = do
   st <- getState
