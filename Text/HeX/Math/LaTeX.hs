@@ -10,8 +10,8 @@ writer = MathWriter{
    displayMath = mathenv True
  , inlineMath  = mathenv False
  , grouped = \d -> "{" +++ d +++ "}"
- , variable = id
- , number = id
+ , variable = rawc
+ , number = raws
  }
 
 mathenv :: Bool -> HeX Doc -> HeX Doc

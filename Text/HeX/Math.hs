@@ -46,8 +46,14 @@ mathParser writer = do
   spaces
   return res
 
-pNumber :: HeX Doc
-pNumber = liftM raws $ many1 digit
+opLetters :: [Char]
+opLetters = ":_+*/=^-(),;.?'~[]<>!"
 
-pVariable :: HeX Doc
-pVariable = liftM rawc letter
+pOperator :: HeX String
+pOperator = count 1 (oneOf opLetters) <|> many1 (char '\'')
+
+pNumber :: HeX String
+pNumber = many1 digit
+
+pVariable :: HeX Char
+pVariable = letter
