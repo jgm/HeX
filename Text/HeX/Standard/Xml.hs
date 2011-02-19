@@ -1,5 +1,6 @@
 {-# LANGUAGE OverloadedStrings, ScopedTypeVariables #-}
-module Text.HeX.Standard.Xml (str, ch, tagSelfClosing, inTags) where
+module Text.HeX.Standard.Xml (str, ch, tagOpen, tagClose,
+                              tagSelfClosing, inTags) where
 
 import Text.HeX
 

@@ -7,18 +7,12 @@ import Control.Monad (liftM)
 
 writer :: MathWriter
 writer = MathWriter{
-   displayMath = mathenv True
- , inlineMath  = mathenv False
+   startDisplayMath = "$$"
+ , endDisplayMath = "$$"
+ , startInlineMath = "$"
+ , endInlineMath = "$"
  , grouped = \d -> "{" +++ d +++ "}"
  , variable = rawc
  , number = raws
  , operator = raws
  }
-
-mathenv :: Bool -> HeX Doc -> HeX Doc
-mathenv display p = do
-  res <- p
-  return $ if display
-              then "$$" +++ res +++ "$$"
-              else "$"  +++ res +++ "$"
-

@@ -171,10 +171,12 @@ infixl 8 +++
 (+++) = mappend
 
 data MathWriter = MathWriter{
-       displayMath :: HeX Doc -> HeX Doc
-     , inlineMath  :: HeX Doc -> HeX Doc
-     , grouped     :: Doc -> Doc
-     , number      :: String -> Doc
-     , variable    :: Char -> Doc
-     , operator    :: String -> Doc
+       startDisplayMath :: Doc
+     , endDisplayMath   :: Doc
+     , startInlineMath  :: Doc
+     , endInlineMath    :: Doc
+     , grouped          :: Doc -> Doc
+     , number           :: String -> Doc
+     , variable         :: Char -> Doc
+     , operator         :: String -> Doc
      }

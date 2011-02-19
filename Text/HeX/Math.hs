@@ -20,8 +20,8 @@ getMathWriter = do
        Just w   -> return w
        Nothing  -> fail $ "No math writer defined for format " ++ show format
 
-math :: HeX Doc
-math = do
+openMath :: HeX Doc
+openMath = do
   char '$'
   display <- option False $ char '$' >> return True
   spaces
@@ -29,14 +29,16 @@ math = do
   let delim = if display
                  then try (string "$$") >> return ()
                  else char '$' >> return ()
-  let env = if display
-               then displayMath writer
-               else inlineMath writer
   parsers <- liftM hexParsers getState
-  updateState $ \st -> st{ hexParsers = mathParser writer : parsers }
-  res <- env $ liftM mconcat $ manyTill getNext delim
-  updateState $ \st -> st{ hexParsers = parsers }
-  return res
+  let endMath = do delim
+                   updateState $ \st -> st{ hexParsers = parsers }
+                   return $ if display
+                               then endDisplayMath writer
+                               else endInlineMath writer
+  updateState $ \st -> st{ hexParsers = endMath : mathParser writer : parsers }
+  return $ if display
+              then startDisplayMath writer
+              else startInlineMath writer
 
 mathParser :: MathWriter -> HeX Doc
 mathParser writer = do

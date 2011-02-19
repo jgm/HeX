@@ -95,7 +95,7 @@ run parser format contents = do
                            case res of
                                 Doc b  -> return b
                                 Fut f  -> getState >>= f)
-               HeXState{ hexParsers = [group, math, command, oneChar]
+               HeXState{ hexParsers = [group, openMath, command, oneChar]
                        , hexEscapers = M.empty
                        , hexCommands = M.empty
                        , hexMathWriters = M.empty
