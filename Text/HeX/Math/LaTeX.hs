@@ -12,6 +12,7 @@ writer = MathWriter{
  , grouped = \d -> "{" +++ d +++ "}"
  , variable = rawc
  , number = raws
+ , operator = raws
  }
 
 mathenv :: Bool -> HeX Doc -> HeX Doc

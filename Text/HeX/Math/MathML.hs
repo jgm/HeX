@@ -12,6 +12,7 @@ writer = MathWriter{
  , grouped = inTags "mrow" []
  , variable = inTags "mi" [] . rawc
  , number = inTags "mn" [] . raws
+ , operator = showOp
  }
 
 mathenv :: Bool -> HeX Doc -> HeX Doc
@@ -24,3 +25,11 @@ mathenv display p = do
                                   ("xmlns",xmlns)] res'
               else inTags "math" [("display","inline"),
                                   ("xmlns",xmlns)] res'
+
+showOp :: String -> Doc
+showOp "'" = inTags "mo" [] $ raws "\x02B9"
+showOp "''" = inTags "mo" [] $ raws "\x02BA"
+showOp "'''" = inTags "mo" [] $ raws "\x2034"
+showOp "''''" = inTags "mo" [] $ raws "\x2057"
+showOp s = inTags "mo" [] $ raws s
+

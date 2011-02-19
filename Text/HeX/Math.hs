@@ -43,6 +43,7 @@ mathParser writer = do
   res <-  liftM (grouped writer) group
       <|> liftM (number writer) pNumber
       <|> liftM (variable writer) pVariable
+      <|> liftM (operator writer) pOperator
   spaces
   return res
 
@@ -50,7 +51,7 @@ opLetters :: [Char]
 opLetters = ":_+*/=^-(),;.?'~[]<>!"
 
 pOperator :: HeX String
-pOperator = count 1 (oneOf opLetters) <|> many1 (char '\'')
+pOperator = many1 (char '\'') <|> count 1 (oneOf opLetters)
 
 pNumber :: HeX String
 pNumber = many1 digit
