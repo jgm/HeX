@@ -12,7 +12,7 @@ import qualified Data.Map as M
 defaults :: HeX ()
 defaults = do
   registerEscaperFor "docbook" (return . ch)
-  registerMathWriterFor "docbook" MathML.writer
+  MathML.math "docbook"
   registerFor "docbook" "emph" emph
   registerFor "docbook" "strong" strong
   registerFor "docbook" "section" (section 1)

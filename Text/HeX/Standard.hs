@@ -11,9 +11,9 @@ import qualified Text.HeX.Math.LaTeX as LaTeXMath
 defaults :: HeX ()
 defaults = do
   setVar "secnum" ([] :: [Int])
-  registerMathWriterFor "html" MathML.writer
-  registerMathWriterFor "latex" LaTeXMath.writer
   Html.defaults
   LaTeX.defaults
   Generic.defaults
+  MathML.math "html"
+  LaTeXMath.math "latex"
 

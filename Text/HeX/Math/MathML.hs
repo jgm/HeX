@@ -1,9 +1,13 @@
 {-# LANGUAGE OverloadedStrings, ScopedTypeVariables #-}
-module Text.HeX.Math.MathML (writer) where
+module Text.HeX.Math.MathML (math) where
 
 import Text.HeX
 import Text.HeX.Standard.Xml
 import Control.Monad (liftM)
+
+math :: Format -> HeX ()
+math f = do
+  registerMathWriterFor f writer
 
 writer :: MathWriter
 writer = MathWriter{
