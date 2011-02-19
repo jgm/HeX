@@ -11,12 +11,10 @@ math f = do
 
 writer :: MathWriter
 writer = MathWriter{
-   startDisplayMath = tagOpen "math" [("display","block"), ("xmlns",xmlns)] +++
-                      tagOpen "mrow" []
- , endDisplayMath = tagClose "mrow" +++ tagClose "math"
- , startInlineMath = tagOpen "math" [("display","block"), ("xmlns",xmlns)] +++
-                     tagOpen "mrow" []
- , endInlineMath = tagClose "mrow" +++ tagClose "math"
+   displayMath = \d ->
+     inTags "math" [("display","block"), ("xmlns",xmlns)] $ inTags "mrow" [] d
+ , inlineMath = \d ->
+     inTags "math" [("display","inline"), ("xmlns",xmlns)] $ inTags "mrow" [] d
  , grouped = inTags "mrow" []
  , variable = inTags "mi" [] . rawc
  , number = inTags "mn" [] . raws

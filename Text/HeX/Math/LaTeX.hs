@@ -11,10 +11,10 @@ math f = do
 
 writer :: MathWriter
 writer = MathWriter{
-   startDisplayMath = "$$"
- , endDisplayMath = "$$"
- , startInlineMath = "$"
- , endInlineMath = "$"
+   displayMath = \d ->
+     "$$" +++ d +++ "$$"
+ , inlineMath = \d ->
+     "$" +++ d +++ "$"
  , grouped = \d -> "{" +++ d +++ "}"
  , variable = rawc
  , number = raws

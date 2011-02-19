@@ -21,23 +21,19 @@ dollars = do
   display <- option False $ char '$' >> return True
   spaces
   let delim = if display
-                 then try (string "$$") >> return ()
-                 else char '$' >> return ()
-  openMath display delim
+                 then char '$' >> char '$'
+                 else char '$'
+  parseMath display delim
 
-openMath :: Bool -> HeX a -> HeX Doc
-openMath display closer = do
+parseMath :: Bool -> HeX a -> HeX Doc
+parseMath display closer = do
   writer <- getMathWriter
   parsers <- liftM hexParsers getState
-  let endMath = do closer
-                   updateState $ \st -> st{ hexParsers = parsers }
-                   return $ if display
-                               then endDisplayMath writer
-                               else endInlineMath writer
-  updateState $ \st -> st{ hexParsers = endMath : mathParser writer : parsers }
+  res <- liftM mconcat $ manyTill getNext closer
+  updateState $ \st -> st{ hexParsers = parsers }
   return $ if display
-              then startDisplayMath writer
-              else startInlineMath writer
+              then displayMath writer res
+              else inlineMath writer res
 
 mathParser :: MathWriter -> HeX Doc
 mathParser writer = do
