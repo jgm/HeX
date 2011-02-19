@@ -1,12 +1,12 @@
 {-# LANGUAGE OverloadedStrings, ScopedTypeVariables, PackageImports #-}
-module Text.HeX.Standard.Generic (commands, getSectionNum) where
+module Text.HeX.Standard.Generic (defaults, getSectionNum) where
 
 import Text.HeX
 import Data.List (intercalate)
 import "mtl" Control.Monad.Trans (liftIO)
 
-commands :: HeX ()
-commands = do
+defaults :: HeX ()
+defaults = do
   register "rpt" rpt
   register "rev" rev
   register "include" include

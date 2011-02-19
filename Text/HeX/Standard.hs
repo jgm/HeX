@@ -1,5 +1,5 @@
 {-# LANGUAGE OverloadedStrings, ScopedTypeVariables, PackageImports #-}
-module Text.HeX.Standard ( commands ) where
+module Text.HeX.Standard ( defaults ) where
 
 import Text.HeX
 import qualified Text.HeX.Standard.Generic as Generic
@@ -8,12 +8,12 @@ import qualified Text.HeX.Standard.LaTeX as LaTeX
 import qualified Text.HeX.Math.MathML as MathML
 import qualified Text.HeX.Math.LaTeX as LaTeXMath
 
-commands :: HeX ()
-commands = do
+defaults :: HeX ()
+defaults = do
   setVar "secnum" ([] :: [Int])
   registerMathWriterFor "html" MathML.writer
   registerMathWriterFor "latex" LaTeXMath.writer
-  Html.commands
-  LaTeX.commands
-  Generic.commands
+  Html.defaults
+  LaTeX.defaults
+  Generic.defaults
 

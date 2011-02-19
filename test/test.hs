@@ -4,7 +4,7 @@ import Text.HeX.Standard as Standard
 import Docbook as Docbook
 
 main = defaultMain $ do
-  Standard.commands
-  Docbook.commands
+  Standard.defaults
+  Docbook.defaults
   parseDoc
 

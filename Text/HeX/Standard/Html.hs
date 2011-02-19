@@ -1,12 +1,12 @@
 {-# LANGUAGE OverloadedStrings, ScopedTypeVariables #-}
-module Text.HeX.Standard.Html (commands) where
+module Text.HeX.Standard.Html (defaults) where
 
 import Text.HeX
 import Text.HeX.Standard.Xml (ch, inTags)
 import Text.HeX.Standard.Generic (getSectionNum)
 
-commands :: HeX ()
-commands = do
+defaults :: HeX ()
+defaults = do
   registerEscaperFor "html" (return . ch)
   registerFor "html" "emph" emph
   registerFor "html" "strong" strong

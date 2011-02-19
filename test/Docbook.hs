@@ -1,5 +1,5 @@
 {-# LANGUAGE OverloadedStrings, ScopedTypeVariables #-}
-module Docbook (commands) where
+module Docbook (defaults) where
 
 import Text.HeX.Standard.Xml (str, ch, inTags, tagSelfClosing)
 import Text.HeX.Standard.Generic (getSectionNum)
@@ -9,8 +9,8 @@ import Text.Parsec
 import Control.Monad
 import qualified Data.Map as M
 
-commands :: HeX ()
-commands = do
+defaults :: HeX ()
+defaults = do
   registerEscaperFor "docbook" (return . ch)
   registerMathWriterFor "docbook" MathML.writer
   registerFor "docbook" "emph" emph

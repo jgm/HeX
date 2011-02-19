@@ -1,12 +1,12 @@
 {-# LANGUAGE OverloadedStrings, ScopedTypeVariables #-}
-module Text.HeX.Standard.LaTeX (commands) where
+module Text.HeX.Standard.LaTeX (defaults) where
 
 import Text.HeX
 import Text.HeX.Standard.TeX (ctl, ch, grp)
 import Text.HeX.Standard.Generic (getSectionNum)
 
-commands :: HeX ()
-commands = do
+defaults :: HeX ()
+defaults = do
   registerEscaperFor "latex" (return . ch)
   registerFor "latex" "emph" emph
   registerFor "latex" "strong" strong
