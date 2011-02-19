@@ -4,7 +4,7 @@ import Text.Parsec
 import Control.Monad
 import Data.Monoid
 import qualified Data.Map as M
-import Data.Char (isLetter)
+import Data.Char (isAscii, isAlphaNum)
 
 registerMathWriterFor :: Format -> MathWriter -> HeX ()
 registerMathWriterFor format writer =
@@ -44,6 +44,7 @@ mathParser writer = do
       <|> liftM (number writer) pNumber
       <|> liftM (variable writer) pVariable
       <|> liftM (operator writer) pOperator
+      <|> liftM (operator writer . (:[])) (pEscaped <|> pUnicode)
   spaces
   return res
 
@@ -58,3 +59,11 @@ pNumber = many1 digit
 
 pVariable :: HeX Char
 pVariable = letter
+
+pEscaped :: HeX Char
+pEscaped = try $ char '\\' >> satisfy (not . isAlphaNum)
+
+pUnicode :: HeX Char
+pUnicode = satisfy (not . isAscii)
+
+
