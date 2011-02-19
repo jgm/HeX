@@ -20,17 +20,21 @@ getMathWriter = do
        Just w   -> return w
        Nothing  -> fail $ "No math writer defined for format " ++ show format
 
-openMath :: HeX Doc
-openMath = do
+dollars :: HeX Doc
+dollars = do
   char '$'
   display <- option False $ char '$' >> return True
   spaces
-  writer <- getMathWriter
   let delim = if display
                  then try (string "$$") >> return ()
                  else char '$' >> return ()
+  openMath display delim
+
+openMath :: Bool -> HeX a -> HeX Doc
+openMath display closer = do
+  writer <- getMathWriter
   parsers <- liftM hexParsers getState
-  let endMath = do delim
+  let endMath = do closer
                    updateState $ \st -> st{ hexParsers = parsers }
                    return $ if display
                                then endDisplayMath writer
