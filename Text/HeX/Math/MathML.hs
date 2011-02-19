@@ -10,6 +10,7 @@ writer = MathWriter{
    displayMath = mathenv True
  , inlineMath  = mathenv False
  , grouped = inTags "mrow" []
+ , variable = inTags "mi" []
  , number = inTags "mn" []
  }
 

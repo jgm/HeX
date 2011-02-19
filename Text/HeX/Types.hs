@@ -175,4 +175,5 @@ data MathWriter = MathWriter{
      , inlineMath  :: HeX Doc -> HeX Doc
      , grouped     :: Doc -> Doc
      , number      :: Doc -> Doc
+     , variable    :: Doc -> Doc
      }

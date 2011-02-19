@@ -40,26 +40,14 @@ math = do
 
 mathParser :: MathWriter -> HeX Doc
 mathParser writer = do
-  res <- liftM (grouped writer) group
+  res <-  liftM (grouped writer) group
       <|> liftM (number writer) pNumber
-      <|> aChar -- FOR NOW
+      <|> liftM (variable writer) pVariable
   spaces
   return res
 
 pNumber :: HeX Doc
 pNumber = liftM raws $ many1 digit
 
--- TODO - this is just for now, replace w/ something better
-aChar :: HeX Doc
-aChar = try $ do
-  c <- (try $ char '\\' >> (satisfy (not . isLetter))) <|> satisfy (/='\\')
-  st <- getState
-  let format = hexFormat st
-  let escapers = hexEscapers st
-  case M.lookup format escapers of
-       Just f  -> f c
-       Nothing -> fail $ "No character escaper registered for format " ++
-                     show format
-
-
-
+pVariable :: HeX Doc
+pVariable = liftM rawc letter
