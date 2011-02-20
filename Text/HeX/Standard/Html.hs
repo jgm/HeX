@@ -8,19 +8,32 @@ import Text.HeX.Standard.Generic (getSectionNum)
 defaults :: HeX ()
 defaults = do
   registerEscaperFor "html" (return . ch)
-  registerFor "html" "emph" emph
-  registerFor "html" "strong" strong
+  addParser smart
+  registerFor "html" "emph" $ inTags "em" []
+  registerFor "html" "strong" $ inTags "strong" []
   registerFor "html" "section" (section 1)
   registerFor "html" "subsection" (section 2)
   registerFor "html" "subsubsection" (section 3)
   registerFor "html" "paragraph" (section 4)
   registerFor "html" "subparagraph" (section 5)
 
-emph :: Doc -> Doc
-emph arg  = inTags "em" [] arg
+smart :: HeX Doc
+smart = lquo <|> rquo <|> dash
 
-strong :: Doc -> Doc
-strong arg  = inTags "strong" [] arg
+lquo :: HeX Doc
+lquo = do
+  char '`'
+  option "&lsquo;" (char '`' >> return "&ldquo;")
+
+rquo :: HeX Doc
+rquo = do
+  char '\''
+  option "&rsquo;" (char '\'' >> return "&rdquo;")
+
+dash :: HeX Doc
+dash = try $ do
+  string "--"
+  option "&ndash;" (char '-' >> return "&mdash;")
 
 section :: Int -> Doc -> HeX Doc
 section lev d = do

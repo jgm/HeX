@@ -3,7 +3,7 @@ _ note: these next two items will require diff treatment in
   need a more generic way to register parsers (not just commands)
   for specific formats?  or use getFormat >>= guard . (== "html")
   _ support for comments
-  _ support for quotes, dashes, ellipses
+  x support for quotes, dashes, ellipses
 x system for warnings; e.g. warn if a label is redefined.
 _ jail for IO?
 _ figure out how to do verbatims
