@@ -27,7 +27,8 @@ inCtl s d = ctl s +++ grp [d]
 
 writer :: MathWriter
 writer = MathWriter{
-   displayMath = \d ->
+   mathFormat = "latex"
+ , displayMath = \d ->
      "$$" +++ d +++ "$$"
  , inlineMath = \d ->
      "$" +++ d +++ "$"

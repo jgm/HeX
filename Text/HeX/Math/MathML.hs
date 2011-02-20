@@ -24,7 +24,8 @@ mathFor f = do
 
 writer :: MathWriter
 writer = MathWriter{
-   displayMath = \d ->
+   mathFormat = "mathml"
+ , displayMath = \d ->
      inTags "math" [("display","block"), ("xmlns",xmlns)] $ inTags "mrow" [] d
  , inlineMath = \d ->
      inTags "math" [("display","inline"), ("xmlns",xmlns)] $ inTags "mrow" [] d

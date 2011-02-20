@@ -1,8 +1,6 @@
 module Text.HeX.Math (defaults, withText) where
 import Text.HeX
-import Text.Parsec
 import Control.Monad
-import Data.Monoid
 import qualified Data.Map as M
 import Data.Char (isAscii, isAlphaNum)
 
@@ -40,10 +38,14 @@ bracketMath = spaces >> parseMath True (try $ string "\\]")
 parseMath :: Bool -> HeX a -> HeX Doc
 parseMath display closer = do
   writer <- getMathWriter
-  parsers <- liftM hexParsers getState
-  updateState $ \st -> st{ hexParsers = mathParser writer : parsers }
+  st' <- getState
+  let parsers = hexParsers st'
+  let format = hexFormat st'
+  updateState $ \st -> st{ hexParsers = mathParser writer : parsers
+                         , hexFormat = mathFormat writer }
   res <- liftM mconcat $ manyTill getNext closer
-  updateState $ \st -> st{ hexParsers = parsers }
+  updateState $ \st -> st{ hexParsers = parsers
+                         , hexFormat = format }
   return $ if display
               then displayMath writer res
               else inlineMath writer res
