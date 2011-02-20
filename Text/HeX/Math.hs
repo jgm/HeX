@@ -1,4 +1,4 @@
-module Text.HeX.Math where
+module Text.HeX.Math (math) where
 import Text.HeX.Types
 import Text.Parsec
 import Control.Monad
@@ -15,6 +15,9 @@ getMathWriter = do
        Just w   -> return w
        Nothing  -> fail $ "No math writer defined for format " ++ show format
 
+math :: HeX Doc
+math = dollars <|> parenMath <|> bracketMath
+
 dollars :: HeX Doc
 dollars = do
   char '$'
@@ -25,10 +28,23 @@ dollars = do
                  else char '$'
   parseMath display delim
 
+parenMath :: HeX Doc
+parenMath = do
+  try $ string "\\("
+  spaces
+  parseMath False (try $ string "\\)")
+
+bracketMath :: HeX Doc
+bracketMath = do
+  try $ string "\\["
+  spaces
+  parseMath True (try $ string "\\]")
+
 parseMath :: Bool -> HeX a -> HeX Doc
 parseMath display closer = do
   writer <- getMathWriter
   parsers <- liftM hexParsers getState
+  updateState $ \st -> st{ hexParsers = mathParser writer : parsers }
   res <- liftM mconcat $ manyTill getNext closer
   updateState $ \st -> st{ hexParsers = parsers }
   return $ if display
