@@ -21,6 +21,8 @@ module Text.HeX ( run
                 , module Data.Monoid
                 , registerEscaperFor
                 , registerMathWriterFor
+                , register
+                , registerFor
                 , oneChar
                 , addParser
                 , command
@@ -149,6 +151,16 @@ oneChar = try $ do
 
 addParser :: HeX Doc -> HeX ()
 addParser p = updateState $ \st -> st{ hexParsers = p : hexParsers st }
+
+register :: ToCommand a => String -> a -> HeX ()
+register name x = updateState $ \s ->
+  s{ hexCommands = M.insert (name, Nothing)
+     (toCommand x) (hexCommands s) }
+
+registerFor :: ToCommand a => Format -> String -> a -> HeX ()
+registerFor f name x = updateState $ \s ->
+  s{ hexCommands = M.insert (name, Just f)
+     (toCommand x) (hexCommands s) }
 
 command :: HeX Doc
 command = try $ do

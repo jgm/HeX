@@ -42,16 +42,6 @@ type HeX = ParsecT String HeXState IO
 
 class ToCommand a where
   toCommand   :: a -> HeX Doc
-  register    :: String -> a -> HeX ()
-  registerFor :: Format -> String -> a -> HeX ()
-
-  register name x = updateState $ \s ->
-    s{ hexCommands = M.insert (name, Nothing)
-       (toCommand x) (hexCommands s) }
-
-  registerFor f name x = updateState $ \s ->
-    s{ hexCommands = M.insert (name, Just f)
-       (toCommand x) (hexCommands s) }
 
 instance ToCommand Doc where
   toCommand = return
