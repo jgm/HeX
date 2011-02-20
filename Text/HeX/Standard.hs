@@ -7,6 +7,7 @@ import qualified Text.HeX.Standard.Html as Html
 import qualified Text.HeX.Standard.LaTeX as LaTeX
 import qualified Text.HeX.Math.MathML as MathML
 import qualified Text.HeX.Math.LaTeX as LaTeXMath
+import qualified Text.HeX.Math as Math
 
 defaults :: HeX ()
 defaults = do
@@ -14,6 +15,7 @@ defaults = do
   Html.defaults
   LaTeX.defaults
   Generic.defaults
+  Math.defaults
   MathML.math "html"
   LaTeXMath.math "latex"
 

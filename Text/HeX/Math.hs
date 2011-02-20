@@ -1,5 +1,5 @@
-module Text.HeX.Math (math) where
-import Text.HeX.Types
+module Text.HeX.Math (defaults) where
+import Text.HeX
 import Text.Parsec
 import Control.Monad
 import Data.Monoid
@@ -15,8 +15,11 @@ getMathWriter = do
        Just w   -> return w
        Nothing  -> fail $ "No math writer defined for format " ++ show format
 
-math :: HeX Doc
-math = dollars <|> parenMath <|> bracketMath
+defaults :: HeX ()
+defaults = do
+  addParser dollars
+  register "(" parenMath
+  register "[" bracketMath
 
 dollars :: HeX Doc
 dollars = do
@@ -29,16 +32,10 @@ dollars = do
   parseMath display delim
 
 parenMath :: HeX Doc
-parenMath = do
-  try $ string "\\("
-  spaces
-  parseMath False (try $ string "\\)")
+parenMath = spaces >> parseMath False (try $ string "\\)")
 
 bracketMath :: HeX Doc
-bracketMath = do
-  try $ string "\\["
-  spaces
-  parseMath True (try $ string "\\]")
+bracketMath = spaces >> parseMath True (try $ string "\\]")
 
 parseMath :: Bool -> HeX a -> HeX Doc
 parseMath display closer = do

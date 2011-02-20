@@ -36,7 +36,6 @@ module Text.HeX ( run
                 )
 where
 import Text.HeX.Types
-import Text.HeX.Math
 import Text.Parsec
 import qualified Data.ByteString.Lazy as L
 import Blaze.ByteString.Builder.Char.Utf8 as BU
@@ -97,7 +96,7 @@ run parser format contents = do
                            case res of
                                 Doc b  -> return b
                                 Fut f  -> getState >>= f)
-               HeXState{ hexParsers = [group, math, command, oneChar]
+               HeXState{ hexParsers = [group, command, oneChar]
                        , hexEscapers = M.empty
                        , hexCommands = M.empty
                        , hexMathWriters = M.empty
