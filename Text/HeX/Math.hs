@@ -1,4 +1,4 @@
-module Text.HeX.Math (defaults) where
+module Text.HeX.Math (defaults, withText) where
 import Text.HeX
 import Text.Parsec
 import Control.Monad
@@ -76,4 +76,11 @@ pEscaped = try $ char '\\' >> satisfy (not . isAlphaNum)
 pUnicode :: HeX Char
 pUnicode = satisfy (not . isAscii)
 
+withText :: HeX Doc
+withText = do
+  parsers <- liftM hexParsers getState
+  updateState $ \st -> st{ hexParsers = [group, command, oneChar] }
+  res <- group
+  updateState $ \st -> st{ hexParsers = parsers }
+  return res
 
