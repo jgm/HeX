@@ -1,9 +1,4 @@
-_ rearrange so that Text.HeX.Math depends on Text.HeX, not vv.
-  have math parsers export commands, which also registerMathWriter.
-  have main one export dollars etc.
-  or have something like "command" that takes a parser rather than
-  a string, so $$ can be a command?
-  make register, registerFor regular functions, not typeclass fns.
+_ support for quotes, dashes, ellipses
 x system for warnings; e.g. warn if a label is redefined.
 _ jail for IO?
 _ change math mode so it allows a large list of latex commands
