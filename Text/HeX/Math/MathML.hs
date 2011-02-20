@@ -9,18 +9,18 @@ import Text.HeX.Math (withText)
 mathFor :: Format -> HeX ()
 mathFor f = do
   registerMathWriterFor f writer
-  registerFor f "textrm" $ asText "normal" <$> withText
-  registerFor f "text" $ asText "normal" <$> withText
-  registerFor f "mathrm" $ asText "normal" <$> group
-  registerFor f "mbox" $ asText "normal" <$> group
-  registerFor f "mathit" $ asText "italic" <$> group
-  registerFor f "textit" $ asText "italic" <$> withText
-  registerFor f "mathtt" $ asText "monospace" <$> group
-  registerFor f "texttt" $ asText "monospace" <$> withText
-  registerFor f "mathsf" $ asText "sans-serif" <$> group
-  registerFor f "mathbb" $ asText "double-struck" <$> group
-  registerFor f "mathcal" $ asText "script" <$> group
-  registerFor f "mathfrak" $ asText "fraktur" <$> group
+  registerFor "mathml" "textrm" $ asText "normal" <$> withText
+  registerFor "mathml" "text" $ asText "normal" <$> withText
+  registerFor "mathml" "mathrm" $ asText "normal" <$> group
+  registerFor "mathml" "mbox" $ asText "normal" <$> group
+  registerFor "mathml" "mathit" $ asText "italic" <$> group
+  registerFor "mathml" "textit" $ asText "italic" <$> withText
+  registerFor "mathml" "mathtt" $ asText "monospace" <$> group
+  registerFor "mathml" "texttt" $ asText "monospace" <$> withText
+  registerFor "mathml" "mathsf" $ asText "sans-serif" <$> group
+  registerFor "mathml" "mathbb" $ asText "double-struck" <$> group
+  registerFor "mathml" "mathcal" $ asText "script" <$> group
+  registerFor "mathml" "mathfrak" $ asText "fraktur" <$> group
 
 writer :: MathWriter
 writer = MathWriter{

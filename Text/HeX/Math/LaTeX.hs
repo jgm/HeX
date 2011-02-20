@@ -5,22 +5,24 @@ import Text.HeX
 import Text.HeX.Standard.TeX
 import Control.Applicative ((<$>))
 import Text.HeX.Math (withText)
+import qualified Text.HeX.Standard.Xml as Xml
 
 mathFor :: Format -> HeX ()
 mathFor f = do
   registerMathWriterFor f writer
-  registerFor f "textrm" $ inCtl "textrm" <$> withText
-  registerFor f "text" $ inCtl "text" <$> withText
-  registerFor f "mathrm" $ inCtl "mathrm" <$> group
-  registerFor f "mbox" $ inCtl "mbox" <$> group
-  registerFor f "mathit" $ inCtl "mathit" <$> group
-  registerFor f "textit" $ inCtl "textit" <$> withText
-  registerFor f "mathtt" $ inCtl "mathtt" <$> group
-  registerFor f "texttt" $ inCtl "texttt" <$> withText
-  registerFor f "mathsf" $ inCtl "mathsf" <$> group
-  registerFor f "mathbb" $ inCtl "mathbb" <$> group
-  registerFor f "mathcal" $ inCtl "mathcal" <$> group
-  registerFor f "mathfrak" $ inCtl "mathfrak" <$> group
+  registerEscaperFor "mathml" (return . Xml.ch)
+  registerFor "latex" "textrm" $ inCtl "textrm" <$> withText
+  registerFor "latex" "text" $ inCtl "text" <$> withText
+  registerFor "latex" "mathrm" $ inCtl "mathrm" <$> group
+  registerFor "latex" "mbox" $ inCtl "mbox" <$> group
+  registerFor "latex" "mathit" $ inCtl "mathit" <$> group
+  registerFor "latex" "textit" $ inCtl "textit" <$> withText
+  registerFor "latex" "mathtt" $ inCtl "mathtt" <$> group
+  registerFor "latex" "texttt" $ inCtl "texttt" <$> withText
+  registerFor "latex" "mathsf" $ inCtl "mathsf" <$> group
+  registerFor "latex" "mathbb" $ inCtl "mathbb" <$> group
+  registerFor "latex" "mathcal" $ inCtl "mathcal" <$> group
+  registerFor "latex" "mathfrak" $ inCtl "mathfrak" <$> group
 
 inCtl :: String -> Doc -> Doc
 inCtl s d = ctl s +++ grp [d]
