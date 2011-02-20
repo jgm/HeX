@@ -16,6 +16,6 @@ defaults = do
   LaTeX.defaults
   Generic.defaults
   Math.defaults
-  MathML.math "html"
-  LaTeXMath.math "latex"
+  MathML.mathFor "html"
+  LaTeXMath.mathFor "latex"
 
