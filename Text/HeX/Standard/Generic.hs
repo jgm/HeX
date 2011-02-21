@@ -8,7 +8,6 @@ import "mtl" Control.Monad.Trans (liftIO)
 defaults :: HeX ()
 defaults = do
   register "rpt" rpt
-  register "rev" rev
   register "include" include
   register "label" label'
   register "ref" ref
@@ -16,9 +15,6 @@ defaults = do
 rpt :: Maybe Int -> Doc -> Doc
 rpt (Just n) d = mconcat $ replicate n d
 rpt Nothing  d = d
-
-rev :: [Doc] -> Doc
-rev = mconcat . reverse
 
 include :: FilePath -> HeX Doc
 include f = do

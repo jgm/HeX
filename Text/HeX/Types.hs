@@ -28,15 +28,16 @@ instance IsString Doc
 
 type Format = CI String
 
-data HeXState = HeXState { hexParsers     :: [HeX Doc]
-                         , hexEscapers    :: M.Map Format (Char -> HeX Doc)
-                         , hexCommands    :: M.Map (String, (Maybe Format))
-                                              (HeX Doc)
-                         , hexMathWriters :: M.Map Format MathWriter
-                         , hexFormat      :: Format
-                         , hexVars        :: M.Map String Dynamic
-                         , hexTarget      :: String
-                         , hexLabels      :: M.Map String String }
+data Mode = Normal | Math
+          deriving (Show, Eq, Ord)
+
+data HeXState = HeXState { hexParsers   :: M.Map Mode [HeX Doc]
+                         , hexMode      :: Mode
+                         , hexCommands  :: M.Map String (HeX Doc)
+                         , hexFormat    :: Format
+                         , hexVars      :: M.Map String Dynamic
+                         , hexTarget    :: String
+                         , hexLabels    :: M.Map String String }
 
 type HeX = ParsecT String HeXState IO
 
@@ -77,24 +78,20 @@ instance ToCommand b => ToCommand (Maybe Double -> b) where
   toCommand x = withOpt x <|> toCommand (x Nothing)
 
 instance ToCommand b => ToCommand (Doc -> b) where
-  toCommand x = do arg <- group
+  toCommand x = do arg <- getNext
                    toCommand (x arg)
 
 instance ToCommand b => ToCommand (String -> b) where
-  toCommand x = group >>= withArg x
+  toCommand x = getNext >>= withArg x
 
 instance ToCommand b => ToCommand (Int -> b) where
-  toCommand x = group >>= withArg x
+  toCommand x = getNext >>= withArg x
 
 instance ToCommand b => ToCommand (Integer -> b) where
-  toCommand x = group >>= withArg x
+  toCommand x = getNext >>= withArg x
 
 instance ToCommand b => ToCommand (Double -> b) where
-  toCommand x = group >>= withArg x
-
-instance ToCommand b => ToCommand ([Doc] -> b) where
-  toCommand x = do arg <- sepBy group spaces
-                   toCommand (x arg)
+  toCommand x = getNext >>= withArg x
 
 withOpt :: (ToCommand b, ReadString a)
         => (Maybe a -> b) -> HeX Doc
@@ -135,14 +132,12 @@ instance ReadString Double where
 
 getNext :: HeX Doc
 getNext = do
-  parsers <- liftM hexParsers getState
-  choice parsers
-
-group :: HeX Doc
-group = do
-  char '{'
-  res <- manyTill getNext (char '}')
-  return $ mconcat res
+  st <- getState
+  let mode = hexMode st
+  let parsers = hexParsers st
+  case M.lookup mode parsers of
+       Just ps -> choice ps
+       Nothing -> fail $ "No parsers defined for mode " ++ show mode
 
 readM :: (Read a, Monad m) => String -> m a
 readM s | [x] <- parsed = return x

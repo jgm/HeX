@@ -1,28 +1,26 @@
 {-# LANGUAGE OverloadedStrings, ScopedTypeVariables #-}
-module Text.HeX.Math.LaTeX (mathFor) where
+module Text.HeX.Math.LaTeX (defaults) where
 
 import Text.HeX
 import Text.HeX.Standard.TeX
 import Control.Applicative ((<$>))
-import Text.HeX.Math (withText)
-import qualified Text.HeX.Standard.Xml as Xml
+import Text.HeX.Math (defaultsFor, withText)
 
-mathFor :: Format -> HeX ()
-mathFor f = do
-  registerMathWriterFor f writer
-  registerEscaperFor "mathml" (return . Xml.ch)
-  registerFor "latex" "textrm" $ inCtl "textrm" <$> withText
-  registerFor "latex" "text" $ inCtl "text" <$> withText
-  registerFor "latex" "mathrm" $ inCtl "mathrm" <$> group
-  registerFor "latex" "mbox" $ inCtl "mbox" <$> group
-  registerFor "latex" "mathit" $ inCtl "mathit" <$> group
-  registerFor "latex" "textit" $ inCtl "textit" <$> withText
-  registerFor "latex" "mathtt" $ inCtl "mathtt" <$> group
-  registerFor "latex" "texttt" $ inCtl "texttt" <$> withText
-  registerFor "latex" "mathsf" $ inCtl "mathsf" <$> group
-  registerFor "latex" "mathbb" $ inCtl "mathbb" <$> group
-  registerFor "latex" "mathcal" $ inCtl "mathcal" <$> group
-  registerFor "latex" "mathfrak" $ inCtl "mathfrak" <$> group
+defaults :: HeX ()
+defaults = do
+  defaultsFor writer
+  register "textrm" $ inCtl "textrm" <$> withText
+  register "text" $ inCtl "text" <$> withText
+  register "mathrm" $ inCtl "mathrm" <$> group
+  register "mbox" $ inCtl "mbox" <$> group
+  register "mathit" $ inCtl "mathit" <$> group
+  register "textit" $ inCtl "textit" <$> withText
+  register "mathtt" $ inCtl "mathtt" <$> group
+  register "texttt" $ inCtl "texttt" <$> withText
+  register "mathsf" $ inCtl "mathsf" <$> group
+  register "mathbb" $ inCtl "mathbb" <$> group
+  register "mathcal" $ inCtl "mathcal" <$> group
+  register "mathfrak" $ inCtl "mathfrak" <$> group
 
 inCtl :: String -> Doc -> Doc
 inCtl s d = ctl s +++ grp [d]

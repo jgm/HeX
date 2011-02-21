@@ -1,51 +1,36 @@
-module Text.HeX.Math (defaults, withText) where
+module Text.HeX.Math (defaultsFor, withText) where
 import Text.HeX
 import Control.Monad
-import qualified Data.Map as M
 import Data.Char (isAscii, isAlphaNum)
 
-getMathWriter :: HeX MathWriter
-getMathWriter = do
-  st <- getState
-  let format = hexFormat st
-  let mathwriters = hexMathWriters st
-  case M.lookup format mathwriters of
-       Just w   -> return w
-       Nothing  -> fail $ "No math writer defined for format " ++ show format
+defaultsFor :: MathWriter -> HeX ()
+defaultsFor writer = do
+  addParser Math $ mathParser writer
+  addParser Normal $ dollars writer
+  register "(" $ parenMath writer
+  register "[" $ bracketMath writer
 
-defaults :: HeX ()
-defaults = do
-  addParser dollars
-  register "(" parenMath
-  register "[" bracketMath
-
-dollars :: HeX Doc
-dollars = do
+dollars :: MathWriter -> HeX Doc
+dollars writer = do
   char '$'
   display <- option False $ char '$' >> return True
   spaces
   let delim = if display
                  then char '$' >> char '$'
                  else char '$'
-  parseMath display delim
+  parseMath writer display delim
 
-parenMath :: HeX Doc
-parenMath = spaces >> parseMath False (try $ string "\\)")
+parenMath :: MathWriter -> HeX Doc
+parenMath writer = spaces >> parseMath writer False (try $ string "\\)")
 
-bracketMath :: HeX Doc
-bracketMath = spaces >> parseMath True (try $ string "\\]")
+bracketMath :: MathWriter -> HeX Doc
+bracketMath writer = spaces >> parseMath writer True (try $ string "\\]")
 
-parseMath :: Bool -> HeX a -> HeX Doc
-parseMath display closer = do
-  writer <- getMathWriter
-  st' <- getState
-  let parsers = hexParsers st'
-  let format = hexFormat st'
-  updateState $ \st -> st{ hexParsers = mathParser writer : parsers
-                         , hexFormat = mathFormat writer }
+parseMath :: MathWriter -> Bool -> HeX a -> HeX Doc
+parseMath writer display closer = do
+  updateState $ \st -> st{ hexMode = Math }
   res <- liftM mconcat $ manyTill getNext closer
-  updateState $ \st -> st{ hexParsers = parsers
-                         , hexFormat = format }
+  updateState $ \st -> st{ hexMode = Normal }
   return $ if display
               then displayMath writer res
               else inlineMath writer res
@@ -80,9 +65,9 @@ pUnicode = satisfy (not . isAscii)
 
 withText :: HeX Doc
 withText = do
-  parsers <- liftM hexParsers getState
-  updateState $ \st -> st{ hexParsers = [group, command, oneChar] }
+  current <- liftM hexMode getState
+  updateState $ \st -> st{ hexMode = Normal }
   res <- group
-  updateState $ \st -> st{ hexParsers = parsers }
+  updateState $ \st -> st{ hexMode = current }
   return res
 

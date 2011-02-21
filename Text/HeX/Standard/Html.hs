@@ -7,15 +7,15 @@ import Text.HeX.Standard.Generic (getSectionNum)
 
 defaults :: HeX ()
 defaults = do
-  registerEscaperFor "html" (return . ch)
-  addParser smart
-  registerFor "html" "emph" $ inTags "em" []
-  registerFor "html" "strong" $ inTags "strong" []
-  registerFor "html" "section" (section 1)
-  registerFor "html" "subsection" (section 2)
-  registerFor "html" "subsubsection" (section 3)
-  registerFor "html" "paragraph" (section 4)
-  registerFor "html" "subparagraph" (section 5)
+  addParser Normal $ basicParsers ch
+  addParser Normal smart
+  register "emph" $ inTags "em" []
+  register "strong" $ inTags "strong" []
+  register "section" (section 1)
+  register "subsection" (section 2)
+  register "subsubsection" (section 3)
+  register "paragraph" (section 4)
+  register "subparagraph" (section 5)
 
 smart :: HeX Doc
 smart = lquo <|> rquo <|> dash

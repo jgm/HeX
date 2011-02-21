@@ -11,15 +11,15 @@ import qualified Data.Map as M
 
 defaults :: HeX ()
 defaults = do
-  registerEscaperFor "docbook" (return . ch)
-  MathML.mathFor "docbook"
-  registerFor "docbook" "emph" emph
-  registerFor "docbook" "strong" strong
-  registerFor "docbook" "section" (section 1)
-  registerFor "docbook" "subsection" (section 2)
-  registerFor "docbook" "subsubsection" (section 3)
-  registerFor "docbook" "paragraph" (section 4)
-  registerFor "docbook" "subparagraph" (section 5)
+  addParser Normal $ basicParsers ch
+  MathML.defaults
+  register "emph" emph
+  register "strong" strong
+  register "section" (section 1)
+  register "subsection" (section 2)
+  register "subsubsection" (section 3)
+  register "paragraph" (section 4)
+  register "subparagraph" (section 5)
 
 emph :: Doc -> Doc
 emph arg  = inTags "emphasis" [] arg
@@ -37,15 +37,13 @@ section lev d = do
       sectionCmd 5 = "subparagraph"
       sectionCmd _ = "subsubparagraph"
   st <- getState
-  let remapCmd n = registerFor "docbook" (sectionCmd n) $
+  let remapCmd n = register (sectionCmd n) $
                      do guard False
                         section n mempty
-  let unRemapCmd n = let old = case M.lookup
-                                (sectionCmd n, Just "docbook")
-                                (hexCommands st) of
+  let unRemapCmd n = let old = case M.lookup (sectionCmd n) (hexCommands st) of
                                   Just x  -> x
                                   Nothing -> error "Something happened"
-                     in  registerFor "docbook" (sectionCmd n) old
+                     in  register (sectionCmd n) old
   forM_ [1..lev] remapCmd
   contents <- many getNext
   forM_ [1..lev] unRemapCmd

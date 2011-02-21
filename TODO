@@ -1,13 +1,5 @@
-_ maybe instead of having maps, we should just have lists of
-  parsers -- one for normal mode, one for math mode -- and set
-  these according to the format in the setup phase.
-  getNext can check the mathMode and apply parsers as applicable.
-_ note: these next two items will require diff treatment in
-  diff output formats, but they're not "commands"; perhaps we
-  need a more generic way to register parsers (not just commands)
-  for specific formats?  or use getFormat >>= guard . (== "html")
-  _ support for comments
-  x support for quotes, dashes, ellipses
+_ support for comments
+x support for quotes, dashes, ellipses
 x system for warnings; e.g. warn if a label is redefined.
 _ jail for IO?
 _ figure out how to do verbatims

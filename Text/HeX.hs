@@ -19,11 +19,7 @@ module Text.HeX ( run
                 , module Text.HeX.Types
                 , module Text.Parsec
                 , module Data.Monoid
-                , registerEscaperFor
-                , registerMathWriterFor
                 , register
-                , registerFor
-                , oneChar
                 , addParser
                 , command
                 , parseDoc
@@ -33,6 +29,9 @@ module Text.HeX ( run
                 , lookupLabel
                 , warn
                 , defaultMain
+                , group
+                , oneChar
+                , basicParsers
                 )
 where
 import Text.HeX.Types
@@ -41,7 +40,7 @@ import qualified Data.ByteString.Lazy as L
 import Blaze.ByteString.Builder.Char.Utf8 as BU
 import System.Environment
 import Control.Monad
-import Data.Char (isLetter)
+import Control.Applicative ((<$>))
 import Data.Dynamic
 import Blaze.ByteString.Builder
 import qualified Data.Map as M
@@ -50,6 +49,7 @@ import Data.Maybe (fromMaybe)
 import qualified Data.CaseInsensitive as CI
 import Control.Monad.Trans (liftIO)
 import System.IO
+import Data.Char (isLetter)
 
 setVar :: Typeable a => String -> a -> HeX a
 setVar name' v = do
@@ -96,10 +96,9 @@ run parser format contents = do
                            case res of
                                 Doc b  -> return b
                                 Fut f  -> getState >>= f)
-               HeXState{ hexParsers = [group, command, oneChar]
-                       , hexEscapers = M.empty
+               HeXState{ hexParsers = M.empty  -- was [group, command, oneChar]
+                       , hexMode = Normal
                        , hexCommands = M.empty
-                       , hexMathWriters = M.empty
                        , hexFormat = format
                        , hexVars = M.empty
                        , hexTarget = ""
@@ -127,39 +126,16 @@ parseDoc = do
 getFormat :: HeX Format
 getFormat = liftM hexFormat getState
 
-registerEscaperFor :: Format -> (Char -> HeX Doc) -> HeX ()
-registerEscaperFor format escaper =
-  updateState $ \st -> st{ hexEscapers = M.insert format escaper
-                                         $ hexEscapers st }
-
-registerMathWriterFor :: Format -> MathWriter -> HeX ()
-registerMathWriterFor format writer =
-  updateState $ \st -> st{ hexMathWriters = M.insert format writer
-                                           $ hexMathWriters st }
-
-oneChar :: HeX Doc
-oneChar = try $ do
-  c <- (try $ char '\\' >> (satisfy (not . isLetter))) <|> satisfy (/='\\')
-  st <- getState
-  let format = hexFormat st
-  let escapers = hexEscapers st
-  case M.lookup format escapers of
-       Just f  -> f c
-       Nothing -> fail $ "No character escaper registered for format " ++
-                     show format
-
-addParser :: HeX Doc -> HeX ()
-addParser p = updateState $ \st -> st{ hexParsers = p : hexParsers st }
+addParser :: Mode -> HeX Doc -> HeX ()
+addParser mode p = updateState $ \st ->
+  let parsers = hexParsers st in
+  st{ hexParsers = if M.member mode parsers
+                      then M.adjust (p:) mode parsers
+                      else M.insert mode [p] parsers }
 
 register :: ToCommand a => String -> a -> HeX ()
 register name x = updateState $ \s ->
-  s{ hexCommands = M.insert (name, Nothing)
-     (toCommand x) (hexCommands s) }
-
-registerFor :: ToCommand a => Format -> String -> a -> HeX ()
-registerFor f name x = updateState $ \s ->
-  s{ hexCommands = M.insert (name, Just f)
-     (toCommand x) (hexCommands s) }
+  s{ hexCommands = M.insert name (toCommand x) (hexCommands s) }
 
 command :: HeX Doc
 command = try $ do
@@ -169,12 +145,10 @@ command = try $ do
   st <- getState
   let commands = hexCommands st
   let format = hexFormat st
-  case M.lookup (cmd, Just format) commands of
+  case M.lookup cmd commands of
         Just p  -> p
-        Nothing -> case M.lookup (cmd, Nothing) commands of
-                        Just q  -> q
-                        Nothing -> fail $ ('\\':cmd) ++
-                                     " is not defined for " ++ show format
+        Nothing -> fail $ ('\\':cmd) ++ " is not defined for " ++ show format
+
 warn :: String -> HeX ()
 warn msg = do
   pos <- getPosition
@@ -189,3 +163,18 @@ defaultMain parser = do
   let format = CI.mk $ head args
   L.putStrLn =<< run parser format inp
 
+group :: HeX Doc
+group = do
+  char '{'
+  res <- manyTill getNext (char '}')
+  return $ mconcat res
+
+oneChar :: (Char -> Doc) -> HeX Doc
+oneChar escaper = escaper <$> (try (char '\\' >> (satisfy (not . isLetter)))
+                               <|> noneOf specialChars)
+
+specialChars :: [Char]
+specialChars = "%{$\\"
+
+basicParsers :: (Char -> Doc) -> HeX Doc
+basicParsers escaper = oneChar escaper <|> command <|> group
