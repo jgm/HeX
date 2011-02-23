@@ -1,4 +1,4 @@
-_ support for comments
+x support for comments
 x support for quotes, dashes, ellipses
 x system for warnings; e.g. warn if a label is redefined.
 _ jail for IO?

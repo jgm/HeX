@@ -31,6 +31,7 @@ module Text.HeX ( run
                 , defaultMain
                 , group
                 , oneChar
+                , comment
                 , basicParsers
                 )
 where
@@ -176,5 +177,11 @@ oneChar escaper = escaper <$> (try (char '\\' >> (satisfy (not . isLetter)))
 specialChars :: [Char]
 specialChars = "%{$\\"
 
+comment :: HeX Doc
+comment = do
+  char '%'
+  manyTill anyChar newline
+  return mempty
+
 basicParsers :: (Char -> Doc) -> HeX Doc
-basicParsers escaper = oneChar escaper <|> command <|> group
+basicParsers escaper = oneChar escaper <|> command <|> group <|> comment

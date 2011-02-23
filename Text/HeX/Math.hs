@@ -42,6 +42,7 @@ mathParser writer = do
       <|> liftM (variable writer) pVariable
       <|> liftM (operator writer) pOperator
       <|> liftM (operator writer . (:[])) (pEscaped <|> pUnicode)
+      <|> comment
   spaces
   return res
 
