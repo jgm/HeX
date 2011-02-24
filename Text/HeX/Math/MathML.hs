@@ -21,6 +21,8 @@ defaults = do
   register "mathbb" $ asText "double-struck" <$> group
   register "mathcal" $ asText "script" <$> group
   register "mathfrak" $ asText "fraktur" <$> group
+  register "sqrt" root
+  register "surd" root
 
 writer :: MathWriter
 writer = MathWriter{
@@ -37,6 +39,11 @@ writer = MathWriter{
 
 xmlns :: String
 xmlns = "http://www.w3.org/1998/Math/MathML"
+
+root :: Maybe Doc -> Doc -> Doc
+root Nothing y  = inTags "mrow" [] $ inTags "msqrt" [] $ inTags "mn" [] y
+root (Just x) y = inTags "mrow" [] $ inTags "mroot" []
+                $ inTags "mn" [] y +++ inTags "mn" [] x
 
 showOp :: String -> Doc
 showOp s = inTags "mo" []

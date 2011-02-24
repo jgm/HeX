@@ -37,12 +37,13 @@ parseMath writer display closer = do
 
 mathParser :: MathWriter -> HeX Doc
 mathParser writer = do
-  res <-  liftM (grouped writer) group
+  res <-  command
+      <|> comment
+      <|> liftM (grouped writer) group
       <|> liftM (number writer) pNumber
       <|> liftM (variable writer) pVariable
       <|> liftM (operator writer) pOperator
       <|> liftM (operator writer . (:[])) (pEscaped <|> pUnicode)
-      <|> comment
   spaces
   return res
 

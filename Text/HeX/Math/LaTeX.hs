@@ -21,9 +21,17 @@ defaults = do
   register "mathbb" $ inCtl "mathbb" <$> group
   register "mathcal" $ inCtl "mathcal" <$> group
   register "mathfrak" $ inCtl "mathfrak" <$> group
+  register "sqrt" root
+  register "surd" root
 
 inCtl :: String -> Doc -> Doc
 inCtl s d = ctl s +++ grp [d]
+
+root :: Maybe Doc -> Doc -> Doc
+root x y = "\\sqrt" +++ x' +++ y
+  where x' = case x of
+                  Just z  -> "[" +++ z +++ "]"
+                  Nothing -> mempty
 
 writer :: MathWriter
 writer = MathWriter{
