@@ -67,6 +67,12 @@ instance ToCommand (HeX [Doc]) where
 instance ToCommand (HeX Integer) where
   toCommand = liftM (raws . show)
 
+instance ToCommand b => ToCommand (Maybe Doc -> b) where
+  toCommand x = try (do char '['
+                        arg <- liftM mconcat (manyTill getNext (char ']'))
+                        toCommand $ x $ Just arg)
+             <|> toCommand (x Nothing)
+
 instance ToCommand b => ToCommand (Maybe String -> b) where
   toCommand x = withOpt x <|> toCommand (x Nothing)
 
