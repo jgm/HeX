@@ -11,10 +11,7 @@ import qualified Text.HeX.Math.LaTeX as LaTeXMath
 defaults :: HeX ()
 defaults = do
   setVar "secnum" ([] :: [Int])
-  format <- getFormat
-  case format of
-    "html"  -> Html.defaults >> MathML.defaults
-    "latex" -> LaTeX.defaults >> LaTeXMath.defaults
-    _       -> return ()
+  forFormat "html" $ Html.defaults >> MathML.defaults
+  forFormat "latex" $ LaTeX.defaults >> LaTeXMath.defaults
   Generic.defaults
 

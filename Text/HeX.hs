@@ -33,6 +33,7 @@ module Text.HeX ( run
                 , oneChar
                 , comment
                 , basicParsers
+                , forFormat
                 )
 where
 import Text.HeX.Types
@@ -185,3 +186,9 @@ comment = do
 
 basicParsers :: (Char -> Doc) -> HeX Doc
 basicParsers escaper = oneChar escaper <|> command <|> group <|> comment
+
+forFormat :: Format -> HeX () -> HeX ()
+forFormat f p = do
+  f' <- getFormat
+  when (f == f') p
+
