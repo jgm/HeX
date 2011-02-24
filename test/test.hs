@@ -10,7 +10,6 @@ main = defaultMain $ do
   parseDoc
 
 
-silly :: Maybe OptionList -> Doc
-silly (Just (OptionList opts)) =
+silly :: OptionList -> Doc
+silly (OptionList opts) =
   raws $ show opts
-silly Nothing = mempty

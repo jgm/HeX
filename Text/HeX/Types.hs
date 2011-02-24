@@ -11,6 +11,7 @@ import Data.String
 import Text.Parsec
 import Control.Monad
 import Data.Dynamic
+import Data.Maybe (fromMaybe)
 import Data.CaseInsensitive (CI)
 import Text.Parsec.String
 
@@ -78,8 +79,9 @@ instance ToCommand b => ToCommand (Maybe Integer -> b) where
 instance ToCommand b => ToCommand (Maybe Double -> b) where
   toCommand x = withOpt x <|> toCommand (x Nothing)
 
-instance ToCommand b => ToCommand (Maybe OptionList -> b) where
-  toCommand x = withOpt x <|> toCommand (x Nothing)
+instance ToCommand b => ToCommand (OptionList -> b) where
+  toCommand x = withOpt (x . fromMaybe (OptionList []))
+             <|> toCommand (x (OptionList []))
 
 instance ToCommand b => ToCommand (Doc -> b) where
   toCommand x = do arg <- getNext
@@ -120,11 +122,6 @@ withArg x arg = do
                             (Fut _) -> error "Unexpected Fut"
 
 newtype OptionList = OptionList [(String,String)]
-
-instance Read OptionList where
-  readsPrec _ s = case parse parseOptionList "input" s of
-                        Right o  -> [(o,"")]
-                        Left _   -> []
 
 parseOptionList :: Parser OptionList
 parseOptionList  = liftM OptionList $ sepBy parseOption comma
