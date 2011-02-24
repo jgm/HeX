@@ -12,6 +12,7 @@ import Text.Parsec
 import Control.Monad
 import Data.Dynamic
 import Data.CaseInsensitive (CI)
+import Text.Parsec.String
 
 data Doc = Doc Builder
          | Fut (HeXState -> HeX Builder)
@@ -77,6 +78,9 @@ instance ToCommand b => ToCommand (Maybe Integer -> b) where
 instance ToCommand b => ToCommand (Maybe Double -> b) where
   toCommand x = withOpt x <|> toCommand (x Nothing)
 
+instance ToCommand b => ToCommand (Maybe OptionList -> b) where
+  toCommand x = withOpt x <|> toCommand (x Nothing)
+
 instance ToCommand b => ToCommand (Doc -> b) where
   toCommand x = do arg <- getNext
                    toCommand (x arg)
@@ -115,6 +119,25 @@ withArg x arg = do
                             (Doc b) -> return b
                             (Fut _) -> error "Unexpected Fut"
 
+newtype OptionList = OptionList [(String,String)]
+
+instance Read OptionList where
+  readsPrec _ s = case parse parseOptionList "input" s of
+                        Right o  -> [(o,"")]
+                        Left _   -> []
+
+parseOptionList :: Parser OptionList
+parseOptionList  = liftM OptionList $ sepBy parseOption comma
+  where comma = try $ spaces >> char ',' >> spaces
+
+parseOption :: Parser (String,String)
+parseOption = try $ do
+  spaces
+  key <- many1 (satisfy (/='='))
+  char '='
+  val <- many1 (satisfy (/=','))
+  return (key,val)
+
 class ReadString a where
   readString :: String -> Maybe a
 
@@ -129,6 +152,11 @@ instance ReadString Integer where
 
 instance ReadString Double where
   readString = readM
+
+instance ReadString OptionList where
+  readString s = case parse parseOptionList "" s of
+                      Left _   -> fail $ "Failed to parse `" ++ s ++ "'"
+                      Right o  -> return o
 
 getNext :: HeX Doc
 getNext = do

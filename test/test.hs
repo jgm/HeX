@@ -6,5 +6,11 @@ import Docbook as Docbook
 main = defaultMain $ do
   Standard.defaults
   Docbook.defaults
+  register "silly" silly
   parseDoc
 
+
+silly :: Maybe OptionList -> Doc
+silly (Just (OptionList opts)) =
+  raws $ show opts
+silly Nothing = mempty
