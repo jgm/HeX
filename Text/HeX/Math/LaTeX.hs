@@ -11,21 +11,45 @@ defaults = do
   defaultsFor writer
   register "textrm" $ inCtl "textrm" <$> withText
   register "text" $ inCtl "text" <$> withText
-  register "mathrm" $ inCtl "mathrm" <$> group
-  register "mbox" $ inCtl "mbox" <$> group
-  register "mathit" $ inCtl "mathit" <$> group
   register "textit" $ inCtl "textit" <$> withText
-  register "mathtt" $ inCtl "mathtt" <$> group
   register "texttt" $ inCtl "texttt" <$> withText
-  register "mathsf" $ inCtl "mathsf" <$> group
-  register "mathbb" $ inCtl "mathbb" <$> group
-  register "mathcal" $ inCtl "mathcal" <$> group
-  register "mathfrak" $ inCtl "mathfrak" <$> group
+  mapM_ latexCommand [ "mathrm"
+                     , "mbox"
+                     , "mathit"
+                     , "mathtt"
+                     , "mathsf"
+                     , "mathbb"
+                     , "mathcal"
+                     , "mathfrak" ]
   register "sqrt" root
   register "surd" root
+  mapM_ latexCommand [ "acute"
+                     , "grave"
+                     , "breve"
+                     , "check"
+                     , "dot"
+                     , "ddot"
+                     , "mathring"
+                     , "vec"
+                     , "overrightarrow"
+                     , "overleftarrow"
+                     , "hat"
+                     , "widehat"
+                     , "tilde"
+                     , "widetilde"
+                     , "bar"
+                     , "overbrace"
+                     , "overbracket"
+                     , "overline"
+                     , "underbrace"
+                     , "underbracket"
+                     , "underline" ]
+
+latexCommand :: String -> HeX ()
+latexCommand s = register s $ inCtl s <$> getNext
 
 inCtl :: String -> Doc -> Doc
-inCtl s d = ctl s +++ grp [d]
+inCtl s d = ctl s +++ d
 
 root :: Maybe Doc -> Doc -> Doc
 root x y = "\\sqrt" +++ x' +++ y

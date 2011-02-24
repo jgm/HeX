@@ -69,7 +69,7 @@ withText :: HeX Doc
 withText = do
   current <- liftM hexMode getState
   updateState $ \st -> st{ hexMode = Normal }
-  res <- group
+  res <- getNext
   updateState $ \st -> st{ hexMode = current }
   return res
 

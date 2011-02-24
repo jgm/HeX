@@ -1,3 +1,6 @@
+_ add diacritics to MathML math parser
+_ add accents to standard parsers
+_ move latexCommand to Hex?
 x support for comments
 x support for quotes, dashes, ellipses
 x system for warnings; e.g. warn if a label is redefined.
