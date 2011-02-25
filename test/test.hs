@@ -30,7 +30,11 @@ unknown = try $ do
   cmd <- many1 letter <|> count 1 anyChar
   commands <- liftM hexCommands getState
   case M.lookup cmd commands of
-       Nothing -> return mempty
+       Nothing -> do
+          f <- getFormat
+          return $ case f of
+                   "html" -> inTags "span" [("style","color:red")] (raws cmd)
+                   _      -> "[" +++ raws cmd +++ "]"
        Just _  -> fail "known command"
 
 -- CSS:
