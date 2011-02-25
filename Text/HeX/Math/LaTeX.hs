@@ -13,40 +13,43 @@ defaults = do
   register "text" $ inCtl "text" <$> withText
   register "textit" $ inCtl "textit" <$> withText
   register "texttt" $ inCtl "texttt" <$> withText
-  mapM_ latexCommand [ "mathrm"
-                     , "mbox"
-                     , "mathit"
-                     , "mathtt"
-                     , "mathsf"
-                     , "mathbb"
-                     , "mathcal"
-                     , "mathfrak" ]
+  mapM_ latexCommand1 [ "mathrm"
+                      , "mbox"
+                      , "mathit"
+                      , "mathtt"
+                      , "mathsf"
+                      , "mathbb"
+                      , "mathcal"
+                      , "mathfrak" ]
   register "sqrt" root
   register "surd" root
-  mapM_ latexCommand [ "acute"
-                     , "grave"
-                     , "breve"
-                     , "check"
-                     , "dot"
-                     , "ddot"
-                     , "mathring"
-                     , "vec"
-                     , "overrightarrow"
-                     , "overleftarrow"
-                     , "hat"
-                     , "widehat"
-                     , "tilde"
-                     , "widetilde"
-                     , "bar"
-                     , "overbrace"
-                     , "overbracket"
-                     , "overline"
-                     , "underbrace"
-                     , "underbracket"
-                     , "underline" ]
+  mapM_ latexCommand1 [ "acute"
+                      , "grave"
+                      , "breve"
+                      , "check"
+                      , "dot"
+                      , "ddot"
+                      , "mathring"
+                      , "vec"
+                      , "overrightarrow"
+                      , "overleftarrow"
+                      , "hat"
+                      , "widehat"
+                      , "tilde"
+                      , "widetilde"
+                      , "bar"
+                      , "overbrace"
+                      , "overbracket"
+                      , "overline"
+                      , "underbrace"
+                      , "underbracket"
+                      , "underline" ]
 
-latexCommand :: String -> HeX ()
-latexCommand s = register s $ inCtl s <$> getNext
+latexCommand0 :: String -> HeX ()
+latexCommand0 s = register s $ inCtl s
+
+latexCommand1 :: String -> HeX ()
+latexCommand1 s = register s $ inCtl s <$> getNext
 
 inCtl :: String -> Doc -> Doc
 inCtl s d = ctl s +++ d
