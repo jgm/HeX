@@ -105,6 +105,10 @@ instance ToCommand b => ToCommand (Integer -> b) where
 instance ToCommand b => ToCommand (Double -> b) where
   toCommand x = getNext >>= withArg x
 
+instance ToCommand b => ToCommand (Format -> b) where
+  toCommand x = do format <- liftM hexFormat getState
+                   toCommand (x format)
+
 withOpt :: (ToCommand b, ReadString a)
         => (Maybe a -> b) -> HeX Doc
 withOpt f = try $ do char '['
