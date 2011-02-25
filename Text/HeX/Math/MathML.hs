@@ -314,11 +314,6 @@ defaults = do
   register "quad" $ inTags "mspace" [("width","1em")] mempty
   register "qquad" $ inTags "mspace" [("width","2em")] mempty
 
-{-
-           , ("~", ESpace "0.333em")
-
--}
-
 writer :: MathWriter
 writer = MathWriter{
    mathFormat = "mathml"
@@ -348,6 +343,7 @@ root (Just x) y = inTags "mroot" [] $ inTags "mn" [] y +++ inTags "mn" [] x
 showOp :: String -> Doc
 showOp s = inTags "mo" []
          $ case s of
+              "~"    -> inTags "mspace" [("width","0.333em")] mempty
               "'"    -> raws "\x02B9"
               "''"   -> raws "\x02BA"
               "'''"  -> raws "\x2034"
