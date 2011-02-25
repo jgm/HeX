@@ -18,6 +18,10 @@ silly (OptionList opts) =
   raws $ show opts
 
 lettrine :: Format -> Doc -> Doc -> Doc
-lettrine "html" x y = inTags "span" [("style","font-size: 200%;")] x +++ y
+lettrine "html" x y = inTags "span" [("class","lettrine")] x +++ y
 lettrine "latex" x y = ctl "lettrine" +++ grp [x] +++ grp [y]
+
+-- CSS:
+-- body { line-height: 1.3; }
+-- .lettrine {font-size:3em; float: left; line-height: 1; margin-right: 0.1em;}
 

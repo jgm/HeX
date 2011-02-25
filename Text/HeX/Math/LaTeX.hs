@@ -9,10 +9,10 @@ import Text.HeX.Math (defaultsFor, withText)
 defaults :: HeX ()
 defaults = do
   defaultsFor writer
-  register "textrm" $ inCtl "textrm" <$> withText
-  register "text" $ inCtl "text" <$> withText
-  register "textit" $ inCtl "textit" <$> withText
-  register "texttt" $ inCtl "texttt" <$> withText
+  register "textrm" $ (ctl "textrm" +++) <$> withText
+  register "text" $ (ctl "text" +++) <$> withText
+  register "textit" $ (ctl "textit" +++) <$> withText
+  register "texttt" $ (ctl "texttt" +++) <$> withText
   mapM_ latexCommand1 [ "mathrm"
                       , "mbox"
                       , "mathit"
@@ -291,15 +291,22 @@ defaults = do
                       , "sup"
                       , "tan"
                       , "tanh" ]
+  mapM_ latexCommand2 [ "frac"
+                      , "tfrac"
+                      , "dfrac"
+                      , "stackrel"
+                      , "overset"
+                      , "underset"
+                      , "binom"]
 
 latexCommand0 :: String -> HeX ()
-latexCommand0 s = register s $ inCtl s
+latexCommand0 s = register s $ ctl s
 
 latexCommand1 :: String -> HeX ()
-latexCommand1 s = register s $ inCtl s <$> getNext
+latexCommand1 s = register s $ \d -> ctl s +++ d
 
-inCtl :: String -> Doc -> Doc
-inCtl s d = ctl s +++ d
+latexCommand2 :: String -> HeX ()
+latexCommand2 s = register s $ \d1 d2 -> ctl s +++ d1 +++ d2
 
 root :: Maybe Doc -> Doc -> Doc
 root x y = "\\sqrt" +++ x' +++ y
