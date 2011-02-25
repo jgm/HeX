@@ -1,9 +1,10 @@
 {-# LANGUAGE OverloadedStrings, ScopedTypeVariables, PackageImports #-}
-module Text.HeX.Standard.Generic (defaults, getSectionNum) where
+module Text.HeX.Standard.Generic (defaults, getSectionNum, para) where
 
 import Text.HeX
 import Data.List (intercalate)
 import "mtl" Control.Monad.Trans (liftIO)
+import Control.Monad
 
 defaults :: HeX ()
 defaults = do
@@ -38,4 +39,34 @@ label' s = addLabel s >> return mempty
 
 ref :: String -> HeX Doc
 ref s = lookupLabel s
+
+para :: ([Doc] -> Doc) -> HeX Doc
+para f = try $ do
+  guard . not . hexInPara =<< getState
+  updateState $ \st -> st{ hexInPara = True }
+  res <- many1Till getNext blanklines
+  updateState $ \st -> st{ hexInPara = False }
+  return $ f res
+
+many1Till :: HeX a -> HeX b -> HeX [a]
+many1Till a b = do x <- a
+                   xs <- manyTill a b
+                   return $ x : xs
+
+-- | Parses a space or tab.
+spaceChar :: HeX Char
+spaceChar = satisfy $ \c -> c == ' ' || c == '\t'
+
+-- | Skips zero or more spaces or tabs.
+skipSpaces :: HeX ()
+skipSpaces = skipMany spaceChar
+
+-- | Skips zero or more spaces or tabs, then reads a newline.
+blankline :: HeX ()
+blankline = try $ skipSpaces >> newline >> return ()
+
+-- | Parses one or more blank lines and returns a string of newlines.
+blanklines :: HeX ()
+blanklines =  (try $ skipSpaces >> eof)
+          <|> (try $ blankline >> many1 blankline >> return ())
 

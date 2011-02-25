@@ -3,12 +3,13 @@ module Text.HeX.Standard.Html (defaults) where
 
 import Text.HeX
 import Text.HeX.Standard.Xml (ch, inTags)
-import Text.HeX.Standard.Generic (getSectionNum)
+import Text.HeX.Standard.Generic (getSectionNum, para)
 
 defaults :: HeX ()
 defaults = do
   addParser Normal $ basicParsers ch
   addParser Normal smart
+  addParser Normal $ para (\d -> inTags "p" [] (mconcat d) +++ "\n")
   register "emph" $ inTags "em" []
   register "strong" $ inTags "strong" []
   register "section" (section 1)

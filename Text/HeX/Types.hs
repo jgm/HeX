@@ -38,6 +38,7 @@ data HeXState = HeXState { hexParsers   :: M.Map Mode [HeX Doc]
                          , hexCommands  :: M.Map String (HeX Doc)
                          , hexFormat    :: Format
                          , hexVars      :: M.Map String Dynamic
+                         , hexInPara    :: Bool
                          , hexTarget    :: String
                          , hexLabels    :: M.Map String String }
 

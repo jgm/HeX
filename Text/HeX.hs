@@ -103,6 +103,7 @@ run parser format contents = do
                        , hexCommands = M.empty
                        , hexFormat = format
                        , hexVars = M.empty
+                       , hexInPara = False
                        , hexTarget = ""
                        , hexLabels = M.empty } "input" contents
   case result of

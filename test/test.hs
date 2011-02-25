@@ -13,7 +13,7 @@ main = defaultMain $ do
   register "silly" silly
   register "lettrine" lettrine
   addParser Math unknown
-  -- addParser Normal unknown
+  addParser Normal unknown
   parseDoc
 
 silly :: OptionList -> Doc
