@@ -313,6 +313,16 @@ defaults = do
   register ";" $ inTags "mspace" [("width","0.278em")] mempty
   register "quad" $ inTags "mspace" [("width","1em")] mempty
   register "qquad" $ inTags "mspace" [("width","2em")] mempty
+  register "frac" $ \x y -> inTags "mfrac" [] (x +++ y)
+  register "tfrac" $ \x y -> inTags "mstyle" [("displaystyle","false")]
+                             $ inTags "mfrac" [] (x +++ y)
+  register "dfrac" $ \x y -> inTags "mstyle" [("displaystyle","true")]
+                             $ inTags "mfrac" [] (x +++ y)
+  register "stackrel" $ \x y -> inTags "mover" [] (x +++ y)
+  register "overset" $ \x y -> inTags "mover" [] (x +++ y)
+  register "underset" $ \x y -> inTags "munder" [] (x +++ y)
+  register "binom" $ \x y -> inTags "mfenced" []
+                             $ inTags "mfrac" [("linethickness","0")] (x +++ y)
 
 writer :: MathWriter
 writer = MathWriter{
