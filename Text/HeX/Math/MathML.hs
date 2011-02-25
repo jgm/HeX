@@ -65,216 +65,248 @@ defaults = do
     inTags "munder" [] $ d +++ inTags "mo" [("accent","true")] "&#9141;"
   register "underline" $ \d ->
     inTags "munder" [] $ d +++ inTags "mo" [("accent","true")] "&#175;"
+  register "mid" $ inTags "mo" [] "&#x2223;"
+  register "parallel" $ inTags "mo" [] "&#x2225;"
+  register "backslash" $ inTags "mo" [] "&#x2216;"
+  register "times" $ inTags "mo" [] "&#x00D7;"
+  register "alpha" $ inTags "mo" [] "&#x03B1;"
+  register "beta" $ inTags "mo" [] "&#x03B2;"
+  register "chi" $ inTags "mo" [] "&#x03C7;"
+  register "delta" $ inTags "mo" [] "&#x03B4;"
+  register "Delta" $ inTags "mo" [] "&#x0394;"
+  register "epsilon" $ inTags "mo" [] "&#x03B5;"
+  register "varepsilon" $ inTags "mo" [] "&#x025B;"
+  register "eta" $ inTags "mo" [] "&#x03B7;"
+  register "gamma" $ inTags "mo" [] "&#x03B3;"
+  register "Gamma" $ inTags "mo" [] "&#x0393;" 
+  register "iota" $ inTags "mo" [] "&#x03B9;"
+  register "kappa" $ inTags "mo" [] "&#x03BA;"
+  register "lambda" $ inTags "mo" [] "&#x03BB;"
+  register "Lambda" $ inTags "mo" [] "&#x039B;" 
+  register "mu" $ inTags "mo" [] "&#x03BC;"
+  register "nu" $ inTags "mo" [] "&#x03BD;"
+  register "omega" $ inTags "mo" [] "&#x03C9;"
+  register "Omega" $ inTags "mo" [] "&#x03A9;"
+  register "phi" $ inTags "mo" [] "&#x03C6;"
+  register "varphi" $ inTags "mo" [] "&#x03D5;"
+  register "Phi" $ inTags "mo" [] "&#x03A6;" 
+  register "pi" $ inTags "mo" [] "&#x03C0;"
+  register "Pi" $ inTags "mo" [] "&#x03A0;" 
+  register "psi" $ inTags "mo" [] "&#x03C8;"
+  register "Psi" $ inTags "mo" [] "&#x03A8;"
+  register "rho" $ inTags "mo" [] "&#x03C1;"
+  register "sigma" $ inTags "mo" [] "&#x03C3;"
+  register "Sigma" $ inTags "mo" [] "&#x03A3;" 
+  register "tau" $ inTags "mo" [] "&#x03C4;"
+  register "theta" $ inTags "mo" [] "&#x03B8;"
+  register "vartheta" $ inTags "mo" [] "&#x03D1;"
+  register "Theta" $ inTags "mo" [] "&#x0398;" 
+  register "upsilon" $ inTags "mo" [] "&#x03C5;"
+  register "xi" $ inTags "mo" [] "&#x03BE;"
+  register "Xi" $ inTags "mo" [] "&#x039E;" 
+  register "zeta" $ inTags "mo" [] "&#x03B6;"
+  register "frac12" $ inTags "mo" [] "&#x00BD;"
+  register "frac14" $ inTags "mo" [] "&#x00BC;"
+  register "frac34" $ inTags "mo" [] "&#x00BE;"
+  register "frac13" $ inTags "mo" [] "&#x2153;"
+  register "frac23" $ inTags "mo" [] "&#x2154;"
+  register "frac15" $ inTags "mo" [] "&#x2155;"
+  register "frac25" $ inTags "mo" [] "&#x2156;"
+  register "frac35" $ inTags "mo" [] "&#x2157;"
+  register "frac45" $ inTags "mo" [] "&#x2158;"
+  register "frac16" $ inTags "mo" [] "&#x2159;"
+  register "frac56" $ inTags "mo" [] "&#x215A;"
+  register "frac18" $ inTags "mo" [] "&#x215B;"
+  register "frac38" $ inTags "mo" [] "&#x215C;"
+  register "frac58" $ inTags "mo" [] "&#x215D;"
+  register "frac78" $ inTags "mo" [] "&#x215E;"
+  register "pm" $ inTags "mo" [] "&#x00B1;"
+  register "mp" $ inTags "mo" [] "&#x2213;"
+  register "triangleleft" $ inTags "mo" [] "&#x22B2;"
+  register "triangleright" $ inTags "mo" [] "&#x22B3;"
+  register "cdot" $ inTags "mo" [] "&#x22C5;"
+  register "star" $ inTags "mo" [] "&#x22C6;"
+  register "ast" $ inTags "mo" [] "&#x002A;"
+  register "times" $ inTags "mo" [] "&#x00D7;"
+  register "div" $ inTags "mo" [] "&#x00F7;"
+  register "circ" $ inTags "mo" [] "&#x2218;"
+  register "bullet" $ inTags "mo" [] "&#x2022;"
+  register "oplus" $ inTags "mo" [] "&#x2295;"
+  register "ominus" $ inTags "mo" [] "&#x2296;"
+  register "otimes" $ inTags "mo" [] "&#x2297;"
+  register "bigcirc" $ inTags "mo" [] "&#x25CB;"
+  register "oslash" $ inTags "mo" [] "&#x2298;"
+  register "odot" $ inTags "mo" [] "&#x2299;"
+  register "land" $ inTags "mo" [] "&#x2227;"
+  register "wedge" $ inTags "mo" [] "&#x2227;"
+  register "lor" $ inTags "mo" [] "&#x2228;"
+  register "vee" $ inTags "mo" [] "&#x2228;"
+  register "cap" $ inTags "mo" [] "&#x2229;"
+  register "cup" $ inTags "mo" [] "&#x222A;"
+  register "sqcap" $ inTags "mo" [] "&#x2293;"
+  register "sqcup" $ inTags "mo" [] "&#x2294;"
+  register "uplus" $ inTags "mo" [] "&#x228E;"
+  register "amalg" $ inTags "mo" [] "&#x2210;"
+  register "bigtriangleup" $ inTags "mo" [] "&#x25B3;"
+  register "bigtriangledown" $ inTags "mo" [] "&#x25BD;"
+  register "dag" $ inTags "mo" [] "&#x2020;"
+  register "dagger" $ inTags "mo" [] "&#x2020;"
+  register "ddag" $ inTags "mo" [] "&#x2021;"
+  register "ddagger" $ inTags "mo" [] "&#x2021;"
+  register "lhd" $ inTags "mo" [] "&#x22B2;"
+  register "rhd" $ inTags "mo" [] "&#x22B3;"
+  register "unlhd" $ inTags "mo" [] "&#x22B4;"
+  register "unrhd" $ inTags "mo" [] "&#x22B5;"
+  register "lt" $ inTags "mo" [] "<"
+  register "gt" $ inTags "mo" [] ">"
+  register "ne" $ inTags "mo" [] "&#x2260;"
+  register "neq" $ inTags "mo" [] "&#x2260;"
+  register "le" $ inTags "mo" [] "&#x2264;"
+  register "leq" $ inTags "mo" [] "&#x2264;"
+  register "leqslant" $ inTags "mo" [] "&#x2264;"
+  register "ge" $ inTags "mo" [] "&#x2265;"
+  register "geq" $ inTags "mo" [] "&#x2265;"
+  register "geqslant" $ inTags "mo" [] "&#x2265;"
+  register "equiv" $ inTags "mo" [] "&#x2261;"
+  register "ll" $ inTags "mo" [] "&#x226A;"
+  register "gg" $ inTags "mo" [] "&#x226B;"
+  register "doteq" $ inTags "mo" [] "&#x2250;"
+  register "prec" $ inTags "mo" [] "&#x227A;"
+  register "succ" $ inTags "mo" [] "&#x227B;"
+  register "preceq" $ inTags "mo" [] "&#x227C;"
+  register "succeq" $ inTags "mo" [] "&#x227D;"
+  register "subset" $ inTags "mo" [] "&#x2282;"
+  register "supset" $ inTags "mo" [] "&#x2283;"
+  register "subseteq" $ inTags "mo" [] "&#x2286;"
+  register "supseteq" $ inTags "mo" [] "&#x2287;"
+  register "sqsubset" $ inTags "mo" [] "&#x228F;"
+  register "sqsupset" $ inTags "mo" [] "&#x2290;"
+  register "sqsubseteq" $ inTags "mo" [] "&#x2291;"
+  register "sqsupseteq" $ inTags "mo" [] "&#x2292;"
+  register "sim" $ inTags "mo" [] "&#x223C;"
+  register "simeq" $ inTags "mo" [] "&#x2243;"
+  register "approx" $ inTags "mo" [] "&#x2248;"
+  register "cong" $ inTags "mo" [] "&#x2245;"
+  register "Join" $ inTags "mo" [] "&#x22C8;"
+  register "bowtie" $ inTags "mo" [] "&#x22C8;"
+  register "in" $ inTags "mo" [] "&#x2208;"
+  register "ni" $ inTags "mo" [] "&#x220B;"
+  register "owns" $ inTags "mo" [] "&#x220B;"
+  register "propto" $ inTags "mo" [] "&#x221D;"
+  register "vdash" $ inTags "mo" [] "&#x22A2;"
+  register "dashv" $ inTags "mo" [] "&#x22A3;"
+  register "models" $ inTags "mo" [] "&#x22A8;"
+  register "perp" $ inTags "mo" [] "&#x22A5;"
+  register "smile" $ inTags "mo" [] "&#x2323;"
+  register "frown" $ inTags "mo" [] "&#x2322;"
+  register "asymp" $ inTags "mo" [] "&#x224D;"
+  register "notin" $ inTags "mo" [] "&#x2209;"
+  register "gets" $ inTags "mo" [] "&#x2190;"
+  register "leftarrow" $ inTags "mo" [] "&#x2190;"
+  register "to" $ inTags "mo" [] "&#x2192;"
+  register "rightarrow" $ inTags "mo" [] "&#x2192;"
+  register "leftrightarrow" $ inTags "mo" [] "&#x2194;"
+  register "uparrow" $ inTags "mo" [] "&#x2191;"
+  register "downarrow" $ inTags "mo" [] "&#x2193;"
+  register "updownarrow" $ inTags "mo" [] "&#x2195;"
+  register "Leftarrow" $ inTags "mo" [] "&#x21D0;"
+  register "Rightarrow" $ inTags "mo" [] "&#x21D2;"
+  register "Leftrightarrow" $ inTags "mo" [] "&#x21D4;"
+  register "iff" $ inTags "mo" [] "&#x21D4;"
+  register "Uparrow" $ inTags "mo" [] "&#x21D1;"
+  register "Downarrow" $ inTags "mo" [] "&#x21D3;"
+  register "Updownarrow" $ inTags "mo" [] "&#x21D5;"
+  register "mapsto" $ inTags "mo" [] "&#x21A6;"
+  register "longleftarrow" $ inTags "mo" [] "&#x2190;"
+  register "longrightarrow" $ inTags "mo" [] "&#x2192;"
+  register "longleftrightarrow" $ inTags "mo" [] "&#x2194;"
+  register "Longleftarrow" $ inTags "mo" [] "&#x21D0;"
+  register "Longrightarrow" $ inTags "mo" [] "&#x21D2;"
+  register "Longleftrightarrow" $ inTags "mo" [] "&#x21D4;"
+  register "longmapsto" $ inTags "mo" [] "&#x21A6;"
+  register "sum" $ inTags "mo" [] "&#x2211;"
+  register "prod" $ inTags "mo" [] "&#x220F;"
+  register "bigcap" $ inTags "mo" [] "&#x22C2;"
+  register "bigcup" $ inTags "mo" [] "&#x22C3;"
+  register "bigwedge" $ inTags "mo" [] "&#x22C0;"
+  register "bigvee" $ inTags "mo" [] "&#x22C1;"
+  register "bigsqcap" $ inTags "mo" [] "&#x2A05;"
+  register "bigsqcup" $ inTags "mo" [] "&#x2A06;"
+  register "coprod" $ inTags "mo" [] "&#x2210;"
+  register "bigoplus" $ inTags "mo" [] "&#x2A01;"
+  register "bigotimes" $ inTags "mo" [] "&#x2A02;"
+  register "bigodot" $ inTags "mo" [] "&#x2A00;"
+  register "biguplus" $ inTags "mo" [] "&#x2A04;"
+  register "int" $ inTags "mo" [] "&#x222B;"
+  register "iint" $ inTags "mo" [] "&#x222C;"
+  register "iiint" $ inTags "mo" [] "&#x222D;"
+  register "oint" $ inTags "mo" [] "&#x222E;"
+  register "prime" $ inTags "mo" [] "&#x2032;"
+  register "dots" $ inTags "mo" [] "&#x2026;"
+  register "ldots" $ inTags "mo" [] "&#x2026;"
+  register "cdots" $ inTags "mo" [] "&#x22EF;"
+  register "vdots" $ inTags "mo" [] "&#x22EE;"
+  register "ddots" $ inTags "mo" [] "&#x22F1;"
+  register "forall" $ inTags "mo" [] "&#x2200;"
+  register "exists" $ inTags "mo" [] "&#x2203;"
+  register "Re" $ inTags "mo" [] "&#x211C;"
+  register "Im" $ inTags "mo" [] "&#x2111;"
+  register "aleph" $ inTags "mo" [] "&#x2135;"
+  register "hbar" $ inTags "mo" [] "&#x210F;"
+  register "ell" $ inTags "mo" [] "&#x2113;"
+  register "wp" $ inTags "mo" [] "&#x2118;"
+  register "emptyset" $ inTags "mo" [] "&#x2205;"
+  register "infty" $ inTags "mo" [] "&#x221E;"
+  register "partial" $ inTags "mo" [] "&#x2202;"
+  register "nabla" $ inTags "mo" [] "&#x2207;"
+  register "triangle" $ inTags "mo" [] "&#x25B3;"
+  register "therefore" $ inTags "mo" [] "&#x2234;"
+  register "angle" $ inTags "mo" [] "&#x2220;"
+  register "diamond" $ inTags "mo" [] "&#x22C4;"
+  register "Diamond" $ inTags "mo" [] "&#x25C7;"
+  register "lozenge" $ inTags "mo" [] "&#x25CA;"
+  register "neg" $ inTags "mo" [] "&#x00AC;"
+  register "lnot" $ inTags "mo" [] "&#x00AC;"
+  register "bot" $ inTags "mo" [] "&#x22A5;"
+  register "top" $ inTags "mo" [] "&#x22A4;"
+  register "square" $ inTags "mo" [] "&#x25AB;"
+  register "Box" $ inTags "mo" [] "&#x25A1;"
+  register "wr" $ inTags "mo" [] "&#x2240;"
+  register "arccos" $ inTags "mi" [] "arccos"
+  register "arcsin" $ inTags "mi" [] "arcsin"
+  register "arctan" $ inTags "mi" [] "arctan"
+  register "arg" $ inTags "mi" [] "arg"
+  register "cos" $ inTags "mi" [] "cos"
+  register "cosh" $ inTags "mi" [] "cosh"
+  register "cot" $ inTags "mi" [] "cot"
+  register "coth" $ inTags "mi" [] "coth"
+  register "csc" $ inTags "mi" [] "csc"
+  register "deg" $ inTags "mi" [] "deg"
+  register "det" $ inTags "mi" [] "det"
+  register "dim" $ inTags "mi" [] "dim"
+  register "exp" $ inTags "mi" [] "exp"
+  register "gcd" $ inTags "mi" [] "gcd"
+  register "hom" $ inTags "mi" [] "hom"
+  register "inf" $ inTags "mi" [] "inf"
+  register "ker" $ inTags "mi" [] "ker"
+  register "lg" $ inTags "mi" [] "lg"
+  register "lim" $ inTags "mi" [] "lim"
+  register "liminf" $ inTags "mi" [] "liminf"
+  register "limsup" $ inTags "mi" [] "limsup"
+  register "ln" $ inTags "mi" [] "ln"
+  register "log" $ inTags "mi" [] "log"
+  register "max" $ inTags "mi" [] "max"
+  register "min" $ inTags "mi" [] "min"
+  register "Pr" $ inTags "mi" [] "Pr"
+  register "sec" $ inTags "mi" [] "sec"
+  register "sin" $ inTags "mi" [] "sin"
+  register "sinh" $ inTags "mi" [] "sinh"
+  register "sup" $ inTags "mi" [] "sup"
+  register "tan" $ inTags "mi" [] "tan"
+  register "tanh" $ inTags "mi" [] "tanh"
 
 {-
-           , ("\\mid", ESymbol Bin "\x2223")
-           , ("\\parallel", ESymbol Rel "\x2225")
-           , ("\\backslash", ESymbol Bin "\x2216")
            , ("\\setminus",	ESymbol Bin "\\")
-           , ("\\times", ESymbol Bin "\x00D7")
-           , ("\\alpha", ESymbol Ord "\x03B1")
-           , ("\\beta", ESymbol Ord "\x03B2")
-           , ("\\chi", ESymbol Ord "\x03C7")
-           , ("\\delta", ESymbol Ord "\x03B4")
-           , ("\\Delta", ESymbol Op "\x0394")
-           , ("\\epsilon", ESymbol Ord "\x03B5")
-           , ("\\varepsilon", ESymbol Ord "\x025B")
-           , ("\\eta", ESymbol Ord "\x03B7")
-           , ("\\gamma", ESymbol Ord "\x03B3")
-           , ("\\Gamma", ESymbol Op "\x0393") 
-           , ("\\iota", ESymbol Ord "\x03B9")
-           , ("\\kappa", ESymbol Ord "\x03BA")
-           , ("\\lambda", ESymbol Ord "\x03BB")
-           , ("\\Lambda", ESymbol Op "\x039B") 
-           , ("\\mu", ESymbol Ord "\x03BC")
-           , ("\\nu", ESymbol Ord "\x03BD")
-           , ("\\omega", ESymbol Ord "\x03C9")
-           , ("\\Omega", ESymbol Op "\x03A9")
-           , ("\\phi", ESymbol Ord "\x03C6")
-           , ("\\varphi", ESymbol Ord "\x03D5")
-           , ("\\Phi", ESymbol Op "\x03A6") 
-           , ("\\pi", ESymbol Ord "\x03C0")
-           , ("\\Pi", ESymbol Op "\x03A0") 
-           , ("\\psi", ESymbol Ord "\x03C8")
-           , ("\\Psi", ESymbol Ord "\x03A8")
-           , ("\\rho", ESymbol Ord "\x03C1")
-           , ("\\sigma", ESymbol Ord "\x03C3")
-           , ("\\Sigma", ESymbol Op "\x03A3") 
-           , ("\\tau", ESymbol Ord "\x03C4")
-           , ("\\theta", ESymbol Ord "\x03B8")
-           , ("\\vartheta", ESymbol Ord "\x03D1")
-           , ("\\Theta", ESymbol Op "\x0398") 
-           , ("\\upsilon", ESymbol Ord "\x03C5")
-           , ("\\xi", ESymbol Ord "\x03BE")
-           , ("\\Xi", ESymbol Op "\x039E") 
-           , ("\\zeta", ESymbol Ord "\x03B6")
-           , ("\\frac12", ESymbol Ord "\x00BD")
-           , ("\\frac14", ESymbol Ord "\x00BC")
-           , ("\\frac34", ESymbol Ord "\x00BE")
-           , ("\\frac13", ESymbol Ord "\x2153")
-           , ("\\frac23", ESymbol Ord "\x2154")
-           , ("\\frac15", ESymbol Ord "\x2155")
-           , ("\\frac25", ESymbol Ord "\x2156")
-           , ("\\frac35", ESymbol Ord "\x2157")
-           , ("\\frac45", ESymbol Ord "\x2158")
-           , ("\\frac16", ESymbol Ord "\x2159")
-           , ("\\frac56", ESymbol Ord "\x215A")
-           , ("\\frac18", ESymbol Ord "\x215B")
-           , ("\\frac38", ESymbol Ord "\x215C")
-           , ("\\frac58", ESymbol Ord "\x215D")
-           , ("\\frac78", ESymbol Ord "\x215E")
-           , ("\\pm", ESymbol Bin "\x00B1")
-           , ("\\mp", ESymbol Bin "\x2213")
-           , ("\\triangleleft", ESymbol Bin "\x22B2")
-           , ("\\triangleright", ESymbol Bin "\x22B3")
-           , ("\\cdot", ESymbol Bin "\x22C5")
-           , ("\\star", ESymbol Bin "\x22C6")
-           , ("\\ast", ESymbol Bin "\x002A")
-           , ("\\times", ESymbol Bin "\x00D7")
-           , ("\\div", ESymbol Bin "\x00F7")
-           , ("\\circ", ESymbol Bin "\x2218")
-           , ("\\bullet", ESymbol Bin "\x2022")
-           , ("\\oplus", ESymbol Bin "\x2295")
-           , ("\\ominus", ESymbol Bin "\x2296")
-           , ("\\otimes", ESymbol Bin "\x2297")
-           , ("\\bigcirc", ESymbol Bin "\x25CB")
-           , ("\\oslash", ESymbol Bin "\x2298")
-           , ("\\odot", ESymbol Bin "\x2299")
-           , ("\\land", ESymbol Bin "\x2227")
-           , ("\\wedge", ESymbol Bin "\x2227")
-           , ("\\lor", ESymbol Bin "\x2228")
-           , ("\\vee", ESymbol Bin "\x2228")
-           , ("\\cap", ESymbol Bin "\x2229")
-           , ("\\cup", ESymbol Bin "\x222A")
-           , ("\\sqcap", ESymbol Bin "\x2293")
-           , ("\\sqcup", ESymbol Bin "\x2294")
-           , ("\\uplus", ESymbol Bin "\x228E")
-           , ("\\amalg", ESymbol Bin "\x2210")
-           , ("\\bigtriangleup", ESymbol Bin "\x25B3")
-           , ("\\bigtriangledown", ESymbol Bin "\x25BD")
-           , ("\\dag", ESymbol Bin "\x2020")
-           , ("\\dagger", ESymbol Bin "\x2020")
-           , ("\\ddag", ESymbol Bin "\x2021")
-           , ("\\ddagger", ESymbol Bin "\x2021")
-           , ("\\lhd", ESymbol Bin "\x22B2")
-           , ("\\rhd", ESymbol Bin "\x22B3")
-           , ("\\unlhd", ESymbol Bin "\x22B4")
-           , ("\\unrhd", ESymbol Bin "\x22B5")
-           , ("\\lt", ESymbol Rel "<")
-           , ("\\gt", ESymbol Rel ">")
-           , ("\\ne", ESymbol Rel "\x2260")
-           , ("\\neq", ESymbol Rel "\x2260")
-           , ("\\le", ESymbol Rel "\x2264")
-           , ("\\leq", ESymbol Rel "\x2264")
-           , ("\\leqslant", ESymbol Rel "\x2264")
-           , ("\\ge", ESymbol Rel "\x2265")
-           , ("\\geq", ESymbol Rel "\x2265")
-           , ("\\geqslant", ESymbol Rel "\x2265")
-           , ("\\equiv", ESymbol Rel "\x2261")
-           , ("\\ll", ESymbol Rel "\x226A")
-           , ("\\gg", ESymbol Rel "\x226B")
-           , ("\\doteq", ESymbol Rel "\x2250")
-           , ("\\prec", ESymbol Rel "\x227A")
-           , ("\\succ", ESymbol Rel "\x227B")
-           , ("\\preceq", ESymbol Rel "\x227C")
-           , ("\\succeq", ESymbol Rel "\x227D")
-           , ("\\subset", ESymbol Rel "\x2282")
-           , ("\\supset", ESymbol Rel "\x2283")
-           , ("\\subseteq", ESymbol Rel "\x2286")
-           , ("\\supseteq", ESymbol Rel "\x2287")
-           , ("\\sqsubset", ESymbol Rel "\x228F")
-           , ("\\sqsupset", ESymbol Rel "\x2290")
-           , ("\\sqsubseteq", ESymbol Rel "\x2291")
-           , ("\\sqsupseteq", ESymbol Rel "\x2292")
-           , ("\\sim", ESymbol Rel "\x223C")
-           , ("\\simeq", ESymbol Rel "\x2243")
-           , ("\\approx", ESymbol Rel "\x2248")
-           , ("\\cong", ESymbol Rel "\x2245")
-           , ("\\Join", ESymbol Rel "\x22C8")
-           , ("\\bowtie", ESymbol Rel "\x22C8")
-           , ("\\in", ESymbol Rel "\x2208")
-           , ("\\ni", ESymbol Rel "\x220B")
-           , ("\\owns", ESymbol Rel "\x220B")
-           , ("\\propto", ESymbol Rel "\x221D")
-           , ("\\vdash", ESymbol Rel "\x22A2")
-           , ("\\dashv", ESymbol Rel "\x22A3")
-           , ("\\models", ESymbol Rel "\x22A8")
-           , ("\\perp", ESymbol Rel "\x22A5")
-           , ("\\smile", ESymbol Rel "\x2323")
-           , ("\\frown", ESymbol Rel "\x2322")
-           , ("\\asymp", ESymbol Rel "\x224D")
-           , ("\\notin", ESymbol Rel "\x2209")
-           , ("\\gets", ESymbol Rel "\x2190")
-           , ("\\leftarrow", ESymbol Rel "\x2190")
-           , ("\\to", ESymbol Rel "\x2192")
-           , ("\\rightarrow", ESymbol Rel "\x2192")
-           , ("\\leftrightarrow", ESymbol Rel "\x2194")
-           , ("\\uparrow", ESymbol Rel "\x2191")
-           , ("\\downarrow", ESymbol Rel "\x2193")
-           , ("\\updownarrow", ESymbol Rel "\x2195")
-           , ("\\Leftarrow", ESymbol Rel "\x21D0")
-           , ("\\Rightarrow", ESymbol Rel "\x21D2")
-           , ("\\Leftrightarrow", ESymbol Rel "\x21D4")
-           , ("\\iff", ESymbol Rel "\x21D4")
-           , ("\\Uparrow", ESymbol Rel "\x21D1")
-           , ("\\Downarrow", ESymbol Rel "\x21D3")
-           , ("\\Updownarrow", ESymbol Rel "\x21D5")
-           , ("\\mapsto", ESymbol Rel "\x21A6")
-           , ("\\longleftarrow", ESymbol Rel "\x2190")
-           , ("\\longrightarrow", ESymbol Rel "\x2192")
-           , ("\\longleftrightarrow", ESymbol Rel "\x2194")
-           , ("\\Longleftarrow", ESymbol Rel "\x21D0")
-           , ("\\Longrightarrow", ESymbol Rel "\x21D2")
-           , ("\\Longleftrightarrow", ESymbol Rel "\x21D4")
-           , ("\\longmapsto", ESymbol Rel "\x21A6")
-           , ("\\sum", ESymbol Op "\x2211")
-           , ("\\prod", ESymbol Op "\x220F")
-           , ("\\bigcap", ESymbol Op "\x22C2")
-           , ("\\bigcup", ESymbol Op "\x22C3")
-           , ("\\bigwedge", ESymbol Op "\x22C0")
-           , ("\\bigvee", ESymbol Op "\x22C1")
-           , ("\\bigsqcap", ESymbol Op "\x2A05")
-           , ("\\bigsqcup", ESymbol Op "\x2A06")
-           , ("\\coprod", ESymbol Op "\x2210")
-           , ("\\bigoplus", ESymbol Op "\x2A01")
-           , ("\\bigotimes", ESymbol Op "\x2A02")
-           , ("\\bigodot", ESymbol Op "\x2A00")
-           , ("\\biguplus", ESymbol Op "\x2A04")
-           , ("\\int", ESymbol Op "\x222B")
-           , ("\\iint", ESymbol Op "\x222C")
-           , ("\\iiint", ESymbol Op "\x222D")
-           , ("\\oint", ESymbol Op "\x222E")
-           , ("\\prime", ESymbol Ord "\x2032")
-           , ("\\dots", ESymbol Ord "\x2026")
-           , ("\\ldots", ESymbol Ord "\x2026")
-           , ("\\cdots", ESymbol Ord "\x22EF")
-           , ("\\vdots", ESymbol Ord "\x22EE")
-           , ("\\ddots", ESymbol Ord "\x22F1")
-           , ("\\forall", ESymbol Op "\x2200")
-           , ("\\exists", ESymbol Op "\x2203")
-           , ("\\Re", ESymbol Ord "\x211C")
-           , ("\\Im", ESymbol Ord "\x2111")
-           , ("\\aleph", ESymbol Ord "\x2135")
-           , ("\\hbar", ESymbol Ord "\x210F")
-           , ("\\ell", ESymbol Ord "\x2113")
-           , ("\\wp", ESymbol Ord "\x2118")
-           , ("\\emptyset", ESymbol Ord "\x2205")
-           , ("\\infty", ESymbol Ord "\x221E")
-           , ("\\partial", ESymbol Ord "\x2202")
-           , ("\\nabla", ESymbol Ord "\x2207")
-           , ("\\triangle", ESymbol Ord "\x25B3")
-           , ("\\therefore", ESymbol Pun "\x2234")
-           , ("\\angle", ESymbol Ord "\x2220")
-           , ("\\diamond", ESymbol Op "\x22C4")
-           , ("\\Diamond", ESymbol Op "\x25C7")
-           , ("\\lozenge", ESymbol Op "\x25CA")
-           , ("\\neg", ESymbol Op "\x00AC")
-           , ("\\lnot", ESymbol Ord "\x00AC")
-           , ("\\bot", ESymbol Ord "\x22A5")
-           , ("\\top", ESymbol Ord "\x22A4")
-           , ("\\square", ESymbol Ord "\x25AB")
-           , ("\\Box", ESymbol Op "\x25A1")
-           , ("\\wr", ESymbol Ord "\x2240")
            , ("\\!", ESpace "-0.167em")
            , ("\\,", ESpace "0.167em")
            , ("\\>", ESpace "0.222em")
@@ -283,38 +315,6 @@ defaults = do
            , ("~", ESpace "0.333em")
            , ("\\quad", ESpace "1em")
            , ("\\qquad", ESpace "2em")
-           , ("\\arccos", EMathOperator "arccos")
-           , ("\\arcsin", EMathOperator "arcsin")
-           , ("\\arctan", EMathOperator "arctan")
-           , ("\\arg", EMathOperator "arg")
-           , ("\\cos", EMathOperator "cos")
-           , ("\\cosh", EMathOperator "cosh")
-           , ("\\cot", EMathOperator "cot")
-           , ("\\coth", EMathOperator "coth")
-           , ("\\csc", EMathOperator "csc")
-           , ("\\deg", EMathOperator "deg")
-           , ("\\det", EMathOperator "det")
-           , ("\\dim", EMathOperator "dim")
-           , ("\\exp", EMathOperator "exp")
-           , ("\\gcd", EMathOperator "gcd")
-           , ("\\hom", EMathOperator "hom")
-           , ("\\inf", EMathOperator "inf")
-           , ("\\ker", EMathOperator "ker")
-           , ("\\lg", EMathOperator "lg")
-           , ("\\lim", EMathOperator "lim")
-           , ("\\liminf", EMathOperator "liminf")
-           , ("\\limsup", EMathOperator "limsup")
-           , ("\\ln", EMathOperator "ln")
-           , ("\\log", EMathOperator "log")
-           , ("\\max", EMathOperator "max")
-           , ("\\min", EMathOperator "min")
-           , ("\\Pr", EMathOperator "Pr")
-           , ("\\sec", EMathOperator "sec")
-           , ("\\sin", EMathOperator "sin")
-           , ("\\sinh", EMathOperator "sinh")
-           , ("\\sup", EMathOperator "sup")
-           , ("\\tan", EMathOperator "tan")
-           , ("\\tanh", EMathOperator "tanh")
 
 -}
 
