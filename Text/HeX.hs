@@ -140,7 +140,7 @@ register name x = updateState $ \s ->
   s{ hexCommands = M.insert name (toCommand x) (hexCommands s) }
 
 command :: HeX Doc
-command = try $ do
+command = do
   char '\\'
   cmd <- many1 letter <|> count 1 anyChar
   skipBlank
