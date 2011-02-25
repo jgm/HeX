@@ -15,20 +15,29 @@ HeX:
 
 * Provides a basic macro system that can be customized by writing
   functions in Haskell
-* These functions can be included in the document (using bird-style
-  literate Haskell) or imported from a module
-* The macros can define output in multiple formats, for example, TeX
+* The macros can define output in multiple formats, for example, LaTeX
   and HTML
+* References and labels are handled in a consistent way across both formats.
+* Math works in both formats (using MathML in HTML output, though this
+  is configurable).
+* Eventually, citeproc-hs will be used for references.  Producing a
+  PDF from HeX's LaTeX output will only require a single run of pdflatex,
+  and no packages will be required other than amsmath and amssymb.
 
-You can install HeX in the standard way for Haskell packages:
+HeX is under development, but beyond the core not much has been
+implemented yet. If you want to play with it,
+you can install HeX in the standard way for Haskell packages:
 
     cabal install
 
-For an example of a HeX document, see `examples/simple.lhs`.
-To convert it to plain TeX and HTML, respectively:
+For an example of a HeX document, see `test/test.hex`.
+To convert it to LaTeX and HTML, respectively, change
+to the `test` directory and do:
 
-    hexto tex examples/simple.lhs
-    hexto html examples/simple.lhs
+    runghc test.hs latex < test.hex
+    runghc test.hs html < test.hex
 
-At this stage, this is not much more than an idea.
+The file `test.hs` functions like the preamble of a LaTeX document,
+defining the commands to be used.  In this case, MathML is used
+for math in HTML output.
 
