@@ -1,6 +1,7 @@
 module Text.HeX.Math (defaultsFor, withText) where
 import Text.HeX
 import Control.Monad
+import Control.Applicative ((<$>))
 import Data.Char (isAscii, isAlphaNum)
 
 defaultsFor :: MathWriter -> HeX ()
@@ -9,6 +10,7 @@ defaultsFor writer = do
   addParser Normal $ dollars writer
   register "(" $ parenMath writer
   register "[" $ bracketMath writer
+  register "ensuremath" $ ensureMath writer
 
 dollars :: MathWriter -> HeX Doc
 dollars writer = do
@@ -73,3 +75,17 @@ withText = do
   updateState $ \st -> st{ hexMode = current }
   return res
 
+withMath :: HeX Doc
+withMath = do
+  current <- liftM hexMode getState
+  updateState $ \st -> st{ hexMode = Math }
+  res <- getNext
+  updateState $ \st -> st{ hexMode = current }
+  return res
+
+ensureMath :: MathWriter -> HeX Doc
+ensureMath writer = do
+  current <- liftM hexMode getState
+  if current == Math
+     then getNext
+     else inlineMath writer <$> withMath
