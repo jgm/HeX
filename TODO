@@ -1,18 +1,17 @@
-_ add diacritics to MathML math parser
-_ add accents to standard parsers
-_ move latexCommand to Hex?
-x support for comments
-x support for quotes, dashes, ellipses
-x system for warnings; e.g. warn if a label is redefined.
+_ paragraphs
+_ mathML:
+  _ arrays
+  _ enclosures
+  _ superscript, subscript, limit
+_ add accented character commands to standard parsers
 _ jail for IO?
 _ figure out how to do verbatims
 _ figure out how to do environments (do we need them? why not just use
   {} for grouping?)
-_ headers, labels, refs
 _ math in both formats (mathml?)
 _ bibliography w/ citeproc
 _ syntactic macros (why not? in many cases going to Haskell is overkill)
-
+_ hexto?
 
 hexto
 -----
