@@ -142,7 +142,7 @@ register name x = updateState $ \s ->
 command :: HeX Doc
 command = try $ do
   char '\\'
-  cmd <- many1 letter
+  cmd <- many1 letter <|> count 1 anyChar
   skipBlank
   st <- getState
   let commands = hexCommands st

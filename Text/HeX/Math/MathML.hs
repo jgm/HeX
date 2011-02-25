@@ -304,17 +304,18 @@ defaults = do
   register "sup" $ inTags "mi" [] "sup"
   register "tan" $ inTags "mi" [] "tan"
   register "tanh" $ inTags "mi" [] "tanh"
+  register "setminus" $ inTags "mo" [] "\\"
+  register "!" $ inTags "mspace" [("width","-0.167em")] mempty
+  register "," $ inTags "mspace" [("width","0.167em")] mempty
+  register "," $ inTags "mspace" [("width","0.167em")] mempty
+  register ">" $ inTags "mspace" [("width","0.222em")] mempty
+  register ":" $ inTags "mspace" [("width","0.222em")] mempty
+  register ";" $ inTags "mspace" [("width","0.278em")] mempty
+  register "quad" $ inTags "mspace" [("width","1em")] mempty
+  register "qquad" $ inTags "mspace" [("width","2em")] mempty
 
 {-
-           , ("\\setminus",	ESymbol Bin "\\")
-           , ("\\!", ESpace "-0.167em")
-           , ("\\,", ESpace "0.167em")
-           , ("\\>", ESpace "0.222em")
-           , ("\\:", ESpace "0.222em")
-           , ("\\;", ESpace "0.278em")
            , ("~", ESpace "0.333em")
-           , ("\\quad", ESpace "1em")
-           , ("\\qquad", ESpace "2em")
 
 -}
 
