@@ -25,7 +25,6 @@ module Text.HeX ( run
                 , parseDoc
                 , getFormat
                 , setTarget
-                , withMode
                 , addLabel
                 , lookupLabel
                 , warn
@@ -203,14 +202,6 @@ plain :: HeX Doc
 plain = try $ do
   spaces
   liftM mconcat $ withMode Inline $ many1 getNext
-
-withMode :: Mode -> HeX a -> HeX a
-withMode mode p = do
-  oldmode <- liftM hexMode getState
-  updateState $ \st -> st{ hexMode = mode }
-  res <- p
-  updateState $ \st -> st{ hexMode = oldmode }
-  return res
 
 forFormat :: Format -> HeX () -> HeX ()
 forFormat f p = do

@@ -1,5 +1,3 @@
-_ figure out paragraphs:
-  as things now stand we get <p></p> and <p><h1>...</p>, both bad
 _ \index also in HTML!
 _ outer shell - preamble stuff, css, encoding, etc.
 _ mathML to SVG? www.grigoriev.ru/svgmath/

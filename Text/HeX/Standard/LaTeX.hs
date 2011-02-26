@@ -36,4 +36,4 @@ section lev d = do
                         3 -> "subsubsection"
                         4 -> "paragraph"
                         _ -> "subparagraph"
-  return $ ctl secheading +++ grp [d]
+  return $ ctl secheading +++ grp [d] +++ "\n"

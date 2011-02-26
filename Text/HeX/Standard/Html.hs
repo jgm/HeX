@@ -40,7 +40,7 @@ dash = try $ do
   string "--"
   option "&ndash;" (char '-' >> return "&mdash;")
 
-section :: Int -> Doc -> HeX Doc
-section lev d = do
+section :: Int -> InlineDoc -> HeX Doc
+section lev (InlineDoc d) = do
   num <- getSectionNum lev
-  return $ inTags ("h" ++ show lev) [] (raws num +++ ". " +++ d)
+  return $ inTags ("h" ++ show lev) [] (raws num +++ ". " +++ d) +++ "\n"

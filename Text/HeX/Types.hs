@@ -33,6 +33,10 @@ type Format = CI String
 data Mode = Block | Inline | Verbatim | Math
           deriving (Show, Eq, Ord)
 
+newtype InlineDoc = InlineDoc Doc
+
+newtype BlockDoc = BlockDoc Doc
+
 data HeXState = HeXState { hexParsers   :: M.Map Mode [HeX Doc]
                          , hexMode      :: Mode
                          , hexCommands  :: M.Map (Mode, String) (HeX Doc)
@@ -92,6 +96,14 @@ instance ToCommand b => ToCommand (OptionList -> b) where
 instance ToCommand b => ToCommand (Doc -> b) where
   toCommand x = do arg <- getNext
                    toCommand (x arg)
+
+instance ToCommand b => ToCommand (InlineDoc -> b) where
+  toCommand x = do arg <- withMode Inline getNext
+                   toCommand (x $ InlineDoc arg)
+
+instance ToCommand b => ToCommand (BlockDoc -> b) where
+  toCommand x = do arg <- withMode Block getNext
+                   toCommand (x $ BlockDoc arg)
 
 instance ToCommand b => ToCommand (String -> b) where
   toCommand x = getNext >>= withArg x
@@ -185,6 +197,14 @@ raws = Doc . BU.fromString
 
 rawc :: Char -> Doc
 rawc = Doc . fromChar
+
+withMode :: Mode -> HeX a -> HeX a
+withMode mode p = do
+  oldmode <- liftM hexMode getState
+  updateState $ \st -> st{ hexMode = mode }
+  res <- p
+  updateState $ \st -> st{ hexMode = oldmode }
+  return res
 
 infixl 8 +++
 (+++) :: Monoid a => a -> a -> a
