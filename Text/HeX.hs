@@ -25,6 +25,7 @@ module Text.HeX ( run
                 , parseDoc
                 , getFormat
                 , setTarget
+                , withMode
                 , addLabel
                 , lookupLabel
                 , warn
@@ -32,7 +33,8 @@ module Text.HeX ( run
                 , group
                 , oneChar
                 , comment
-                , basicParsers
+                , basicInline
+                , basicBlock
                 , forFormat
                 )
 where
@@ -99,11 +101,10 @@ run parser format contents = do
                                 Doc b  -> return b
                                 Fut f  -> getState >>= f)
                HeXState{ hexParsers = M.empty
-                       , hexMode = Normal
+                       , hexMode = Block
                        , hexCommands = M.empty
                        , hexFormat = format
                        , hexVars = M.empty
-                       , hexInPara = False
                        , hexTarget = ""
                        , hexLabels = M.empty } "input" contents
   case result of
@@ -129,16 +130,18 @@ parseDoc = do
 getFormat :: HeX Format
 getFormat = liftM hexFormat getState
 
-addParser :: Mode -> HeX Doc -> HeX ()
-addParser mode p = updateState $ \st ->
-  let parsers = hexParsers st in
-  st{ hexParsers = if M.member mode parsers
-                      then M.adjust (p:) mode parsers
-                      else M.insert mode [p] parsers }
+addParser :: [Mode] -> HeX Doc -> HeX ()
+addParser modes p = forM_ modes $ \mode ->
+  updateState $ \st ->
+    let parsers = hexParsers st in
+    st{ hexParsers = if M.member mode parsers
+                        then M.adjust (p:) mode parsers
+                        else M.insert mode [p] parsers }
 
-register :: ToCommand a => String -> a -> HeX ()
-register name x = updateState $ \s ->
-  s{ hexCommands = M.insert name (toCommand x) (hexCommands s) }
+register :: ToCommand a => [Mode] -> String -> a -> HeX ()
+register modes name x = forM_ modes $ \m ->
+  updateState $ \s ->
+    s{ hexCommands = M.insert (m, name) (toCommand x) (hexCommands s) }
 
 command :: HeX Doc
 command = do
@@ -147,10 +150,12 @@ command = do
   skipBlank
   st <- getState
   let commands = hexCommands st
+  let mode = hexMode st
   let format = hexFormat st
-  case M.lookup cmd commands of
+  case M.lookup (mode, cmd) commands of
         Just p  -> p
         Nothing -> fail $ ('\\':cmd) ++ " is not defined for " ++ show format
+                          ++ " in mode " ++ show mode
 
 warn :: String -> HeX ()
 warn msg = do
@@ -174,10 +179,13 @@ group = do
 
 oneChar :: (Char -> Doc) -> HeX Doc
 oneChar escaper = escaper <$> (try (char '\\' >> (satisfy (not . isLetter)))
-                               <|> noneOf specialChars)
+                               <|> noneOf specialChars <|> endline)
+
+endline :: HeX Char
+endline = newline >> notFollowedBy blankline >> return '\n'
 
 specialChars :: [Char]
-specialChars = "%{$\\"
+specialChars = "%{$\\\n"
 
 comment :: HeX Doc
 comment = do
@@ -185,8 +193,24 @@ comment = do
   manyTill anyChar newline
   return mempty
 
-basicParsers :: (Char -> Doc) -> HeX Doc
-basicParsers escaper = oneChar escaper <|> command <|> group <|> comment
+basicInline :: (Char -> Doc) -> HeX Doc
+basicInline escaper = comment <|> oneChar escaper <|> command <|> group
+
+basicBlock :: HeX Doc
+basicBlock = comment <|> command <|> plain
+
+plain :: HeX Doc
+plain = try $ do
+  spaces
+  liftM mconcat $ withMode Inline $ many1 getNext
+
+withMode :: Mode -> HeX a -> HeX a
+withMode mode p = do
+  oldmode <- liftM hexMode getState
+  updateState $ \st -> st{ hexMode = mode }
+  res <- p
+  updateState $ \st -> st{ hexMode = oldmode }
+  return res
 
 forFormat :: Format -> HeX () -> HeX ()
 forFormat f p = do

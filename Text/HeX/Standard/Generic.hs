@@ -4,14 +4,13 @@ module Text.HeX.Standard.Generic (defaults, getSectionNum, para) where
 import Text.HeX
 import Data.List (intercalate)
 import "mtl" Control.Monad.Trans (liftIO)
-import Control.Monad
 
 defaults :: HeX ()
 defaults = do
-  register "rpt" rpt
-  register "include" include
-  register "label" label'
-  register "ref" ref
+  register [Block,Inline,Math] "rpt" rpt
+  register [Block] "include" include
+  register [Inline] "label" label'
+  register [Inline] "ref" ref
 
 rpt :: Maybe Int -> Doc -> Doc
 rpt (Just n) d = mconcat $ replicate n d
@@ -42,16 +41,11 @@ ref s = lookupLabel s
 
 para :: ([Doc] -> Doc) -> HeX Doc
 para f = try $ do
-  guard . not . hexInPara =<< getState
-  updateState $ \st -> st{ hexInPara = True }
-  res <- many1Till getNext blanklines
-  updateState $ \st -> st{ hexInPara = False }
+  spaces
+  notFollowedBy (char '%') -- comment
+  res <- withMode Inline $ many1 (try $ notFollowedBy blanklines >> getNext)
+  blanklines <|> (spaces >> eof)
   return $ f res
-
-many1Till :: HeX a -> HeX b -> HeX [a]
-many1Till a b = do x <- a
-                   xs <- manyTill a b
-                   return $ x : xs
 
 -- | Parses a space or tab.
 spaceChar :: HeX Char

@@ -10,12 +10,11 @@ import Text.HeX.Standard.TeX (ctl,grp)
 main = defaultMain $ do
   Standard.defaults
   forFormat "docbook" Docbook.defaults
-  register "silly" silly
-  register "lettrine" lettrine
-  addParser Math unknown
-  addParser Normal unknown
+  register [Block,Inline] "silly" silly
+  register [Inline] "lettrine" lettrine
+  addParser [Math, Inline] unknown
   -- FOR DEBUGGING
-  forFormat "html" $ addParser Math unknownChar
+  forFormat "html" $ addParser [Math] unknownChar
   parseDoc
 
 silly :: OptionList -> Doc
@@ -31,12 +30,16 @@ unknown = try $ do
   char '\\'
   cmd <- many1 letter <|> count 1 anyChar
   commands <- liftM hexCommands getState
-  case M.lookup cmd commands of
+  mode <- liftM hexMode getState
+  case M.lookup (mode, cmd) commands of
        Nothing -> do
-          f <- getFormat
-          return $ case f of
-                   "html" -> inTags "span" [("style","color:red")] (raws cmd)
-                   _      -> "[" +++ raws cmd +++ "]"
+          case M.lookup (Block, cmd) commands of
+               Just _ -> fail "block command"
+               Nothing -> do
+                 f <- getFormat
+                 return $ case f of
+                          "html" -> inTags "span" [("style","color:red")] (raws cmd)
+                          _      -> "[" +++ raws cmd +++ "]"
        Just _  -> fail "known command"
 
 unknownChar :: HeX Doc

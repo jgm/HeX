@@ -30,15 +30,14 @@ instance IsString Doc
 
 type Format = CI String
 
-data Mode = Normal | Math
+data Mode = Block | Inline | Verbatim | Math
           deriving (Show, Eq, Ord)
 
 data HeXState = HeXState { hexParsers   :: M.Map Mode [HeX Doc]
                          , hexMode      :: Mode
-                         , hexCommands  :: M.Map String (HeX Doc)
+                         , hexCommands  :: M.Map (Mode, String) (HeX Doc)
                          , hexFormat    :: Format
                          , hexVars      :: M.Map String Dynamic
-                         , hexInPara    :: Bool
                          , hexTarget    :: String
                          , hexLabels    :: M.Map String String }
 

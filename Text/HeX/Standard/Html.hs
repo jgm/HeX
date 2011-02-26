@@ -7,16 +7,20 @@ import Text.HeX.Standard.Generic (getSectionNum, para)
 
 defaults :: HeX ()
 defaults = do
-  addParser Normal $ basicParsers ch
-  addParser Normal smart
-  addParser Normal $ para (\d -> inTags "p" [] (mconcat d) +++ "\n")
-  register "emph" $ inTags "em" []
-  register "strong" $ inTags "strong" []
-  register "section" (section 1)
-  register "subsection" (section 2)
-  register "subsubsection" (section 3)
-  register "paragraph" (section 4)
-  register "subparagraph" (section 5)
+  addParser [Inline] $ basicInline ch
+  addParser [Inline] smart
+  addParser [Block] basicBlock
+  addParser [Block] $ para toPara
+  register [Inline] "emph" $ inTags "em" []
+  register [Inline] "strong" $ inTags "strong" []
+  register [Block] "section" (section 1)
+  register [Block] "subsection" (section 2)
+  register [Block] "subsubsection" (section 3)
+  register [Block] "paragraph" (section 4)
+  register [Block] "subparagraph" (section 5)
+
+toPara :: [Doc] -> Doc
+toPara xs = inTags "p" [] (mconcat xs) +++ "\n"
 
 smart :: HeX Doc
 smart = lquo <|> rquo <|> dash

@@ -9,10 +9,10 @@ import Text.HeX.Math (defaultsFor, withText)
 defaults :: HeX ()
 defaults = do
   defaultsFor writer
-  register "textrm" $ (ctl "textrm" +++) <$> withText
-  register "text" $ (ctl "text" +++) <$> withText
-  register "textit" $ (ctl "textit" +++) <$> withText
-  register "texttt" $ (ctl "texttt" +++) <$> withText
+  register [Math] "textrm" $ (ctl "textrm" +++) <$> withText
+  register [Math] "text" $ (ctl "text" +++) <$> withText
+  register [Math] "textit" $ (ctl "textit" +++) <$> withText
+  register [Math] "texttt" $ (ctl "texttt" +++) <$> withText
   mapM_ latexCommand1 [ "mathrm"
                       , "mbox"
                       , "mathit"
@@ -21,8 +21,8 @@ defaults = do
                       , "mathbb"
                       , "mathcal"
                       , "mathfrak" ]
-  register "sqrt" root
-  register "surd" root
+  register [Math] "sqrt" root
+  register [Math] "surd" root
   mapM_ latexCommand1 [ "acute"
                       , "grave"
                       , "breve"
@@ -330,20 +330,20 @@ defaults = do
                       , "Vert"
                       , "ulcorner"
                       , "urcorner" ]
-  addParser Math enclosure
+  addParser [Math] enclosure
 
 enclosure :: HeX Doc
 enclosure = rawc <$> (oneOf "()[]{}")
          <|> (char '|' >> return (rawc '\x2223'))
 
 latexCommand0 :: String -> HeX ()
-latexCommand0 s = register s $ ctl s
+latexCommand0 s = register [Math] s $ ctl s
 
 latexCommand1 :: String -> HeX ()
-latexCommand1 s = register s $ \d -> ctl s +++ d
+latexCommand1 s = register [Math] s $ \d -> ctl s +++ d
 
 latexCommand2 :: String -> HeX ()
-latexCommand2 s = register s $ \d1 d2 -> ctl s +++ d1 +++ d2
+latexCommand2 s = register [Math] s $ \d1 d2 -> ctl s +++ d1 +++ d2
 
 root :: Maybe Doc -> Doc -> Doc
 root x y = "\\sqrt" +++ x' +++ y

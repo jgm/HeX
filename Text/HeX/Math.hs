@@ -6,11 +6,11 @@ import Data.Char (isAscii, isAlphaNum)
 
 defaultsFor :: MathWriter -> HeX ()
 defaultsFor writer = do
-  addParser Math $ mathParser writer
-  addParser Normal $ dollars writer
-  register "(" $ parenMath writer
-  register "[" $ bracketMath writer
-  register "ensuremath" $ ensureMath writer
+  addParser [Math] $ mathParser writer
+  addParser [Block,Inline] $ dollars writer
+  register [Inline] "(" $ parenMath writer
+  register [Inline,Block] "[" $ bracketMath writer
+  register [Inline,Block,Math] "ensuremath" $ ensureMath writer
 
 dollars :: MathWriter -> HeX Doc
 dollars writer = do
@@ -30,9 +30,7 @@ bracketMath writer = spaces >> parseMath writer True (try $ string "\\]")
 
 parseMath :: MathWriter -> Bool -> HeX a -> HeX Doc
 parseMath writer display closer = do
-  updateState $ \st -> st{ hexMode = Math }
-  res <- liftM mconcat $ manyTill getNext closer
-  updateState $ \st -> st{ hexMode = Normal }
+  res <- liftM mconcat $ withMode Math $ manyTill getNext closer
   return $ if display
               then displayMath writer res
               else inlineMath writer res
@@ -68,20 +66,10 @@ pUnicode :: HeX Char
 pUnicode = satisfy (not . isAscii)
 
 withText :: HeX Doc
-withText = do
-  current <- liftM hexMode getState
-  updateState $ \st -> st{ hexMode = Normal }
-  res <- getNext
-  updateState $ \st -> st{ hexMode = current }
-  return res
+withText = withMode Inline getNext
 
 withMath :: HeX Doc
-withMath = do
-  current <- liftM hexMode getState
-  updateState $ \st -> st{ hexMode = Math }
-  res <- getNext
-  updateState $ \st -> st{ hexMode = current }
-  return res
+withMath = withMode Math getNext
 
 ensureMath :: MathWriter -> HeX Doc
 ensureMath writer = do
