@@ -1,3 +1,10 @@
+_ rethink!
+  document class Doc
+  instances:  Math, Inline, Block
+
+  so, each arg in a command command will be specifically designated
+  by type.
+
 _ mathML:
   _ arrays
   _ superscript, subscript, limit
