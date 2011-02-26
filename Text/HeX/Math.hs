@@ -46,7 +46,7 @@ mathParser writer = do
       <|> liftM (variable writer) pVariable
       <|> liftM (operator writer) pOperator
       <|> liftM (operator writer . (:[])) (pEscaped <|> pUnicode)
-      <|> liftM raws (many1 space)
+      <|> liftM (whitespace writer) (many1 space)
   return res
 
 opLetters :: [Char]

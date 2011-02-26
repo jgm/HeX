@@ -199,4 +199,5 @@ data MathWriter = MathWriter{
      , number           :: String -> Doc
      , variable         :: Char -> Doc
      , operator         :: String -> Doc
+     , whitespace       :: String -> Doc
      }

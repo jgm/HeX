@@ -335,6 +335,7 @@ writer = MathWriter{
  , variable = inTags "mi" [] . rawc
  , number = inTags "mn" [] . raws
  , operator = showOp
+ , whitespace = const mempty
  }
 
 mrow :: Doc -> Doc

@@ -362,4 +362,5 @@ writer = MathWriter{
  , variable = rawc
  , number = raws
  , operator = raws
+ , whitespace = raws
  }
