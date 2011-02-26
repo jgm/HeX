@@ -5,10 +5,12 @@ import Text.HeX
 import Text.HeX.Standard.Xml
 import Control.Applicative ((<$>))
 import Text.HeX.Math (defaultsFor, withText)
+import qualified Data.Map as M
 
 defaults :: HeX ()
 defaults = do
   defaultsFor writer
+  addParser [Math] enclosure
   register [Math] "textrm" $ asText "normal" <$> withText
   register [Math] "text" $ asText "normal" <$> withText
   register [Math] "mathrm" $ asText "normal" <$> getNext
@@ -368,7 +370,41 @@ enclosure :: HeX Doc
 enclosure = basicEnclosure -- TODO : <|> left <|> right <|> scaledEnclosure
 
 basicEnclosure :: HeX Doc
-basicEnclosure = fail "unimplemented"
+basicEnclosure = inTags "mo" [] . rawc <$>
+                   (oneOf "[]()" <|> (char '|' >> return '\x2223'))
+              <|> try (do char '\\'
+                          cmd <- many1 letter <|> count 1 anyChar
+                          case M.lookup cmd enclosures of
+                                Just x   -> return $ inTags "mo" [] $ rawc x
+                                Nothing  -> fail "not an enclosure")
+
+enclosures :: M.Map String Char
+enclosures = M.fromList
+  [ ("{", '{')
+  , ("}", '}')
+  , ("lbrack", '[')
+  , ("lbrace", '{')
+  , ("rbrack", ']')
+  , ("rbrace", '}')
+  , ("llbracket", '\x27E6')
+  , ("rrbracket", '\x27E7')
+  , ("langle", '\x27E8')
+  , ("rangle", '\x27E9')
+  , ("lfloor", '\x230A')
+  , ("rfloor", '\x230B')
+  , ("lceil", '\x2308')
+  , ("rceil", '\x2309')
+  , ("|", '\x2225')
+  , ("|", '\x2225')
+  , ("lvert", '\x7C')
+  , ("rvert", '\x7C')
+  , ("vert", '\x7C')
+  , ("lVert", '\x2225')
+  , ("rVert", '\x2225')
+  , ("Vert", '\x2016')
+  , ("ulcorner", '\x231C')
+  , ("urcorner", '\x231D')
+  ]
 
 {-
 basicEnclosure :: GenParser Char st Exp
@@ -423,38 +459,7 @@ scalers = M.fromList
           , ("\\Bigl", "1.6")
           ]
 
-enclosures :: [(String, Exp)]
-enclosures = [ ("(", ESymbol Open "(")
-             , (")", ESymbol Close ")")
-             , ("[", ESymbol Open "[")
-             , ("]", ESymbol Close "]")
-             , ("\\{", ESymbol Open "{")
-             , ("\\}", ESymbol Close "}")
-             , ("\\lbrack", ESymbol Open "[")
-             , ("\\lbrace", ESymbol Open "{")
-             , ("\\rbrack", ESymbol Close "]")
-             , ("\\rbrace", ESymbol Close "}")
-             , ("\\llbracket", ESymbol Open "\x27E6")
-             , ("\\rrbracket", ESymbol Close "\x27E7")
-             , ("\\langle", ESymbol Open "\x27E8")
-             , ("\\rangle", ESymbol Close "\x27E9")
-             , ("\\lfloor", ESymbol Open "\x230A")
-             , ("\\rfloor", ESymbol Close "\x230B")
-             , ("\\lceil", ESymbol Open "\x2308")
-             , ("\\rceil", ESymbol Close "\x2309")
-             , ("|", ESymbol Open "\x2223")
-             , ("|", ESymbol Close "\x2223")
-             , ("\\|", ESymbol Open "\x2225")
-             , ("\\|", ESymbol Close "\x2225")
-             , ("\\lvert", ESymbol Open "\x7C")
-             , ("\\rvert", ESymbol Close "\x7C")
-             , ("\\vert", ESymbol Close "\x7C")
-             , ("\\lVert", ESymbol Open "\x2225")
-             , ("\\rVert", ESymbol Close "\x2225")
-             , ("\\Vert", ESymbol Close "\x2016")
-             , ("\\ulcorner", ESymbol Open "\x231C")
-             , ("\\urcorner", ESymbol Close "\x231D")
-             ]
+
 
 
 -}

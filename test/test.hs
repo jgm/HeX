@@ -12,9 +12,9 @@ main = defaultMain $ do
   forFormat "docbook" Docbook.defaults
   register [Block,Inline] "silly" silly
   register [Inline] "lettrine" lettrine
-  addParser [Math, Inline] unknown
+  -- addParser [Math, Inline] unknown
   -- FOR DEBUGGING
-  forFormat "html" $ addParser [Math] unknownChar
+  -- forFormat "html" $ addParser [Math] unknownChar
   parseDoc
 
 silly :: OptionList -> Doc
