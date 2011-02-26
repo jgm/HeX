@@ -367,15 +367,30 @@ asText :: String -> Doc -> Doc
 asText variant = inTags "mtext" [("mathvariant",variant)]
 
 enclosure :: HeX Doc
-enclosure = basicEnclosure -- TODO : <|> left <|> right <|> scaledEnclosure
+enclosure = do
+  modif <- try (string "\\left" >> spaces >> return "left")
+        <|> try (string "\\right" >> spaces >> return "right")
+        <|> scaler
+        <|> return ""
+  enc <- basicEnclosure
+      <|> if (modif == "left" || modif == "right")
+             then try (char '.' >> return '\xFEFF')
+             else fail "expecting enclosure"
+  case modif of
+       ""       -> return $ inTags "mo" [] (rawc enc)
+       "left"   -> tilRight enc
+               <|> return (inTags "mo" [("stretchy","true")] (rawc enc))
+       "right"  -> return $ inTags "mo" [("stretchy","true")] (rawc enc)
+       scale    -> return $ inTags "mo"
+                     [("stretchy","true"),("minsize",scale),("maxsize",scale)]
+                     (rawc enc)
 
-basicEnclosure :: HeX Doc
-basicEnclosure = inTags "mo" [] . rawc <$>
-                   (oneOf "[]()" <|> (char '|' >> return '\x2223'))
+basicEnclosure :: HeX Char
+basicEnclosure = (oneOf "[]()" <|> (char '|' >> return '\x2223'))
               <|> try (do char '\\'
                           cmd <- many1 letter <|> count 1 anyChar
                           case M.lookup cmd enclosures of
-                                Just x   -> return $ inTags "mo" [] $ rawc x
+                                Just x   -> return x
                                 Nothing  -> fail "not an enclosure")
 
 enclosures :: M.Map String Char
@@ -406,60 +421,37 @@ enclosures = M.fromList
   , ("urcorner", '\x231D')
   ]
 
-{-
-basicEnclosure :: GenParser Char st Exp
-basicEnclosure = choice $ map (\(s, v) -> try (symbol s) >> return v) enclosures
-
-left :: GenParser Char st Exp
-left = try $ do
-  symbol "\\left"
-  enc <- basicEnclosure <|> (try (symbol ".") >> return (ESymbol Open "\xFEFF"))
-  case enc of
-    (ESymbol Open _) -> tilRight enc <|> return (EStretchy enc)
-    _ -> pzero
-
-right :: GenParser Char st Exp
-right = try $ do
-  symbol "\\right"
-  enc <- basicEnclosure <|> (try (symbol ".") >> return (ESymbol Close "\xFEFF"))
-  case enc of
-    (ESymbol Close x) -> return (EStretchy $ ESymbol Open x)
-    _ -> pzero
-
 -- We want stuff between \left( and \right) to be in an mrow,
 -- so that the scaling is based just on this unit, and not the
 -- whole containing formula.
-tilRight :: Exp -> GenParser Char st Exp
+tilRight :: Char -> HeX Doc
 tilRight start = try $ do
-  contents <- manyTill expr
-               (try $ symbol "\\right" >> lookAhead basicEnclosure)
+  contents <- manyTill getNext
+               (try $ string "\\right" >> lookAhead basicEnclosure)
   end <- basicEnclosure
-  return $ EGrouped $ EStretchy start : (contents ++ [EStretchy end])
+  return $ mrow $ inTags "mo" [("stretchy","true")] (rawc start) +++
+    mconcat contents +++ inTags "mo" [("stretchy","true")] (rawc end)
 
-scaledEnclosure :: GenParser Char st Exp
-scaledEnclosure = try $ do
-  cmd <- command
+scaler :: HeX String
+scaler = try $ do
+  char '\\'
+  cmd <- many1 letter
   case M.lookup cmd scalers of
-       Just  r -> liftM (EScaled r . EStretchy) basicEnclosure
-       Nothing -> pzero 
+       Just  r -> return r
+       Nothing -> unexpected $ '\\' : cmd
 
 scalers :: M.Map String String
 scalers = M.fromList
-          [ ("\\bigg", "2.2")
-          , ("\\Bigg", "2.9")
-          , ("\\big", "1.2")
-          , ("\\Big", "1.6")
-          , ("\\biggr", "2.2")
-          , ("\\Biggr", "2.9")
-          , ("\\bigr", "1.2")
-          , ("\\Bigr", "1.6")
-          , ("\\biggl", "2.2")
-          , ("\\Biggl", "2.9")
-          , ("\\bigl", "1.2")
-          , ("\\Bigl", "1.6")
+          [ ("bigg", "2.2")
+          , ("Bigg", "2.9")
+          , ("big", "1.2")
+          , ("Big", "1.6")
+          , ("biggr", "2.2")
+          , ("Biggr", "2.9")
+          , ("bigr", "1.2")
+          , ("Bigr", "1.6")
+          , ("biggl", "2.2")
+          , ("Biggl", "2.9")
+          , ("bigl", "1.2")
+          , ("Bigl", "1.6")
           ]
-
-
-
-
--}

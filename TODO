@@ -3,7 +3,7 @@ _ outer shell - preamble stuff, css, encoding, etc.
 _ mathML to SVG? www.grigoriev.ru/svgmath/
 _ mathML:
   _ arrays
-  _ enclosures
+  x enclosures
   _ superscript, subscript, limit
 _ add accented character commands to standard parsers
 _ jail for IO?
