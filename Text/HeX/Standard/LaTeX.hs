@@ -3,13 +3,12 @@ module Text.HeX.Standard.LaTeX (defaults) where
 
 import Text.HeX
 import Text.HeX.Standard.TeX (ctl, ch, grp)
-import Text.HeX.Standard.Generic (getSectionNum, para)
+import Text.HeX.Standard.Generic (getSectionNum)
 
 defaults :: HeX ()
 defaults = do
   addParser [Inline] $ basicInline ch
-  addParser [Block] basicBlock
-  addParser [Block] $ para toPara
+  addParser [Block] $ basicBlock toPara
   register [Inline] "emph" emph
   register [Inline] "strong" strong
   register [Block] "section" (section 1)

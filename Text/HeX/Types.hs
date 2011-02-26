@@ -94,28 +94,21 @@ instance ToCommand b => ToCommand (OptionList -> b) where
              <|> toCommand (x (OptionList []))
 
 instance ToCommand b => ToCommand (Doc -> b) where
-  toCommand x = do arg <- getNext
+  toCommand x = do arg <- group
                    toCommand (x arg)
 
 instance ToCommand b => ToCommand (InlineDoc -> b) where
-  toCommand x = do arg <- withMode Inline getNext
+  toCommand x = do arg <- withMode Inline group
                    toCommand (x $ InlineDoc arg)
 
 instance ToCommand b => ToCommand (BlockDoc -> b) where
-  toCommand x = do arg <- withMode Block getNext
+  toCommand x = do arg <- withMode Block group
                    toCommand (x $ BlockDoc arg)
 
 instance ToCommand b => ToCommand (String -> b) where
-  toCommand x = getNext >>= withArg x
-
-instance ToCommand b => ToCommand (Int -> b) where
-  toCommand x = getNext >>= withArg x
-
-instance ToCommand b => ToCommand (Integer -> b) where
-  toCommand x = getNext >>= withArg x
-
-instance ToCommand b => ToCommand (Double -> b) where
-  toCommand x = getNext >>= withArg x
+  toCommand x = do char '{'
+                   arg <- manyTill anyChar (char '}')
+                   toCommand $ x arg
 
 instance ToCommand b => ToCommand (Format -> b) where
   toCommand x = do format <- liftM hexFormat getState
@@ -142,6 +135,12 @@ withArg x arg = do
                        case res of
                             (Doc b) -> return b
                             (Fut _) -> error "Unexpected Fut"
+
+group :: HeX Doc
+group = try $ do
+  char '{'
+  res <- manyTill getNext (char '}')
+  return $ mconcat res
 
 newtype OptionList = OptionList [(String,String)]
 

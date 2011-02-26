@@ -29,7 +29,6 @@ module Text.HeX ( run
                 , lookupLabel
                 , warn
                 , defaultMain
-                , group
                 , oneChar
                 , comment
                 , basicInline
@@ -170,18 +169,12 @@ defaultMain parser = do
   let format = CI.mk $ head args
   L.putStrLn =<< run parser format inp
 
-group :: HeX Doc
-group = do
-  char '{'
-  res <- manyTill getNext (char '}')
-  return $ mconcat res
-
 oneChar :: (Char -> Doc) -> HeX Doc
 oneChar escaper = escaper <$> (try (char '\\' >> (satisfy (not . isLetter)))
                                <|> noneOf specialChars <|> endline)
 
 endline :: HeX Char
-endline = newline >> notFollowedBy blankline >> return '\n'
+endline = try $ newline >> notFollowedBy blankline >> return '\n'
 
 specialChars :: [Char]
 specialChars = "%{$\\\n"
@@ -195,16 +188,15 @@ comment = do
 basicInline :: (Char -> Doc) -> HeX Doc
 basicInline escaper = comment <|> oneChar escaper <|> command <|> group
 
-basicBlock :: HeX Doc
-basicBlock = comment <|> command <|> plain
+basicBlock :: ([Doc] -> Doc) -> HeX Doc
+basicBlock f = try $ spaces >> (comment <|> try command <|> para f)
 
-plain :: HeX Doc
-plain = try $ do
-  spaces
-  liftM mconcat $ withMode Inline $ many1 getNext
+para :: ([Doc] -> Doc) -> HeX Doc
+para f = do
+  res <- withMode Inline $ many1 getNext
+  return $ f res
 
 forFormat :: Format -> HeX () -> HeX ()
 forFormat f p = do
   f' <- getFormat
   when (f == f') p
-

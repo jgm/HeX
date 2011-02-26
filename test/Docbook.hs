@@ -11,7 +11,7 @@ import qualified Data.Map as M
 
 defaults :: HeX ()
 defaults = do
-  addParser [Block] basicBlock
+  addParser [Block] $ basicBlock (inTags "para" [] . mconcat)
   addParser [Inline] $ basicInline ch
   MathML.defaults
   register [Inline] "emph" emph
