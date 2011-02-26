@@ -363,4 +363,94 @@ showOp s = inTags "mo" []
 asText :: String -> Doc -> Doc
 asText variant = inTags "mtext" [("mathvariant",variant)]
 
+{-
+enclosure :: GenParser Char st Exp
+enclosure = basicEnclosure <|> left <|> right <|> scaledEnclosure
 
+basicEnclosure :: GenParser Char st Exp
+basicEnclosure = choice $ map (\(s, v) -> try (symbol s) >> return v) enclosures
+
+left :: GenParser Char st Exp
+left = try $ do
+  symbol "\\left"
+  enc <- basicEnclosure <|> (try (symbol ".") >> return (ESymbol Open "\xFEFF"))
+  case enc of
+    (ESymbol Open _) -> tilRight enc <|> return (EStretchy enc)
+    _ -> pzero
+
+right :: GenParser Char st Exp
+right = try $ do
+  symbol "\\right"
+  enc <- basicEnclosure <|> (try (symbol ".") >> return (ESymbol Close "\xFEFF"))
+  case enc of
+    (ESymbol Close x) -> return (EStretchy $ ESymbol Open x)
+    _ -> pzero
+
+-- We want stuff between \left( and \right) to be in an mrow,
+-- so that the scaling is based just on this unit, and not the
+-- whole containing formula.
+tilRight :: Exp -> GenParser Char st Exp
+tilRight start = try $ do
+  contents <- manyTill expr
+               (try $ symbol "\\right" >> lookAhead basicEnclosure)
+  end <- basicEnclosure
+  return $ EGrouped $ EStretchy start : (contents ++ [EStretchy end])
+
+scaledEnclosure :: GenParser Char st Exp
+scaledEnclosure = try $ do
+  cmd <- command
+  case M.lookup cmd scalers of
+       Just  r -> liftM (EScaled r . EStretchy) basicEnclosure
+       Nothing -> pzero 
+
+scalers :: M.Map String String
+scalers = M.fromList
+          [ ("\\bigg", "2.2")
+          , ("\\Bigg", "2.9")
+          , ("\\big", "1.2")
+          , ("\\Big", "1.6")
+          , ("\\biggr", "2.2")
+          , ("\\Biggr", "2.9")
+          , ("\\bigr", "1.2")
+          , ("\\Bigr", "1.6")
+          , ("\\biggl", "2.2")
+          , ("\\Biggl", "2.9")
+          , ("\\bigl", "1.2")
+          , ("\\Bigl", "1.6")
+          ]
+
+enclosures :: [(String, Exp)]
+enclosures = [ ("(", ESymbol Open "(")
+             , (")", ESymbol Close ")")
+             , ("[", ESymbol Open "[")
+             , ("]", ESymbol Close "]")
+             , ("\\{", ESymbol Open "{")
+             , ("\\}", ESymbol Close "}")
+             , ("\\lbrack", ESymbol Open "[")
+             , ("\\lbrace", ESymbol Open "{")
+             , ("\\rbrack", ESymbol Close "]")
+             , ("\\rbrace", ESymbol Close "}")
+             , ("\\llbracket", ESymbol Open "\x27E6")
+             , ("\\rrbracket", ESymbol Close "\x27E7")
+             , ("\\langle", ESymbol Open "\x27E8")
+             , ("\\rangle", ESymbol Close "\x27E9")
+             , ("\\lfloor", ESymbol Open "\x230A")
+             , ("\\rfloor", ESymbol Close "\x230B")
+             , ("\\lceil", ESymbol Open "\x2308")
+             , ("\\rceil", ESymbol Close "\x2309")
+             , ("|", ESymbol Open "\x2223")
+             , ("|", ESymbol Close "\x2223")
+             , ("\\|", ESymbol Open "\x2225")
+             , ("\\|", ESymbol Close "\x2225")
+             , ("\\lvert", ESymbol Open "\x7C")
+             , ("\\rvert", ESymbol Close "\x7C")
+             , ("\\vert", ESymbol Close "\x7C")
+             , ("\\lVert", ESymbol Open "\x2225")
+             , ("\\rVert", ESymbol Close "\x2225")
+             , ("\\Vert", ESymbol Close "\x2016")
+             , ("\\ulcorner", ESymbol Open "\x231C")
+             , ("\\urcorner", ESymbol Close "\x231D")
+             ]
+
+
+-}

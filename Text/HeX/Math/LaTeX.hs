@@ -298,6 +298,43 @@ defaults = do
                       , "overset"
                       , "underset"
                       , "binom"]
+  mapM_ latexCommand0 [ "bigg"
+                      , "Bigg"
+                      , "big"
+                      , "Big"
+                      , "biggr"
+                      , "Biggr"
+                      , "bigr"
+                      , "Bigr"
+                      , "biggl"
+                      , "Biggl"
+                      , "bigl"
+                      , "Bigl" ]
+  mapM_ latexCommand0 [ "lbrack"
+                      , "lbrace"
+                      , "rbrack"
+                      , "rbrace"
+                      , "llbracket"
+                      , "rrbracket"
+                      , "langle"
+                      , "rangle"
+                      , "lfloor"
+                      , "rfloor"
+                      , "lceil"
+                      , "rceil"
+                      , "lvert"
+                      , "rvert"
+                      , "vert"
+                      , "lVert"
+                      , "rVert"
+                      , "Vert"
+                      , "ulcorner"
+                      , "urcorner" ]
+  addParser Math enclosure
+
+enclosure :: HeX Doc
+enclosure = rawc <$> (oneOf "()[]{}")
+         <|> (char '|' >> return (rawc '\x2223'))
 
 latexCommand0 :: String -> HeX ()
 latexCommand0 s = register s $ ctl s
