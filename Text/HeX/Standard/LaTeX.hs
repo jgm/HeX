@@ -26,8 +26,8 @@ emph arg  = ctl "emph" +++ grp [arg]
 strong :: Doc -> Doc
 strong arg  = ctl "textbf" +++ grp [arg]
 
-section :: Int -> Doc -> HeX Doc
-section lev d = do
+section :: Int -> InlineDoc -> HeX Doc
+section lev (InlineDoc d) = do
   _ <- getSectionNum lev  -- we need to increment the number
   let secheading = case lev of
                         1 -> "section"

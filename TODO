@@ -1,10 +1,9 @@
-_ \index also in HTML!
-_ outer shell - preamble stuff, css, encoding, etc.
-_ mathML to SVG? www.grigoriev.ru/svgmath/
 _ mathML:
   _ arrays
-  x enclosures
   _ superscript, subscript, limit
+_ outer shell - preamble stuff, css, encoding, etc.
+_ \index also in HTML!
+_ mathML to SVG? www.grigoriev.ru/svgmath/
 _ add accented character commands to standard parsers
 _ jail for IO?
 _ figure out how to do verbatims

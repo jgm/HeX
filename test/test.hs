@@ -3,9 +3,11 @@ import Text.HeX
 import Text.HeX.Standard as Standard
 import Docbook as Docbook
 import Control.Monad (guard, liftM)
+import Control.Applicative ((<$>))
 import qualified Data.Map as M
 import Text.HeX.Standard.Xml (inTags)
 import Text.HeX.Standard.TeX (ctl,grp)
+import Control.Monad.Trans (liftIO)
 
 main = defaultMain $ do
   Standard.defaults
@@ -15,7 +17,19 @@ main = defaultMain $ do
   -- addParser [Math, Inline] unknown
   -- FOR DEBUGGING
   -- forFormat "html" $ addParser [Math] unknownChar
-  parseDoc
+  format <- getFormat
+  addHeader format <$> parseDoc
+
+addHeader :: Format -> Doc -> Doc
+addHeader "html" d =
+  "<!DOCTYPE html>" +++
+  inTags "html" []
+    ((inTags "head" [] $
+      inTags "meta" [("charset","utf-8")] mempty +++
+      inTags "title" [] mempty) +++
+     (inTags "body" [] d))
+addHeader "latex" d =
+  "\\documentclass{article}\n\\begin{document}\n" +++ d +++ "\n\\end{document}"
 
 silly :: OptionList -> Doc
 silly (OptionList opts) =
