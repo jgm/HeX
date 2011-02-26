@@ -14,6 +14,8 @@ main = defaultMain $ do
   register "lettrine" lettrine
   addParser Math unknown
   addParser Normal unknown
+  -- FOR DEBUGGING
+  forFormat "html" $ addParser Math unknownChar
   parseDoc
 
 silly :: OptionList -> Doc
@@ -36,6 +38,11 @@ unknown = try $ do
                    "html" -> inTags "span" [("style","color:red")] (raws cmd)
                    _      -> "[" +++ raws cmd +++ "]"
        Just _  -> fail "known command"
+
+unknownChar :: HeX Doc
+unknownChar = do
+  c <- oneOf "()[]|&"
+  return $ inTags "span" [("style","color:red")] $ raws ['[',c,']']
 
 -- CSS:
 -- body { line-height: 1.3; }

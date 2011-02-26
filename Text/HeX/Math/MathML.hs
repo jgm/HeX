@@ -364,10 +364,13 @@ showOp s = inTags "mo" []
 asText :: String -> Doc -> Doc
 asText variant = inTags "mtext" [("mathvariant",variant)]
 
-{-
-enclosure :: GenParser Char st Exp
-enclosure = basicEnclosure <|> left <|> right <|> scaledEnclosure
+enclosure :: HeX Doc
+enclosure = basicEnclosure -- TODO : <|> left <|> right <|> scaledEnclosure
 
+basicEnclosure :: HeX Doc
+basicEnclosure = fail "unimplemented"
+
+{-
 basicEnclosure :: GenParser Char st Exp
 basicEnclosure = choice $ map (\(s, v) -> try (symbol s) >> return v) enclosures
 
