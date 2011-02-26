@@ -22,14 +22,14 @@ defaults = do
   register [Block] "paragraph" (section 4)
   register [Block] "subparagraph" (section 5)
 
-emph :: Doc -> Doc
-emph arg  = inTags "emphasis" [] arg
+emph :: InlineDoc -> Doc
+emph (InlineDoc arg)  = inTags "emphasis" [] arg
 
-strong :: Doc -> Doc
-strong arg  = inTags "emphasis" [("role","strong")] arg
+strong :: InlineDoc -> Doc
+strong (InlineDoc arg)  = inTags "emphasis" [("role","strong")] arg
 
-section :: Int -> Doc -> HeX Doc
-section lev d = do
+section :: Int -> InlineDoc -> HeX Doc
+section lev (InlineDoc d) = do
   num <- getSectionNum lev
   let sectionCmd 1 = "section"
       sectionCmd 2 = "subsection"
@@ -41,12 +41,12 @@ section lev d = do
   let remapCmd n = register [Block] (sectionCmd n) $
                      do guard False
                         section n mempty
-  let unRemapCmd n = let old = case M.lookup (hexMode st, sectionCmd n) (hexCommands st) of
+  let unRemapCmd n = let old = case M.lookup (Block, sectionCmd n) (hexCommands st) of
                                   Just x  -> x
                                   Nothing -> error "Something happened"
                      in  register [Block] (sectionCmd n) old
   forM_ [1..lev] remapCmd
-  contents <- many getNext
+  contents <- many block
   forM_ [1..lev] unRemapCmd
   return $ (inTags "section" []
             $ "\n" +++ inTags "title" [] (raws num +++ ". " +++ d) +++

@@ -7,11 +7,11 @@ import Blaze.ByteString.Builder.Char.Utf8 as BU
 import Data.ByteString.Lazy.UTF8 (toString)
 import qualified Data.Map as M
 import Data.Monoid
+import Control.Applicative ((<$>))
 import Data.String
 import Text.Parsec
 import Control.Monad
 import Data.Dynamic
-import Data.Maybe (fromMaybe)
 import Data.CaseInsensitive (CI)
 import Text.Parsec.String
 
@@ -30,15 +30,19 @@ instance IsString Doc
 
 type Format = CI String
 
-data Mode = Block | Inline | Verbatim | Math
+data Mode = Block | Inline | Math
           deriving (Show, Eq, Ord)
 
-newtype InlineDoc = InlineDoc Doc
+newtype InlineDoc = InlineDoc { unInline :: Doc }
+                deriving Monoid
 
-newtype BlockDoc = BlockDoc Doc
+newtype BlockDoc = BlockDoc { unBlock :: Doc }
+                deriving Monoid
+
+newtype MathDoc = MathDoc { unMath :: Doc }
+                deriving Monoid
 
 data HeXState = HeXState { hexParsers   :: M.Map Mode [HeX Doc]
-                         , hexMode      :: Mode
                          , hexCommands  :: M.Map (Mode, String) (HeX Doc)
                          , hexFormat    :: Format
                          , hexVars      :: M.Map String Dynamic
@@ -71,38 +75,43 @@ instance ToCommand (HeX [Doc]) where
 instance ToCommand (HeX Integer) where
   toCommand = liftM (raws . show)
 
-instance ToCommand b => ToCommand (Maybe Doc -> b) where
+instance ToCommand b => ToCommand (Maybe InlineDoc -> b) where
   toCommand x = try (do char '['
-                        arg <- liftM mconcat (manyTill getNext (char ']'))
-                        toCommand $ x $ Just arg)
+                        arg <- mconcat <$> manyTill inline (char ']')
+                        toCommand $ x $ Just $ InlineDoc arg)
+             <|> toCommand (x Nothing)
+
+instance ToCommand b => ToCommand (Maybe MathDoc -> b) where
+  toCommand x = try (do char '['
+                        arg <- mconcat <$> manyTill math (char ']')
+                        toCommand $ x $ Just $ MathDoc arg)
              <|> toCommand (x Nothing)
 
 instance ToCommand b => ToCommand (Maybe String -> b) where
-  toCommand x = withOpt x <|> toCommand (x Nothing)
+  toCommand x = withOpt (toCommand . x) <|> toCommand (x Nothing)
 
 instance ToCommand b => ToCommand (Maybe Int -> b) where
-  toCommand x = withOpt x <|> toCommand (x Nothing)
+  toCommand x = withOpt (toCommand . x) <|> toCommand (x Nothing)
 
 instance ToCommand b => ToCommand (Maybe Integer -> b) where
-  toCommand x = withOpt x <|> toCommand (x Nothing)
+  toCommand x = withOpt (toCommand . x) <|> toCommand (x Nothing)
 
 instance ToCommand b => ToCommand (Maybe Double -> b) where
-  toCommand x = withOpt x <|> toCommand (x Nothing)
+  toCommand x = withOpt (toCommand . x) <|> toCommand (x Nothing)
 
-instance ToCommand b => ToCommand (OptionList -> b) where
-  toCommand x = withOpt (x . fromMaybe (OptionList []))
-             <|> toCommand (x (OptionList []))
-
-instance ToCommand b => ToCommand (Doc -> b) where
-  toCommand x = do arg <- group
-                   toCommand (x arg)
+instance ToCommand b => ToCommand (Maybe OptionList -> b) where
+  toCommand x = withOpt (toCommand . x) <|> toCommand (x Nothing)
 
 instance ToCommand b => ToCommand (InlineDoc -> b) where
-  toCommand x = do arg <- withMode Inline group
+  toCommand x = do arg <- inline
                    toCommand (x $ InlineDoc arg)
 
+instance ToCommand b => ToCommand (MathDoc -> b) where
+  toCommand x = do arg <- math
+                   toCommand (x $ MathDoc arg)
+
 instance ToCommand b => ToCommand (BlockDoc -> b) where
-  toCommand x = do arg <- withMode Block group
+  toCommand x = do arg <- block
                    toCommand (x $ BlockDoc arg)
 
 instance ToCommand b => ToCommand (String -> b) where
@@ -114,11 +123,12 @@ instance ToCommand b => ToCommand (Format -> b) where
   toCommand x = do format <- liftM hexFormat getState
                    toCommand (x format)
 
-withOpt :: (ToCommand b, ReadString a)
-        => (Maybe a -> b) -> HeX Doc
-withOpt f = try $ do char '['
-                     arg <- liftM mconcat $ manyTill getNext (char ']')
-                     withArg (f . Just) arg
+withOpt :: ReadString a => (Maybe a -> HeX b) -> HeX b
+withOpt x =  do char '['
+                res <- manyTill anyChar (char ']')
+                case readString res of
+                      Just y  -> x $ Just y
+                      Nothing -> fail "Could not read argument"
 
 withArg :: (ToCommand b, ReadString a)
         => (a -> b) -> Doc -> HeX Doc
@@ -136,10 +146,10 @@ withArg x arg = do
                             (Doc b) -> return b
                             (Fut _) -> error "Unexpected Fut"
 
-group :: HeX Doc
-group = try $ do
+group :: HeX Doc -> HeX Doc
+group p = try $ do
   char '{'
-  res <- manyTill getNext (char '}')
+  res <- manyTill p (char '}')
   return $ mconcat res
 
 newtype OptionList = OptionList [(String,String)]
@@ -176,14 +186,21 @@ instance ReadString OptionList where
                       Left _   -> fail $ "Failed to parse `" ++ s ++ "'"
                       Right o  -> return o
 
-getNext :: HeX Doc
-getNext = do
-  st <- getState
-  let mode = hexMode st
-  let parsers = hexParsers st
+next :: Mode -> HeX Doc
+next mode = do
+  parsers <- hexParsers <$> getState
   case M.lookup mode parsers of
        Just ps -> choice ps
        Nothing -> fail $ "No parsers defined for mode " ++ show mode
+
+inline :: HeX Doc
+inline = next Inline
+
+math :: HeX Doc
+math = next Math
+
+block :: HeX Doc
+block = next Block
 
 readM :: (Read a, Monad m) => String -> m a
 readM s | [x] <- parsed = return x
@@ -196,14 +213,6 @@ raws = Doc . BU.fromString
 
 rawc :: Char -> Doc
 rawc = Doc . fromChar
-
-withMode :: Mode -> HeX a -> HeX a
-withMode mode p = do
-  oldmode <- liftM hexMode getState
-  updateState $ \st -> st{ hexMode = mode }
-  res <- p
-  updateState $ \st -> st{ hexMode = oldmode }
-  return res
 
 infixl 8 +++
 (+++) :: Monoid a => a -> a -> a

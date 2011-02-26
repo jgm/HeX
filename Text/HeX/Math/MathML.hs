@@ -4,68 +4,68 @@ module Text.HeX.Math.MathML (defaults) where
 import Text.HeX
 import Text.HeX.Standard.Xml
 import Control.Applicative ((<$>))
-import Text.HeX.Math (defaultsFor, withText)
+import Text.HeX.Math (defaultsFor)
 import qualified Data.Map as M
 
 defaults :: HeX ()
 defaults = do
   defaultsFor writer
   addParser [Math] enclosure
-  register [Math] "textrm" $ asText "normal" <$> withText
-  register [Math] "text" $ asText "normal" <$> withText
-  register [Math] "mathrm" $ asText "normal" <$> getNext
-  register [Math] "mbox" $ asText "normal" <$> getNext
-  register [Math] "mathit" $ asText "italic" <$> getNext
-  register [Math] "textit" $ asText "italic" <$> withText
-  register [Math] "mathtt" $ asText "monospace" <$> getNext
-  register [Math] "texttt" $ asText "monospace" <$> withText
-  register [Math] "mathsf" $ asText "sans-serif" <$> getNext
-  register [Math] "mathbb" $ asText "double-struck" <$> getNext
-  register [Math] "mathcal" $ asText "script" <$> getNext
-  register [Math] "mathfrak" $ asText "fraktur" <$> getNext
+  register [Math] "textrm" $ asText "normal" <$> inline
+  register [Math] "text" $ asText "normal" <$> inline
+  register [Math] "mathrm" $ asText "normal" <$> math
+  register [Math] "mbox" $ asText "normal" <$> math
+  register [Math] "mathit" $ asText "italic" <$> math
+  register [Math] "textit" $ asText "italic" <$> inline
+  register [Math] "mathtt" $ asText "monospace" <$> math
+  register [Math] "texttt" $ asText "monospace" <$> inline
+  register [Math] "mathsf" $ asText "sans-serif" <$> math
+  register [Math] "mathbb" $ asText "double-struck" <$> math
+  register [Math] "mathcal" $ asText "script" <$> math
+  register [Math] "mathfrak" $ asText "fraktur" <$> math
   register [Math] "sqrt" root
   register [Math] "surd" root
-  register [Math] "acute" $ \d ->
+  register [Math] "acute" $ \(MathDoc d) ->
     mover $ d +++ inTags "mo" [("accent","true")] "&#180;"
-  register [Math] "grave" $ \d ->
+  register [Math] "grave" $ \(MathDoc d) ->
     mover $ d +++ inTags "mo" [("accent","true")] "`"
-  register [Math] "breve" $ \d ->
+  register [Math] "breve" $ \(MathDoc d) ->
     mover $ d +++ inTags "mo" [("accent","true")] "&#728;"
-  register [Math] "check" $ \d ->
+  register [Math] "check" $ \(MathDoc d) ->
     mover $ d +++ inTags "mo" [("accent","true")] "&#711;"
-  register [Math] "dot" $ \d ->
+  register [Math] "dot" $ \(MathDoc d) ->
     mover $ d +++ inTags "mo" [("accent","true")] "."
-  register [Math] "ddot" $ \d ->
+  register [Math] "ddot" $ \(MathDoc d) ->
     mover $ d +++ inTags "mo" [("accent","true")] ".."
-  register [Math] "mathring" $ \d ->
+  register [Math] "mathring" $ \(MathDoc d) ->
     mover $ d +++ inTags "mo" [("accent","true")] "&#176;"
-  register [Math] "vec" $ \d ->
+  register [Math] "vec" $ \(MathDoc d) ->
     mover $ d +++ inTags "mo" [("accent","true")] "&#8407;"
-  register [Math] "overrightarrow" $ \d ->
+  register [Math] "overrightarrow" $ \(MathDoc d) ->
     mover $ d +++ inTags "mo" [("accent","true")] "&#8407;"
-  register [Math] "overleftarrow" $ \d ->
+  register [Math] "overleftarrow" $ \(MathDoc d) ->
     mover $ d +++ inTags "mo" [("accent","true")] "&#8406;"
-  register [Math] "hat" $ \d ->
+  register [Math] "hat" $ \(MathDoc d) ->
     mover $ d +++ inTags "mo" [("accent","true")] "^"
-  register [Math] "widehat" $ \d ->
+  register [Math] "widehat" $ \(MathDoc d) ->
     mover $ d +++ inTags "mo" [("accent","true")] "&#770;"
-  register [Math] "tilde" $ \d ->
+  register [Math] "tilde" $ \(MathDoc d) ->
     mover $ d +++ inTags "mo" [("accent","true")] "~"
-  register [Math] "widetilde" $ \d ->
+  register [Math] "widetilde" $ \(MathDoc d) ->
     mover $ d +++ inTags "mo" [("accent","true")] "&#732;"
-  register [Math] "bar" $ \d ->
+  register [Math] "bar" $ \(MathDoc d) ->
     mover $ d +++ inTags "mo" [("accent","true")] "&#8254;"
-  register [Math] "overbrace" $ \d ->
+  register [Math] "overbrace" $ \(MathDoc d) ->
     mover $ d +++ inTags "mo" [("accent","true")] "&#65079;"
-  register [Math] "overbracket" $ \d ->
+  register [Math] "overbracket" $ \(MathDoc d) ->
     mover $ d +++ inTags "mo" [("accent","true")] "&#9140;"
-  register [Math] "overline" $ \d ->
+  register [Math] "overline" $ \(MathDoc d) ->
     mover $ d +++ inTags "mo" [("accent","true")] "&#175;"
-  register [Math] "underbrace" $ \d ->
+  register [Math] "underbrace" $ \(MathDoc d) ->
     inTags "munder" [] $ d +++ inTags "mo" [("accent","true")] "&#65080;"
-  register [Math] "underbracket" $ \d ->
+  register [Math] "underbracket" $ \(MathDoc d) ->
     inTags "munder" [] $ d +++ inTags "mo" [("accent","true")] "&#9141;"
-  register [Math] "underline" $ \d ->
+  register [Math] "underline" $ \(MathDoc d) ->
     inTags "munder" [] $ d +++ inTags "mo" [("accent","true")] "&#175;"
   register [Math] "mid" $ inTags "mo" [] "&#x2223;"
   register [Math] "parallel" $ inTags "mo" [] "&#x2225;"
@@ -315,16 +315,20 @@ defaults = do
   register [Math] ";" $ inTags "mspace" [("width","0.278em")] mempty
   register [Math] "quad" $ inTags "mspace" [("width","1em")] mempty
   register [Math] "qquad" $ inTags "mspace" [("width","2em")] mempty
-  register [Math] "frac" $ \x y -> inTags "mfrac" [] (x +++ y)
-  register [Math] "tfrac" $ \x y -> inTags "mstyle" [("displaystyle","false")]
-                             $ inTags "mfrac" [] (x +++ y)
-  register [Math] "dfrac" $ \x y -> inTags "mstyle" [("displaystyle","true")]
-                             $ inTags "mfrac" [] (x +++ y)
-  register [Math] "stackrel" $ \x y -> inTags "mover" [] (x +++ y)
-  register [Math] "overset" $ \x y -> inTags "mover" [] (x +++ y)
-  register [Math] "underset" $ \x y -> inTags "munder" [] (x +++ y)
-  register [Math] "binom" $ \x y -> inTags "mfenced" []
-                             $ inTags "mfrac" [("linethickness","0")] (x +++ y)
+  register [Math] "frac" $ \(MathDoc x) (MathDoc y) ->
+    inTags "mfrac" [] (x +++ y)
+  register [Math] "tfrac" $ \(MathDoc x) (MathDoc y) ->
+    inTags "mstyle" [("displaystyle","false")] $ inTags "mfrac" [] (x +++ y)
+  register [Math] "dfrac" $ \(MathDoc x) (MathDoc y) ->
+    inTags "mstyle" [("displaystyle","true")] $ inTags "mfrac" [] (x +++ y)
+  register [Math] "stackrel" $ \(MathDoc x) (MathDoc y) ->
+    inTags "mover" [] (x +++ y)
+  register [Math] "overset" $ \(MathDoc x) (MathDoc y) ->
+    inTags "mover" [] (x +++ y)
+  register [Math] "underset" $ \(MathDoc x) (MathDoc y) ->
+    inTags "munder" [] (x +++ y)
+  register [Math] "binom" $ \(MathDoc x) (MathDoc y) ->
+    inTags "mfenced" [] $ inTags "mfrac" [("linethickness","0")] (x +++ y)
 
 writer :: MathWriter
 writer = MathWriter{
@@ -349,9 +353,11 @@ mover = inTags "mover" []
 xmlns :: String
 xmlns = "http://www.w3.org/1998/Math/MathML"
 
-root :: Maybe Doc -> Doc -> Doc
-root Nothing y  = inTags "msqrt" [] $ inTags "mn" [] y
-root (Just x) y = inTags "mroot" [] $ inTags "mn" [] y +++ inTags "mn" [] x
+root :: Maybe MathDoc -> MathDoc -> Doc
+root Nothing (MathDoc y)  =
+  inTags "msqrt" [] $ inTags "mn" [] y
+root (Just (MathDoc x)) (MathDoc y) =
+  inTags "mroot" [] $ inTags "mn" [] y +++ inTags "mn" [] x
 
 showOp :: String -> Doc
 showOp s = inTags "mo" []
@@ -426,7 +432,7 @@ enclosures = M.fromList
 -- whole containing formula.
 tilRight :: Char -> HeX Doc
 tilRight start = try $ do
-  contents <- manyTill getNext
+  contents <- manyTill math
                (try $ string "\\right" >> lookAhead basicEnclosure)
   end <- basicEnclosure
   return $ mrow $ inTags "mo" [("stretchy","true")] (rawc start) +++

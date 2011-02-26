@@ -99,7 +99,6 @@ run parser format contents = do
                                 Doc b  -> return b
                                 Fut f  -> getState >>= f)
                HeXState{ hexParsers = M.empty
-                       , hexMode = Block
                        , hexCommands = M.empty
                        , hexFormat = format
                        , hexVars = M.empty
@@ -120,7 +119,7 @@ skipBlank = do many $ (newline >> notFollowedBy blankline >> return "\n") <|>
 
 parseDoc :: HeX Doc
 parseDoc = do
-  results <- spaces >> many getNext
+  results <- spaces >> many block
   spaces
   eof
   return $ mconcat results
@@ -141,14 +140,13 @@ register modes name x = forM_ modes $ \m ->
   updateState $ \s ->
     s{ hexCommands = M.insert (m, name) (toCommand x) (hexCommands s) }
 
-command :: HeX Doc
-command = do
+command :: Mode -> HeX Doc
+command mode = do
   char '\\'
   cmd <- many1 letter <|> count 1 anyChar
   skipBlank
   st <- getState
   let commands = hexCommands st
-  let mode = hexMode st
   let format = hexFormat st
   case M.lookup (mode, cmd) commands of
         Just p  -> p
@@ -186,14 +184,14 @@ comment = do
   return mempty
 
 basicInline :: (Char -> Doc) -> HeX Doc
-basicInline escaper = comment <|> oneChar escaper <|> command <|> group
+basicInline escaper = comment <|> oneChar escaper <|> command Inline <|> group inline
 
 basicBlock :: ([Doc] -> Doc) -> HeX Doc
-basicBlock f = try $ spaces >> (comment <|> try command <|> para f)
+basicBlock f = try $ spaces >> (comment <|> command Block <|> group block <|> para f)
 
 para :: ([Doc] -> Doc) -> HeX Doc
 para f = do
-  res <- withMode Inline $ many1 getNext
+  res <- many1 inline
   return $ f res
 
 forFormat :: Format -> HeX () -> HeX ()

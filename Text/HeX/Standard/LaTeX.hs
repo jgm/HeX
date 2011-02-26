@@ -20,11 +20,11 @@ defaults = do
 toPara :: [Doc] -> Doc
 toPara xs = mconcat xs +++ "\n\n"
 
-emph :: Doc -> Doc
-emph arg  = ctl "emph" +++ grp [arg]
+emph :: InlineDoc -> Doc
+emph (InlineDoc arg)  = ctl "emph" +++ grp [arg]
 
-strong :: Doc -> Doc
-strong arg  = ctl "textbf" +++ grp [arg]
+strong :: InlineDoc -> Doc
+strong (InlineDoc arg)  = ctl "textbf" +++ grp [arg]
 
 section :: Int -> InlineDoc -> HeX Doc
 section lev (InlineDoc d) = do

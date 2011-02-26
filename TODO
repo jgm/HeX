@@ -5,6 +5,8 @@ _ rethink!
   so, each arg in a command command will be specifically designated
   by type.
 
+_ rethink ensuremath
+
 _ mathML:
   _ arrays
   _ superscript, subscript, limit

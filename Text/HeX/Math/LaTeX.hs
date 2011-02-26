@@ -4,15 +4,15 @@ module Text.HeX.Math.LaTeX (defaults) where
 import Text.HeX
 import Text.HeX.Standard.TeX
 import Control.Applicative ((<$>))
-import Text.HeX.Math (defaultsFor, withText)
+import Text.HeX.Math (defaultsFor)
 
 defaults :: HeX ()
 defaults = do
   defaultsFor writer
-  register [Math] "textrm" $ (ctl "textrm" +++) <$> withText
-  register [Math] "text" $ (ctl "text" +++) <$> withText
-  register [Math] "textit" $ (ctl "textit" +++) <$> withText
-  register [Math] "texttt" $ (ctl "texttt" +++) <$> withText
+  register [Math] "textrm" $ (ctl "textrm" +++) <$> inline
+  register [Math] "text" $ (ctl "text" +++) <$> inline
+  register [Math] "textit" $ (ctl "textit" +++) <$> inline
+  register [Math] "texttt" $ (ctl "texttt" +++) <$> inline
   mapM_ latexCommand1 [ "mathrm"
                       , "mbox"
                       , "mathit"
@@ -340,16 +340,17 @@ latexCommand0 :: String -> HeX ()
 latexCommand0 s = register [Math] s $ ctl s
 
 latexCommand1 :: String -> HeX ()
-latexCommand1 s = register [Math] s $ \d -> ctl s +++ d
+latexCommand1 s = register [Math] s $ \(MathDoc d) -> ctl s +++ d
 
 latexCommand2 :: String -> HeX ()
-latexCommand2 s = register [Math] s $ \d1 d2 -> ctl s +++ d1 +++ d2
+latexCommand2 s = register [Math] s $ \(MathDoc d1) (MathDoc d2) ->
+  ctl s +++ d1 +++ d2
 
-root :: Maybe Doc -> Doc -> Doc
-root x y = "\\sqrt" +++ x' +++ y
+root :: Maybe MathDoc -> MathDoc -> Doc
+root x (MathDoc y) = "\\sqrt" +++ x' +++ y
   where x' = case x of
-                  Just z  -> "[" +++ z +++ "]"
-                  Nothing -> mempty
+                  Just (MathDoc z)  -> "[" +++ z +++ "]"
+                  Nothing           -> mempty
 
 writer :: MathWriter
 writer = MathWriter{

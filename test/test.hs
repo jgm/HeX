@@ -31,14 +31,18 @@ addHeader "html" d =
 addHeader "latex" d =
   "\\documentclass{article}\n\\begin{document}\n" +++ d +++ "\n\\end{document}"
 
-silly :: OptionList -> Doc
-silly (OptionList opts) =
+silly :: Maybe OptionList -> Doc
+silly (Just (OptionList opts)) =
   raws $ show opts
+silly Nothing = mempty
 
-lettrine :: Format -> Doc -> Doc -> Doc
-lettrine "html" x y = inTags "span" [("class","lettrine")] x +++ y
-lettrine "latex" x y = ctl "lettrine" +++ grp [x] +++ grp [y]
+lettrine :: Format -> InlineDoc -> InlineDoc -> Doc
+lettrine "html" (InlineDoc x) (InlineDoc y) =
+  inTags "span" [("class","lettrine")] x +++ y
+lettrine "latex" (InlineDoc x) (InlineDoc y) =
+  ctl "lettrine" +++ grp [x] +++ grp [y]
 
+{-
 unknown :: HeX Doc
 unknown = try $ do
   char '\\'
@@ -60,7 +64,7 @@ unknownChar :: HeX Doc
 unknownChar = do
   c <- oneOf "()[]|&"
   return $ inTags "span" [("style","color:red")] $ raws ['[',c,']']
-
+-}
 -- CSS:
 -- body { line-height: 1.3; }
 -- .lettrine {font-size:3em; float: left; line-height: 1; margin-right: 0.1em;}

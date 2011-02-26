@@ -1,6 +1,5 @@
-module Text.HeX.Math (defaultsFor, withText) where
+module Text.HeX.Math (defaultsFor) where
 import Text.HeX
-import Control.Monad
 import Control.Applicative ((<$>))
 import Data.Char (isAscii, isAlphaNum)
 
@@ -10,7 +9,8 @@ defaultsFor writer = do
   addParser [Block,Inline] $ dollars writer
   register [Inline] "(" $ parenMath writer
   register [Inline,Block] "[" $ bracketMath writer
-  register [Inline,Block,Math] "ensuremath" $ ensureMath writer
+  register [Inline] "ensuremath" $ ensureMath Inline writer
+  register [Math] "ensuremath" $ ensureMath Math writer
 
 dollars :: MathWriter -> HeX Doc
 dollars writer = do
@@ -30,21 +30,21 @@ bracketMath writer = spaces >> parseMath writer True (try $ string "\\]")
 
 parseMath :: MathWriter -> Bool -> HeX a -> HeX Doc
 parseMath writer display closer = do
-  res <- liftM mconcat $ withMode Math $ manyTill getNext closer
+  res <- mconcat <$> manyTill math closer
   return $ if display
               then displayMath writer res
               else inlineMath writer res
 
 mathParser :: MathWriter -> HeX Doc
 mathParser writer = do
-  res <-  command
+  res <-  command Math
       <|> comment
-      <|> liftM (grouped writer) group
-      <|> liftM (number writer) pNumber
-      <|> liftM (variable writer) pVariable
-      <|> liftM (operator writer) pOperator
-      <|> liftM (operator writer . (:[])) (pEscaped <|> pUnicode)
-      <|> liftM (whitespace writer) (many1 space)
+      <|> grouped writer <$> group math
+      <|> number writer <$> pNumber
+      <|> variable writer <$> pVariable
+      <|> operator writer <$>pOperator
+      <|> (operator writer . (:[])) <$> (pEscaped <|> pUnicode)
+      <|> whitespace writer <$> many1 space
   return res
 
 opLetters :: [Char]
@@ -65,15 +65,9 @@ pEscaped = try $ char '\\' >> satisfy (not . isAlphaNum)
 pUnicode :: HeX Char
 pUnicode = satisfy (not . isAscii)
 
-withText :: HeX Doc
-withText = withMode Inline getNext
-
-withMath :: HeX Doc
-withMath = withMode Math getNext
-
-ensureMath :: MathWriter -> HeX Doc
-ensureMath writer = do
-  current <- liftM hexMode getState
+ensureMath :: Mode -> MathWriter -> HeX Doc
+ensureMath current writer = do
   if current == Math
-     then getNext
-     else inlineMath writer <$> withMath
+     then math
+     else inlineMath writer <$> math
+
