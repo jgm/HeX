@@ -45,6 +45,9 @@ mathParser writer = do
       <|> operator writer <$> pOperator
       <|> (operator writer . (:[])) <$> (pEscaped <|> pUnicode)
       <|> whitespace writer <$> many1 space
+  -- NOTE - may need to put enclosures in here too.
+  -- OR, perhaps better: put this in MathML module,
+  -- and add a flag in state for when we're checking for subscript?
   -- limits <- limitsIndicator
   -- subSup limits a <|> superOrSubscripted limits a <|> return a
   return res
@@ -74,6 +77,7 @@ ensureMath current writer = do
      else inlineMath writer <$> math
 
 {-
+
 expr :: GenParser Char st Exp
 expr = do
   a <- expr1
@@ -112,4 +116,20 @@ superOrSubscripted limits a = try $ do
                         _          -> ESub a b
        _   -> pzero
 
+isConvertible :: Exp -> Bool
+isConvertible (EMathOperator x) = x `elem` convertibleOps
+  where convertibleOps = ["lim","liminf","limsup","inf","sup"]
+isConvertible (ESymbol Rel _) = True
+isConvertible (ESymbol Bin _) = True
+isConvertible (EUnder _ _)    = True
+isConvertible (EOver _ _)     = True
+isConvertible (EUnderover _ _ _) = True
+isConvertible (ESymbol Op x) = x `elem` convertibleSyms
+  where convertibleSyms = ["\x2211","\x220F","\x22C2",
+           "\x22C3","\x22C0","\x22C1","\x2A05","\x2A06",
+           "\x2210","\x2A01","\x2A02","\x2A00","\x2A04"]
+isConvertible _ = False
+
 -}
+
+
