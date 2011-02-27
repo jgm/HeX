@@ -42,9 +42,11 @@ mathParser writer = do
       <|> grouped writer <$> group math
       <|> number writer <$> pNumber
       <|> variable writer <$> pVariable
-      <|> operator writer <$>pOperator
+      <|> operator writer <$> pOperator
       <|> (operator writer . (:[])) <$> (pEscaped <|> pUnicode)
       <|> whitespace writer <$> many1 space
+  -- limits <- limitsIndicator
+  -- subSup limits a <|> superOrSubscripted limits a <|> return a
   return res
 
 opLetters :: [Char]
@@ -71,3 +73,43 @@ ensureMath current writer = do
      then math
      else inlineMath writer <$> math
 
+{-
+expr :: GenParser Char st Exp
+expr = do
+  a <- expr1
+  limits <- limitsIndicator
+  subSup limits a <|> superOrSubscripted limits a <|> return a
+
+limitsIndicator :: GenParser Char st (Maybe Bool)
+limitsIndicator =
+   try (symbol "\\limits" >> return (Just True))
+  <|> try (symbol "\\nolimits" >> return (Just False))
+  <|> return Nothing
+
+subSup :: Maybe Bool -> Exp -> GenParser Char st Exp
+subSup limits a = try $ do
+  char '_'
+  b <- expr1
+  char '^'
+  c <- expr
+  return $ case limits of
+            Just True  -> EUnderover a b c
+            Nothing | isConvertible a -> EDownup a b c
+            _          -> ESubsup a b c
+
+superOrSubscripted :: Maybe Bool -> Exp -> GenParser Char st Exp
+superOrSubscripted limits a = try $ do
+  c <- oneOf "^_"
+  b <- expr
+  case c of
+       '^' -> return $ case limits of
+                        Just True  -> EOver a b
+                        Nothing | isConvertible a -> EUp a b
+                        _          -> ESuper a b
+       '_' -> return $ case limits of
+                        Just True  -> EUnder a b
+                        Nothing | isConvertible a -> EDown a b
+                        _          -> ESub a b
+       _   -> pzero
+
+-}

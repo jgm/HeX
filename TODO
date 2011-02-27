@@ -1,15 +1,7 @@
-_ rethink!
-  document class Doc
-  instances:  Math, Inline, Block
-
-  so, each arg in a command command will be specifically designated
-  by type.
-
-_ rethink ensuremath
-
 _ mathML:
   _ arrays
   _ superscript, subscript, limit
+_ whitespace parser?
 _ outer shell - preamble stuff, css, encoding, etc.
 _ \index also in HTML!
 _ mathML to SVG? www.grigoriev.ru/svgmath/
