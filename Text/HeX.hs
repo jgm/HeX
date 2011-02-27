@@ -141,7 +141,7 @@ register modes name x = forM_ modes $ \m ->
     s{ hexCommands = M.insert (m, name) (toCommand x) (hexCommands s) }
 
 command :: Mode -> HeX Doc
-command mode = do
+command mode = try $ do
   char '\\'
   cmd <- many1 letter <|> count 1 anyChar
   skipBlank
