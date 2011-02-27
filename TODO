@@ -20,6 +20,11 @@ _ sup/sub/limits:
     parser would have to be the first parser applied -- limiting
     user's ability to add new math parsers.
 
+    maybe it could work like this.  have math unset the special
+    variable.  then define math' as like math, but not unsetting
+    it.  so math' won't keep the special variable set when we recurse
+    in.
+
     another approach?  wrap the whole math parser.  parse something.
     then, check for a following sub/super, and modify output accordingly.
     (as in texmath)  how to do the wrapping?  could be in def of 'math',
