@@ -461,3 +461,62 @@ scalers = M.fromList
           , ("bigl", "1.2")
           , ("Bigl", "1.6")
           ]
+
+{-
+  -- limits <- limitsIndicator
+  -- subSup limits a <|> superOrSubscripted limits a <|> return a
+
+expr :: GenParser Char st Exp
+expr = do
+  a <- expr1
+  limits <- limitsIndicator
+  subSup limits a <|> superOrSubscripted limits a <|> return a
+
+limitsIndicator :: GenParser Char st (Maybe Bool)
+limitsIndicator =
+   try (symbol "\\limits" >> return (Just True))
+  <|> try (symbol "\\nolimits" >> return (Just False))
+  <|> return Nothing
+
+subSup :: Maybe Bool -> Exp -> GenParser Char st Exp
+subSup limits a = try $ do
+  char '_'
+  b <- expr1
+  char '^'
+  c <- expr
+  return $ case limits of
+            Just True  -> EUnderover a b c
+            Nothing | isConvertible a -> EDownup a b c
+            _          -> ESubsup a b c
+
+superOrSubscripted :: Maybe Bool -> Exp -> GenParser Char st Exp
+superOrSubscripted limits a = try $ do
+  c <- oneOf "^_"
+  b <- expr
+  case c of
+       '^' -> return $ case limits of
+                        Just True  -> EOver a b
+                        Nothing | isConvertible a -> EUp a b
+                        _          -> ESuper a b
+       '_' -> return $ case limits of
+                        Just True  -> EUnder a b
+                        Nothing | isConvertible a -> EDown a b
+                        _          -> ESub a b
+       _   -> pzero
+
+isConvertible :: Exp -> Bool
+isConvertible (EMathOperator x) = x `elem` convertibleOps
+  where convertibleOps = ["lim","liminf","limsup","inf","sup"]
+isConvertible (ESymbol Rel _) = True
+isConvertible (ESymbol Bin _) = True
+isConvertible (EUnder _ _)    = True
+isConvertible (EOver _ _)     = True
+isConvertible (EUnderover _ _ _) = True
+isConvertible (ESymbol Op x) = x `elem` convertibleSyms
+  where convertibleSyms = ["\x2211","\x220F","\x22C2",
+           "\x22C3","\x22C0","\x22C1","\x2A05","\x2A06",
+           "\x2210","\x2A01","\x2A02","\x2A00","\x2A04"]
+isConvertible _ = False
+
+-}
+
