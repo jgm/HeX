@@ -1,7 +1,6 @@
-_ sup/sub/limits:
 _ mathML:
   _ arrays
-  _ superscript, subscript, limit
+_ bibliography w/ citeproc
 _ whitespace parser?
 _ outer shell - preamble stuff, css, encoding, etc.
 _ \index also in HTML!
@@ -11,8 +10,6 @@ _ jail for IO?
 _ figure out how to do verbatims
 _ figure out how to do environments (do we need them? why not just use
   {} for grouping?)
-_ math in both formats (mathml?)
-_ bibliography w/ citeproc
 _ syntactic macros (why not? in many cases going to Haskell is overkill)
 _ hexto?
 
