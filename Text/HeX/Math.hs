@@ -48,7 +48,7 @@ mathParser writer = do
   return res
 
 opLetters :: [Char]
-opLetters = ":_+*/=^-(),;.?'~[]<>!"
+opLetters = ":+*/=-(),;.?'~[]<>!"
 
 pOperator :: HeX String
 pOperator = many1 (char '\'') <|> count 1 (oneOf opLetters)

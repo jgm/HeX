@@ -12,7 +12,7 @@ defaults = do
   defaultsFor writer
   addParser [Math] enclosure
   updateState $ \st -> st{ hexParsers =
-     M.adjust (\x -> [subsup x]) Math $ hexParsers st }
+     M.adjust (\xs -> [subsup xs]) Math $ hexParsers st }
   register [Math] "textrm" $ asText "normal" <$> inline
   register [Math] "text" $ asText "normal" <$> inline
   register [Math] "mathrm" $ asText "normal" <$> math
@@ -375,7 +375,7 @@ asText :: String -> Doc -> Doc
 asText variant = inTags "mtext" [("mathvariant",variant)]
 
 enclosure :: HeX Doc
-enclosure = do
+enclosure = try $ do
   modif <- try (string "\\left" >> spaces >> return "left")
         <|> try (string "\\right" >> spaces >> return "right")
         <|> scaler
@@ -467,21 +467,22 @@ scalers = M.fromList
 -- 'wraps' a parser in a check for super/subscript/limits
 subsup :: [HeX Doc] -> HeX Doc
 subsup parsers = do
+  res <- choice parsers
   limits <- Just <$> limitsIndicator <|> return Nothing
   sub <- Just <$> subscript <|> return Nothing
   sup <- Just <$> superscript <|> return Nothing
-  res <- choice parsers
-  case (sub, sup, limits) of
-       (Nothing, Nothing, _)         -> return res
-       (Just x, Nothing, Just True)  -> error "unimplemented"
-       (Just x, Nothing, Just False) -> error "unimplemented"
+  return $
+    case (sub, sup, limits) of
+       (Nothing, Nothing, _)         -> res
        (Just x, Nothing, Nothing)    -> error "unimplemented"
-       (Nothing, Just y, Just True)  -> error "unimplemented"
-       (Nothing, Just y, Just False) -> error "unimplemented"
+       (Just x, Nothing, Just True)  -> inTags "munder" [] $ res +++ x
+       (Just x, Nothing, _)          -> inTags "msub" [] $ res +++ x
        (Nothing, Just y, Nothing)    -> error "unimplemented"
-       (Just x, Just y, Just True)   -> error "unimplemented"
-       (Just x, Just y, Just False)  -> error "unimplemented"
+       (Nothing, Just y, Just True)  -> inTags "mover" [] $ res +++ y
+       (Nothing, Just y, _)          -> inTags "msup" [] $ res +++ y
        (Just x, Just y, Nothing)     -> error "unimplemented"
+       (Just x, Just y, Just True)   -> inTags "munderover" [] $ res +++ x +++ y
+       (Just x, Just y, _)           -> inTags "msubsup" [] $ res +++ x +++ y
 
 limitsIndicator :: HeX Bool
 limitsIndicator = try $ do
