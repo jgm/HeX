@@ -1,36 +1,4 @@
 _ sup/sub/limits:
-  do in mathml module (obviously in latex it's easy)
-  * limits command: set a special variable 'limits',
-    parse an item, and unset it.
-    the sup/sub parser will check for this variable and behave accordingly.
-  * sub/sup parser:
-    check to make sure special variable 'subsup' is not set
-    if it is, exit; if not, set 'subsup'
-    parse an item
-    try parsing sub/super.
-    render result
-    unset 'subsup'
-    NOTE: this won't work, because while subsup is set we won't get
-    subscripts + superscripts, even in nested contents.
-
-    of course, could just do the inefficient thing:  first, a parser
-    that parses something + limits/supscript; if that fails, go to
-    regular parser. so everything gets parsed twice.  but, besides
-    inefficiency, this would have the problem that the supr/sup/limits
-    parser would have to be the first parser applied -- limiting
-    user's ability to add new math parsers.
-
-    maybe it could work like this.  have math unset the special
-    variable.  then define math' as like math, but not unsetting
-    it.  so math' won't keep the special variable set when we recurse
-    in.
-
-    another approach?  wrap the whole math parser.  parse something.
-    then, check for a following sub/super, and modify output accordingly.
-    (as in texmath)  how to do the wrapping?  could be in def of 'math',
-    though this requires gumming up Tex.Hex with detailed math stuff.
-    what about in addParser Math?
-
 _ mathML:
   _ arrays
   _ superscript, subscript, limit

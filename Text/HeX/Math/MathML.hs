@@ -11,6 +11,8 @@ defaults :: HeX ()
 defaults = do
   defaultsFor writer
   addParser [Math] enclosure
+  updateState $ \st -> st{ hexParsers =
+     M.adjust (\x -> [subsup x]) Math $ hexParsers st }
   register [Math] "textrm" $ asText "normal" <$> inline
   register [Math] "text" $ asText "normal" <$> inline
   register [Math] "mathrm" $ asText "normal" <$> math
@@ -461,6 +463,29 @@ scalers = M.fromList
           , ("bigl", "1.2")
           , ("Bigl", "1.6")
           ]
+
+-- 'wraps' a parser in a check for super/subscript/limits
+subsup :: [HeX Doc] -> HeX Doc
+subsup parsers = do
+  limits <- limitsIndicator
+  sub <- option Nothing subscript
+  sup <- option Nothing superscript
+  res <- choice parsers
+  case (sub, sup) of
+       (Nothing, Nothing)  -> return res
+       (Just x, Nothing)   -> fail "unimplemented"
+       (Nothing, Just y)   -> fail "unimplemented"
+       (Just x, Just y)    -> fail "unimplemented"
+
+limitsIndicator :: HeX Bool
+limitsIndicator = return False -- TODO
+
+subscript :: HeX (Maybe Doc)
+subscript = fail "unimplemented"
+
+superscript :: HeX (Maybe Doc)
+superscript = fail "unimplemented"
+
 
 {-
   -- limits <- limitsIndicator

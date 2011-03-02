@@ -9,6 +9,7 @@ import Text.HeX.Math (defaultsFor)
 defaults :: HeX ()
 defaults = do
   defaultsFor writer
+  latexCommand1 "limits"
   register [Math] "textrm" $ (ctl "textrm" +++) <$> inline
   register [Math] "text" $ (ctl "text" +++) <$> inline
   register [Math] "textit" $ (ctl "textit" +++) <$> inline
