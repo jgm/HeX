@@ -467,25 +467,35 @@ scalers = M.fromList
 -- 'wraps' a parser in a check for super/subscript/limits
 subsup :: [HeX Doc] -> HeX Doc
 subsup parsers = do
-  limits <- limitsIndicator
-  sub <- option Nothing subscript
-  sup <- option Nothing superscript
+  limits <- Just <$> limitsIndicator <|> return Nothing
+  sub <- Just <$> subscript <|> return Nothing
+  sup <- Just <$> superscript <|> return Nothing
   res <- choice parsers
-  case (sub, sup) of
-       (Nothing, Nothing)  -> return res
-       (Just x, Nothing)   -> fail "unimplemented"
-       (Nothing, Just y)   -> fail "unimplemented"
-       (Just x, Just y)    -> fail "unimplemented"
+  case (sub, sup, limits) of
+       (Nothing, Nothing, _)         -> return res
+       (Just x, Nothing, Just True)  -> error "unimplemented"
+       (Just x, Nothing, Just False) -> error "unimplemented"
+       (Just x, Nothing, Nothing)    -> error "unimplemented"
+       (Nothing, Just y, Just True)  -> error "unimplemented"
+       (Nothing, Just y, Just False) -> error "unimplemented"
+       (Nothing, Just y, Nothing)    -> error "unimplemented"
+       (Just x, Just y, Just True)   -> error "unimplemented"
+       (Just x, Just y, Just False)  -> error "unimplemented"
+       (Just x, Just y, Nothing)     -> error "unimplemented"
 
 limitsIndicator :: HeX Bool
-limitsIndicator = return False -- TODO
+limitsIndicator = try $ do
+  char '\\'
+  no <- option False (string "no" >> return True)
+  string "limits"
+  spaces
+  return $ not $ no
 
-subscript :: HeX (Maybe Doc)
-subscript = fail "unimplemented"
+subscript :: HeX Doc
+subscript = try $ char '_' >> math
 
-superscript :: HeX (Maybe Doc)
-superscript = fail "unimplemented"
-
+superscript :: HeX Doc
+superscript = try $ char '^' >> math
 
 {-
   -- limits <- limitsIndicator
