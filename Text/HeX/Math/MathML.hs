@@ -6,6 +6,9 @@ import Text.HeX.Standard.Xml
 import Control.Applicative ((<$>))
 import Text.HeX.Math (defaultsFor)
 import qualified Data.Map as M
+import Data.ByteString.Lazy.UTF8 (toString)
+import Blaze.ByteString.Builder
+import Data.List (isPrefixOf)
 
 defaults :: HeX ()
 defaults = do
@@ -468,19 +471,58 @@ scalers = M.fromList
 subsup :: [HeX Doc] -> HeX Doc
 subsup parsers = do
   res <- choice parsers
+  resStr <- case res of
+                 Doc x -> return $ toString $ toLazyByteString x
+                 Fut _ -> error "Unexpected Fut in math mode"
   limits <- Just <$> limitsIndicator <|> return Nothing
   sub <- Just <$> subscript <|> return Nothing
   sup <- Just <$> superscript <|> return Nothing
+  (displaymath :: Bool) <- getVar "displaymath"
+  let convertibleSymbols = ['\x2211','\x220F','\x22C2',
+        '\x22C3','\x22C0','\x22C1','\x2A05','\x2A06',
+        '\x2210','\x2A01','\x2A02','\x2A00','\x2A04',
+        '-', '*', '>', '<', '=', ':', '\x2223', '\x2225',
+        '\x2216', '/', '\\', '\x00D7', '\x00B1', '\x2213',
+        '\x22B2', '\x22B3', '\x22C5', '\x22C6', '\x002A', '\x00D7',
+        '\x00F7', '\x2218', '\x2022', '\x2295', '\x2296', '\x2297',
+        '\x25CB', '\x2298', '\x2299', '\x2227', '\x2227', '\x2228',
+        '\x2228', '\x2229', '\x222A', '\x2293', '\x2294', '\x228E',
+        '\x2210', '\x25B3', '\x25BD', '\x2020', '\x2020', '\x2021',
+        '\x2021', '\x22B2', '\x22B3', '\x22B4', '\x22B5', '<',
+        '>', '\x2260', '\x2260', '\x2264', '\x2264', '\x2264',
+        '\x2265', '\x2265', '\x2265', '\x2261', '\x226A', '\x226B',
+        '\x2250', '\x227A', '\x227B', '\x227C', '\x227D', '\x2282',
+        '\x2283', '\x2286', '\x2287', '\x228F', '\x2290', '\x2291',
+        '\x2292', '\x223C', '\x2243', '\x2248', '\x2245', '\x22C8',
+        '\x22C8', '\x2208', '\x220B', '\x220B', '\x221D', '\x22A2',
+        '\x22A3', '\x22A8', '\x22A5', '\x2323', '\x2322', '\x224D',
+        '\x2209', '\x2190', '\x2190', '\x2192', '\x2192', '\x2194',
+        '\x2191', '\x2193', '\x2195', '\x21D0', '\x21D2', '\x21D4',
+        '\x21D4', '\x21D1', '\x21D3', '\x21D5', '\x21A6', '\x2190',
+        '\x2192', '\x2194', '\x21D0', '\x21D2', '\x21D4', '\x21A6' ]
+  let isConvertible = displaymath &&
+                    (   "<munder" `isPrefixOf` resStr
+                     || "<mover"  `isPrefixOf` resStr
+                     || "<mi>lim" `isPrefixOf` resStr
+                     || "<mi>inf" `isPrefixOf` resStr
+                     || "<mi>sup" `isPrefixOf` resStr
+                     || ( "<mo>" `isPrefixOf` resStr &&
+                          not (null $ drop 4 resStr) &&
+                          resStr !! 4 `elem` convertibleSymbols )
+                    )
   return $
     case (sub, sup, limits) of
        (Nothing, Nothing, _)         -> res
-       (Just x, Nothing, Nothing)    -> error "unimplemented"
+       (Just x, Nothing, Nothing)
+                    | isConvertible  -> inTags "munder" [] $ res +++ x
        (Just x, Nothing, Just True)  -> inTags "munder" [] $ res +++ x
        (Just x, Nothing, _)          -> inTags "msub" [] $ res +++ x
-       (Nothing, Just y, Nothing)    -> error "unimplemented"
+       (Nothing, Just y, Nothing)
+                    | isConvertible  -> inTags "mover" [] $ res +++ y
        (Nothing, Just y, Just True)  -> inTags "mover" [] $ res +++ y
        (Nothing, Just y, _)          -> inTags "msup" [] $ res +++ y
-       (Just x, Just y, Nothing)     -> error "unimplemented"
+       (Just x, Just y, Nothing)
+                    | isConvertible  -> inTags "munderover" [] $ res +++ x +++ y
        (Just x, Just y, Just True)   -> inTags "munderover" [] $ res +++ x +++ y
        (Just x, Just y, _)           -> inTags "msubsup" [] $ res +++ x +++ y
 
@@ -553,6 +595,277 @@ isConvertible (ESymbol Op x) = x `elem` convertibleSyms
            "\x22C3","\x22C0","\x22C1","\x2A05","\x2A06",
            "\x2210","\x2A01","\x2A02","\x2A00","\x2A04"]
 isConvertible _ = False
+
+symbols :: M.Map String Exp
+symbols = M.fromList [
+             ("+", ESymbol Bin "+")
+           , ("-", ESymbol Bin "-")
+           , ("*", ESymbol Bin "*")
+           , (",", ESymbol Pun ",")
+           , (".", ESymbol Pun ".")
+           , (";", ESymbol Pun ";")
+           , (":", ESymbol Pun ":")
+           , ("?", ESymbol Pun "?")
+           , (">", ESymbol Rel ">")
+           , ("<", ESymbol Rel "<")
+           , ("!", ESymbol Ord "!")
+           , ("'", ESymbol Ord "\x02B9")
+           , ("''", ESymbol Ord "\x02BA")
+           , ("'''", ESymbol Ord "\x2034")
+           , ("''''", ESymbol Ord "\x2057")
+           , ("=", ESymbol Rel "=")
+           , (":=", ESymbol Rel ":=")
+           , ("\\mid", ESymbol Bin "\x2223")
+           , ("\\parallel", ESymbol Rel "\x2225")
+           , ("\\backslash", ESymbol Bin "\x2216")
+           , ("/", ESymbol Bin "/")
+           , ("\\setminus",	ESymbol Bin "\\")
+           , ("\\times", ESymbol Bin "\x00D7")
+           , ("\\alpha", ESymbol Ord "\x03B1")
+           , ("\\beta", ESymbol Ord "\x03B2")
+           , ("\\chi", ESymbol Ord "\x03C7")
+           , ("\\delta", ESymbol Ord "\x03B4")
+           , ("\\Delta", ESymbol Op "\x0394")
+           , ("\\epsilon", ESymbol Ord "\x03B5")
+           , ("\\varepsilon", ESymbol Ord "\x025B")
+           , ("\\eta", ESymbol Ord "\x03B7")
+           , ("\\gamma", ESymbol Ord "\x03B3")
+           , ("\\Gamma", ESymbol Op "\x0393") 
+           , ("\\iota", ESymbol Ord "\x03B9")
+           , ("\\kappa", ESymbol Ord "\x03BA")
+           , ("\\lambda", ESymbol Ord "\x03BB")
+           , ("\\Lambda", ESymbol Op "\x039B") 
+           , ("\\mu", ESymbol Ord "\x03BC")
+           , ("\\nu", ESymbol Ord "\x03BD")
+           , ("\\omega", ESymbol Ord "\x03C9")
+           , ("\\Omega", ESymbol Op "\x03A9")
+           , ("\\phi", ESymbol Ord "\x03C6")
+           , ("\\varphi", ESymbol Ord "\x03D5")
+           , ("\\Phi", ESymbol Op "\x03A6") 
+           , ("\\pi", ESymbol Ord "\x03C0")
+           , ("\\Pi", ESymbol Op "\x03A0") 
+           , ("\\psi", ESymbol Ord "\x03C8")
+           , ("\\Psi", ESymbol Ord "\x03A8")
+           , ("\\rho", ESymbol Ord "\x03C1")
+           , ("\\sigma", ESymbol Ord "\x03C3")
+           , ("\\Sigma", ESymbol Op "\x03A3") 
+           , ("\\tau", ESymbol Ord "\x03C4")
+           , ("\\theta", ESymbol Ord "\x03B8")
+           , ("\\vartheta", ESymbol Ord "\x03D1")
+           , ("\\Theta", ESymbol Op "\x0398") 
+           , ("\\upsilon", ESymbol Ord "\x03C5")
+           , ("\\xi", ESymbol Ord "\x03BE")
+           , ("\\Xi", ESymbol Op "\x039E") 
+           , ("\\zeta", ESymbol Ord "\x03B6")
+           , ("\\frac12", ESymbol Ord "\x00BD")
+           , ("\\frac14", ESymbol Ord "\x00BC")
+           , ("\\frac34", ESymbol Ord "\x00BE")
+           , ("\\frac13", ESymbol Ord "\x2153")
+           , ("\\frac23", ESymbol Ord "\x2154")
+           , ("\\frac15", ESymbol Ord "\x2155")
+           , ("\\frac25", ESymbol Ord "\x2156")
+           , ("\\frac35", ESymbol Ord "\x2157")
+           , ("\\frac45", ESymbol Ord "\x2158")
+           , ("\\frac16", ESymbol Ord "\x2159")
+           , ("\\frac56", ESymbol Ord "\x215A")
+           , ("\\frac18", ESymbol Ord "\x215B")
+           , ("\\frac38", ESymbol Ord "\x215C")
+           , ("\\frac58", ESymbol Ord "\x215D")
+           , ("\\frac78", ESymbol Ord "\x215E")
+           , ("\\pm", ESymbol Bin "\x00B1")
+           , ("\\mp", ESymbol Bin "\x2213")
+           , ("\\triangleleft", ESymbol Bin "\x22B2")
+           , ("\\triangleright", ESymbol Bin "\x22B3")
+           , ("\\cdot", ESymbol Bin "\x22C5")
+           , ("\\star", ESymbol Bin "\x22C6")
+           , ("\\ast", ESymbol Bin "\x002A")
+           , ("\\times", ESymbol Bin "\x00D7")
+           , ("\\div", ESymbol Bin "\x00F7")
+           , ("\\circ", ESymbol Bin "\x2218")
+           , ("\\bullet", ESymbol Bin "\x2022")
+           , ("\\oplus", ESymbol Bin "\x2295")
+           , ("\\ominus", ESymbol Bin "\x2296")
+           , ("\\otimes", ESymbol Bin "\x2297")
+           , ("\\bigcirc", ESymbol Bin "\x25CB")
+           , ("\\oslash", ESymbol Bin "\x2298")
+           , ("\\odot", ESymbol Bin "\x2299")
+           , ("\\land", ESymbol Bin "\x2227")
+           , ("\\wedge", ESymbol Bin "\x2227")
+           , ("\\lor", ESymbol Bin "\x2228")
+           , ("\\vee", ESymbol Bin "\x2228")
+           , ("\\cap", ESymbol Bin "\x2229")
+           , ("\\cup", ESymbol Bin "\x222A")
+           , ("\\sqcap", ESymbol Bin "\x2293")
+           , ("\\sqcup", ESymbol Bin "\x2294")
+           , ("\\uplus", ESymbol Bin "\x228E")
+           , ("\\amalg", ESymbol Bin "\x2210")
+           , ("\\bigtriangleup", ESymbol Bin "\x25B3")
+           , ("\\bigtriangledown", ESymbol Bin "\x25BD")
+           , ("\\dag", ESymbol Bin "\x2020")
+           , ("\\dagger", ESymbol Bin "\x2020")
+           , ("\\ddag", ESymbol Bin "\x2021")
+           , ("\\ddagger", ESymbol Bin "\x2021")
+           , ("\\lhd", ESymbol Bin "\x22B2")
+           , ("\\rhd", ESymbol Bin "\x22B3")
+           , ("\\unlhd", ESymbol Bin "\x22B4")
+           , ("\\unrhd", ESymbol Bin "\x22B5")
+           , ("\\lt", ESymbol Rel "<")
+           , ("\\gt", ESymbol Rel ">")
+           , ("\\ne", ESymbol Rel "\x2260")
+           , ("\\neq", ESymbol Rel "\x2260")
+           , ("\\le", ESymbol Rel "\x2264")
+           , ("\\leq", ESymbol Rel "\x2264")
+           , ("\\leqslant", ESymbol Rel "\x2264")
+           , ("\\ge", ESymbol Rel "\x2265")
+           , ("\\geq", ESymbol Rel "\x2265")
+           , ("\\geqslant", ESymbol Rel "\x2265")
+           , ("\\equiv", ESymbol Rel "\x2261")
+           , ("\\ll", ESymbol Rel "\x226A")
+           , ("\\gg", ESymbol Rel "\x226B")
+           , ("\\doteq", ESymbol Rel "\x2250")
+           , ("\\prec", ESymbol Rel "\x227A")
+           , ("\\succ", ESymbol Rel "\x227B")
+           , ("\\preceq", ESymbol Rel "\x227C")
+           , ("\\succeq", ESymbol Rel "\x227D")
+           , ("\\subset", ESymbol Rel "\x2282")
+           , ("\\supset", ESymbol Rel "\x2283")
+           , ("\\subseteq", ESymbol Rel "\x2286")
+           , ("\\supseteq", ESymbol Rel "\x2287")
+           , ("\\sqsubset", ESymbol Rel "\x228F")
+           , ("\\sqsupset", ESymbol Rel "\x2290")
+           , ("\\sqsubseteq", ESymbol Rel "\x2291")
+           , ("\\sqsupseteq", ESymbol Rel "\x2292")
+           , ("\\sim", ESymbol Rel "\x223C")
+           , ("\\simeq", ESymbol Rel "\x2243")
+           , ("\\approx", ESymbol Rel "\x2248")
+           , ("\\cong", ESymbol Rel "\x2245")
+           , ("\\Join", ESymbol Rel "\x22C8")
+           , ("\\bowtie", ESymbol Rel "\x22C8")
+           , ("\\in", ESymbol Rel "\x2208")
+           , ("\\ni", ESymbol Rel "\x220B")
+           , ("\\owns", ESymbol Rel "\x220B")
+           , ("\\propto", ESymbol Rel "\x221D")
+           , ("\\vdash", ESymbol Rel "\x22A2")
+           , ("\\dashv", ESymbol Rel "\x22A3")
+           , ("\\models", ESymbol Rel "\x22A8")
+           , ("\\perp", ESymbol Rel "\x22A5")
+           , ("\\smile", ESymbol Rel "\x2323")
+           , ("\\frown", ESymbol Rel "\x2322")
+           , ("\\asymp", ESymbol Rel "\x224D")
+           , ("\\notin", ESymbol Rel "\x2209")
+           , ("\\gets", ESymbol Rel "\x2190")
+           , ("\\leftarrow", ESymbol Rel "\x2190")
+           , ("\\to", ESymbol Rel "\x2192")
+           , ("\\rightarrow", ESymbol Rel "\x2192")
+           , ("\\leftrightarrow", ESymbol Rel "\x2194")
+           , ("\\uparrow", ESymbol Rel "\x2191")
+           , ("\\downarrow", ESymbol Rel "\x2193")
+           , ("\\updownarrow", ESymbol Rel "\x2195")
+           , ("\\Leftarrow", ESymbol Rel "\x21D0")
+           , ("\\Rightarrow", ESymbol Rel "\x21D2")
+           , ("\\Leftrightarrow", ESymbol Rel "\x21D4")
+           , ("\\iff", ESymbol Rel "\x21D4")
+           , ("\\Uparrow", ESymbol Rel "\x21D1")
+           , ("\\Downarrow", ESymbol Rel "\x21D3")
+           , ("\\Updownarrow", ESymbol Rel "\x21D5")
+           , ("\\mapsto", ESymbol Rel "\x21A6")
+           , ("\\longleftarrow", ESymbol Rel "\x2190")
+           , ("\\longrightarrow", ESymbol Rel "\x2192")
+           , ("\\longleftrightarrow", ESymbol Rel "\x2194")
+           , ("\\Longleftarrow", ESymbol Rel "\x21D0")
+           , ("\\Longrightarrow", ESymbol Rel "\x21D2")
+           , ("\\Longleftrightarrow", ESymbol Rel "\x21D4")
+           , ("\\longmapsto", ESymbol Rel "\x21A6")
+           , ("\\sum", ESymbol Op "\x2211")
+           , ("\\prod", ESymbol Op "\x220F")
+           , ("\\bigcap", ESymbol Op "\x22C2")
+           , ("\\bigcup", ESymbol Op "\x22C3")
+           , ("\\bigwedge", ESymbol Op "\x22C0")
+           , ("\\bigvee", ESymbol Op "\x22C1")
+           , ("\\bigsqcap", ESymbol Op "\x2A05")
+           , ("\\bigsqcup", ESymbol Op "\x2A06")
+           , ("\\coprod", ESymbol Op "\x2210")
+           , ("\\bigoplus", ESymbol Op "\x2A01")
+           , ("\\bigotimes", ESymbol Op "\x2A02")
+           , ("\\bigodot", ESymbol Op "\x2A00")
+           , ("\\biguplus", ESymbol Op "\x2A04")
+           , ("\\int", ESymbol Op "\x222B")
+           , ("\\iint", ESymbol Op "\x222C")
+           , ("\\iiint", ESymbol Op "\x222D")
+           , ("\\oint", ESymbol Op "\x222E")
+           , ("\\prime", ESymbol Ord "\x2032")
+           , ("\\dots", ESymbol Ord "\x2026")
+           , ("\\ldots", ESymbol Ord "\x2026")
+           , ("\\cdots", ESymbol Ord "\x22EF")
+           , ("\\vdots", ESymbol Ord "\x22EE")
+           , ("\\ddots", ESymbol Ord "\x22F1")
+           , ("\\forall", ESymbol Op "\x2200")
+           , ("\\exists", ESymbol Op "\x2203")
+           , ("\\Re", ESymbol Ord "\x211C")
+           , ("\\Im", ESymbol Ord "\x2111")
+           , ("\\aleph", ESymbol Ord "\x2135")
+           , ("\\hbar", ESymbol Ord "\x210F")
+           , ("\\ell", ESymbol Ord "\x2113")
+           , ("\\wp", ESymbol Ord "\x2118")
+           , ("\\emptyset", ESymbol Ord "\x2205")
+           , ("\\infty", ESymbol Ord "\x221E")
+           , ("\\partial", ESymbol Ord "\x2202")
+           , ("\\nabla", ESymbol Ord "\x2207")
+           , ("\\triangle", ESymbol Ord "\x25B3")
+           , ("\\therefore", ESymbol Pun "\x2234")
+           , ("\\angle", ESymbol Ord "\x2220")
+           , ("\\diamond", ESymbol Op "\x22C4")
+           , ("\\Diamond", ESymbol Op "\x25C7")
+           , ("\\lozenge", ESymbol Op "\x25CA")
+           , ("\\neg", ESymbol Op "\x00AC")
+           , ("\\lnot", ESymbol Ord "\x00AC")
+           , ("\\bot", ESymbol Ord "\x22A5")
+           , ("\\top", ESymbol Ord "\x22A4")
+           , ("\\square", ESymbol Ord "\x25AB")
+           , ("\\Box", ESymbol Op "\x25A1")
+           , ("\\wr", ESymbol Ord "\x2240")
+           , ("\\!", ESpace "-0.167em")
+           , ("\\,", ESpace "0.167em")
+           , ("\\>", ESpace "0.222em")
+           , ("\\:", ESpace "0.222em")
+           , ("\\;", ESpace "0.278em")
+           , ("~", ESpace "0.333em")
+           , ("\\quad", ESpace "1em")
+           , ("\\qquad", ESpace "2em")
+           , ("\\arccos", EMathOperator "arccos")
+           , ("\\arcsin", EMathOperator "arcsin")
+           , ("\\arctan", EMathOperator "arctan")
+           , ("\\arg", EMathOperator "arg")
+           , ("\\cos", EMathOperator "cos")
+           , ("\\cosh", EMathOperator "cosh")
+           , ("\\cot", EMathOperator "cot")
+           , ("\\coth", EMathOperator "coth")
+           , ("\\csc", EMathOperator "csc")
+           , ("\\deg", EMathOperator "deg")
+           , ("\\det", EMathOperator "det")
+           , ("\\dim", EMathOperator "dim")
+           , ("\\exp", EMathOperator "exp")
+           , ("\\gcd", EMathOperator "gcd")
+           , ("\\hom", EMathOperator "hom")
+           , ("\\inf", EMathOperator "inf")
+           , ("\\ker", EMathOperator "ker")
+           , ("\\lg", EMathOperator "lg")
+           , ("\\lim", EMathOperator "lim")
+           , ("\\liminf", EMathOperator "liminf")
+           , ("\\limsup", EMathOperator "limsup")
+           , ("\\ln", EMathOperator "ln")
+           , ("\\log", EMathOperator "log")
+           , ("\\max", EMathOperator "max")
+           , ("\\min", EMathOperator "min")
+           , ("\\Pr", EMathOperator "Pr")
+           , ("\\sec", EMathOperator "sec")
+           , ("\\sin", EMathOperator "sin")
+           , ("\\sinh", EMathOperator "sinh")
+           , ("\\sup", EMathOperator "sup")
+           , ("\\tan", EMathOperator "tan")
+           , ("\\tanh", EMathOperator "tanh")
+           ] 
+
 
 -}
 

@@ -30,7 +30,9 @@ bracketMath writer = spaces >> parseMath writer True (try $ string "\\]")
 
 parseMath :: MathWriter -> Bool -> HeX a -> HeX Doc
 parseMath writer display closer = do
+  setVar "displaymath" display
   res <- mconcat <$> manyTill math closer
+  setVar "displaymath" False
   return $ if display
               then displayMath writer res
               else inlineMath writer res
