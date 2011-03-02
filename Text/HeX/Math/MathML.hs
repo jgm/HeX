@@ -379,10 +379,12 @@ asText variant = inTags "mtext" [("mathvariant",variant)]
 
 enclosure :: HeX Doc
 enclosure = try $ do
-  modif <- try (string "\\left" >> spaces >> return "left")
-        <|> try (string "\\right" >> spaces >> return "right")
+  spaces
+  modif <- try (string "\\left" >> return "left")
+        <|> try (string "\\right" >> return "right")
         <|> scaler
         <|> return ""
+  spaces
   enc <- basicEnclosure
       <|> if (modif == "left" || modif == "right")
              then try (char '.' >> return '\xFEFF')
@@ -475,8 +477,11 @@ subsup parsers = do
                  Doc x -> return $ toString $ toLazyByteString x
                  Fut _ -> error "Unexpected Fut in math mode"
   limits <- Just <$> limitsIndicator <|> return Nothing
+  spaces
   sub <- Just <$> subscript <|> return Nothing
+  spaces
   sup <- Just <$> superscript <|> return Nothing
+  spaces
   (displaymath :: Bool) <- getVar "displaymath"
   let convertibleSymbols = ['\x2211','\x220F','\x22C2',
         '\x22C3','\x22C0','\x22C1','\x2A05','\x2A06',

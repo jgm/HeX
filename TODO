@@ -4,7 +4,6 @@ _ bibliography w/ citeproc
 _ whitespace parser?
 _ outer shell - preamble stuff, css, encoding, etc.
 _ \index also in HTML!
-_ mathML to SVG? www.grigoriev.ru/svgmath/
 _ add accented character commands to standard parsers
 _ jail for IO?
 _ figure out how to do verbatims

@@ -39,6 +39,7 @@ parseMath writer display closer = do
 
 mathParser :: MathWriter -> HeX Doc
 mathParser writer = do
+  spaces
   res <-  command Math
       <|> comment
       <|> grouped writer <$> group math
@@ -46,7 +47,7 @@ mathParser writer = do
       <|> variable writer <$> pVariable
       <|> operator writer <$> pOperator
       <|> (operator writer . (:[])) <$> (pEscaped <|> pUnicode)
-      <|> whitespace writer <$> many1 space
+  spaces
   return res
 
 opLetters :: [Char]
