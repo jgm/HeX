@@ -22,6 +22,7 @@ module Text.HeX ( run
                 , register
                 , addParser
                 , command
+                , environment
                 , parseDoc
                 , getFormat
                 , setTarget
@@ -159,8 +160,8 @@ command mode = try $ do
                           ++ " in mode " ++ show mode
 
 environment :: Mode -> HeX Doc
-environment mode = try $ do
-  string "\\begin"
+environment mode = do
+  try $ string "\\begin"
   skipBlank
   char '{'
   skipBlank
@@ -168,11 +169,27 @@ environment mode = try $ do
   skipBlank
   char '}'
   skipBlank
-  st <- getState
-  let commands = hexCommands st
-  let format = hexFormat st
+  st' <- getState
+  let commands = hexCommands st'
   case M.lookup (mode, cmd) commands of
-        Just p  -> p
+        Just p  -> do
+          let parsers = hexParsers st'
+          let ender = try $ do
+                 spaces
+                 string "\\end"
+                 skipBlank
+                 char '{'
+                 skipBlank
+                 string cmd
+                 skipBlank
+                 char '}'
+                 return ()
+          updateState $ \st -> st{ hexParsers = M.adjust
+                                     (notFollowedBy ender >>) mode parsers }
+          res <- p
+          ender
+          updateState $ \st -> st { hexParsers = parsers }
+          return res
         Nothing -> fail $ "Environment " ++ show cmd ++ " not defined " ++
                           "in mode " ++ show mode
 
@@ -210,7 +227,7 @@ basicInline :: (Char -> Doc) -> HeX Doc
 basicInline escaper = comment <|> oneChar escaper <|> command Inline <|> group inline
 
 basicBlock :: ([Doc] -> Doc) -> HeX Doc
-basicBlock f = try $ spaces >> (comment <|> command Block <|> group block <|> para f)
+basicBlock f = try $ spaces >> (comment <|> environment Block <|> command Block <|> group block <|> para f)
 
 para :: ([Doc] -> Doc) -> HeX Doc
 para f = do

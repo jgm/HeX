@@ -14,6 +14,7 @@ main = defaultMain $ do
   forFormat "docbook" Docbook.defaults
   register [Block,Inline] "silly*" silly
   register [Inline] "lettrine" lettrine
+  register [Block] "crazy" crazy
   -- addParser [Math, Inline] unknown
   -- FOR DEBUGGING
   -- forFormat "html" $ addParser [Math] unknownChar
@@ -41,6 +42,11 @@ lettrine "html" (InlineDoc x) (InlineDoc y) =
   inTags "span" [("class","lettrine")] x +++ y
 lettrine "latex" (InlineDoc x) (InlineDoc y) =
   ctl "lettrine" +++ grp [x] +++ grp [y]
+
+crazy :: Maybe String -> HeX Doc
+crazy Nothing = mconcat <$> many block
+crazy (Just opt) = mconcat <$> many ((raws opt +++) <$> block)
+
 
 {-
 unknown :: HeX Doc
