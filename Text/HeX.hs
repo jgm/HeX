@@ -20,6 +20,7 @@ module Text.HeX ( run
                 , module Text.Parsec
                 , module Data.Monoid
                 , newCommand
+                , newEnvironment
                 , addParser
                 , command
                 , environment
@@ -101,6 +102,7 @@ run parser format contents = do
                                 Fut f  -> getState >>= f)
                HeXState{ hexParsers = M.empty
                        , hexCommands = M.empty
+                       , hexEnvironments = M.empty
                        , hexFormat = format
                        , hexVars = M.empty
                        , hexTarget = ""
@@ -141,6 +143,11 @@ newCommand modes name x = forM_ modes $ \m ->
   updateState $ \s ->
     s{ hexCommands = M.insert (m, name) (toCommand x) (hexCommands s) }
 
+newEnvironment :: ToCommand a => [Mode] -> String -> a -> HeX ()
+newEnvironment modes name x = forM_ modes $ \m ->
+  updateState $ \s ->
+    s{ hexEnvironments = M.insert (m, name) (toCommand x) (hexEnvironments s) }
+
 cmdIdentifier :: HeX String
 cmdIdentifier = do
   a <- many1 letter
@@ -170,7 +177,7 @@ environment mode = do
   char '}'
   skipBlank
   st' <- getState
-  let commands = hexCommands st'
+  let commands = hexEnvironments st'
   case M.lookup (mode, cmd) commands of
         Just p  -> do
           let parsers = hexParsers st'

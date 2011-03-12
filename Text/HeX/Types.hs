@@ -44,6 +44,7 @@ newtype MathDoc = MathDoc { unMath :: Doc }
 
 data HeXState = HeXState { hexParsers   :: M.Map Mode (HeX Doc)
                          , hexCommands  :: M.Map (Mode, String) (HeX Doc)
+                         , hexEnvironments :: M.Map (Mode, String) (HeX Doc)
                          , hexFormat    :: Format
                          , hexVars      :: M.Map String Dynamic
                          , hexTarget    :: String

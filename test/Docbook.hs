@@ -14,13 +14,13 @@ defaults = do
   addParser [Block] $ basicBlock (inTags "para" [] . mconcat)
   addParser [Inline] $ basicInline ch
   MathML.defaults
-  register [Inline] "emph" emph
-  register [Inline] "strong" strong
-  register [Block] "section" (section 1)
-  register [Block] "subsection" (section 2)
-  register [Block] "subsubsection" (section 3)
-  register [Block] "paragraph" (section 4)
-  register [Block] "subparagraph" (section 5)
+  newCommand [Inline] "emph" emph
+  newCommand [Inline] "strong" strong
+  newCommand [Block] "section" (section 1)
+  newCommand [Block] "subsection" (section 2)
+  newCommand [Block] "subsubsection" (section 3)
+  newCommand [Block] "paragraph" (section 4)
+  newCommand [Block] "subparagraph" (section 5)
 
 emph :: InlineDoc -> Doc
 emph (InlineDoc arg)  = inTags "emphasis" [] arg
@@ -38,13 +38,13 @@ section lev (InlineDoc d) = do
       sectionCmd 5 = "subparagraph"
       sectionCmd _ = "subsubparagraph"
   st <- getState
-  let remapCmd n = register [Block] (sectionCmd n) $
+  let remapCmd n = newCommand [Block] (sectionCmd n) $
                      do guard False
                         section n mempty
   let unRemapCmd n = let old = case M.lookup (Block, sectionCmd n) (hexCommands st) of
                                   Just x  -> x
                                   Nothing -> error "Something happened"
-                     in  register [Block] (sectionCmd n) old
+                     in  newCommand [Block] (sectionCmd n) old
   forM_ [1..lev] remapCmd
   contents <- many block
   forM_ [1..lev] unRemapCmd
