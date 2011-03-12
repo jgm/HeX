@@ -12,7 +12,7 @@ import Control.Monad.Trans (liftIO)
 main = defaultMain $ do
   Standard.defaults
   forFormat "docbook" Docbook.defaults
-  register [Block,Inline] "silly" silly
+  register [Block,Inline] "silly*" silly
   register [Inline] "lettrine" lettrine
   -- addParser [Math, Inline] unknown
   -- FOR DEBUGGING

@@ -140,10 +140,15 @@ register modes name x = forM_ modes $ \m ->
   updateState $ \s ->
     s{ hexCommands = M.insert (m, name) (toCommand x) (hexCommands s) }
 
+cmdIdentifier :: HeX String
+cmdIdentifier = do
+  a <- many1 letter
+  option a $ char '*' >> return (a ++ "*")
+
 command :: Mode -> HeX Doc
 command mode = try $ do
   char '\\'
-  cmd <- many1 letter <|> count 1 anyChar
+  cmd <- cmdIdentifier <|> count 1 anyChar
   skipBlank
   st <- getState
   let commands = hexCommands st
