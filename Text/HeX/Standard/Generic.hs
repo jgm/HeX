@@ -7,9 +7,9 @@ import "mtl" Control.Monad.Trans (liftIO)
 
 defaults :: HeX ()
 defaults = do
-  register [Block] "include" include
-  register [Block,Inline] "label" label'
-  register [Inline] "ref" ref
+  newCommand [Block] "include" include
+  newCommand [Block,Inline] "label" label'
+  newCommand [Inline] "ref" ref
 
 include :: FilePath -> HeX Doc
 include f = do

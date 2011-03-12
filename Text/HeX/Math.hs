@@ -7,10 +7,10 @@ defaultsFor :: MathWriter -> HeX ()
 defaultsFor writer = do
   addParser [Math] $ mathParser writer
   addParser [Block,Inline] $ dollars writer
-  register [Inline] "(" $ parenMath writer
-  register [Inline,Block] "[" $ bracketMath writer
-  register [Inline] "ensuremath" $ ensureMath Inline writer
-  register [Math] "ensuremath" $ ensureMath Math writer
+  newCommand [Inline] "(" $ parenMath writer
+  newCommand [Inline,Block] "[" $ bracketMath writer
+  newCommand [Inline] "ensuremath" $ ensureMath Inline writer
+  newCommand [Math] "ensuremath" $ ensureMath Math writer
 
 dollars :: MathWriter -> HeX Doc
 dollars writer = do

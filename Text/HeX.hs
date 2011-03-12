@@ -19,7 +19,7 @@ module Text.HeX ( run
                 , module Text.HeX.Types
                 , module Text.Parsec
                 , module Data.Monoid
-                , register
+                , newCommand
                 , addParser
                 , command
                 , environment
@@ -136,8 +136,8 @@ addParser modes p = forM_ modes $ \mode ->
                         then M.adjust (p <|>) mode parsers
                         else M.insert mode p parsers }
 
-register :: ToCommand a => [Mode] -> String -> a -> HeX ()
-register modes name x = forM_ modes $ \m ->
+newCommand :: ToCommand a => [Mode] -> String -> a -> HeX ()
+newCommand modes name x = forM_ modes $ \m ->
   updateState $ \s ->
     s{ hexCommands = M.insert (m, name) (toCommand x) (hexCommands s) }
 

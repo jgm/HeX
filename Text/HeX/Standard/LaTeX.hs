@@ -9,13 +9,13 @@ defaults :: HeX ()
 defaults = do
   addParser [Inline] $ basicInline ch
   addParser [Block] $ basicBlock toPara
-  register [Inline] "emph" emph
-  register [Inline] "strong" strong
-  register [Block] "section" (section 1)
-  register [Block] "subsection" (section 2)
-  register [Block] "subsubsection" (section 3)
-  register [Block] "paragraph" (section 4)
-  register [Block] "subparagraph" (section 5)
+  newCommand [Inline] "emph" emph
+  newCommand [Inline] "strong" strong
+  newCommand [Block] "section" (section 1)
+  newCommand [Block] "subsection" (section 2)
+  newCommand [Block] "subsubsection" (section 3)
+  newCommand [Block] "paragraph" (section 4)
+  newCommand [Block] "subparagraph" (section 5)
 
 toPara :: [Doc] -> Doc
 toPara xs = mconcat xs +++ "\n\n"

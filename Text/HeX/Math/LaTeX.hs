@@ -11,10 +11,10 @@ defaults = do
   defaultsFor writer
   addParser [Math] (rawc <$> (char '_' <|> char '^'))
   latexCommand1 "limits"
-  register [Math] "textrm" $ (ctl "textrm" +++) <$> inline
-  register [Math] "text" $ (ctl "text" +++) <$> inline
-  register [Math] "textit" $ (ctl "textit" +++) <$> inline
-  register [Math] "texttt" $ (ctl "texttt" +++) <$> inline
+  newCommand [Math] "textrm" $ (ctl "textrm" +++) <$> inline
+  newCommand [Math] "text" $ (ctl "text" +++) <$> inline
+  newCommand [Math] "textit" $ (ctl "textit" +++) <$> inline
+  newCommand [Math] "texttt" $ (ctl "texttt" +++) <$> inline
   mapM_ latexCommand1 [ "mathrm"
                       , "mbox"
                       , "mathit"
@@ -23,8 +23,8 @@ defaults = do
                       , "mathbb"
                       , "mathcal"
                       , "mathfrak" ]
-  register [Math] "sqrt" root
-  register [Math] "surd" root
+  newCommand [Math] "sqrt" root
+  newCommand [Math] "surd" root
   mapM_ latexCommand1 [ "acute"
                       , "grave"
                       , "breve"
@@ -339,13 +339,13 @@ enclosure = rawc <$> (oneOf "()[]{}")
          <|> (char '|' >> return (rawc '\x2223'))
 
 latexCommand0 :: String -> HeX ()
-latexCommand0 s = register [Math] s $ ctl s
+latexCommand0 s = newCommand [Math] s $ ctl s
 
 latexCommand1 :: String -> HeX ()
-latexCommand1 s = register [Math] s $ \(MathDoc d) -> ctl s +++ d
+latexCommand1 s = newCommand [Math] s $ \(MathDoc d) -> ctl s +++ d
 
 latexCommand2 :: String -> HeX ()
-latexCommand2 s = register [Math] s $ \(MathDoc d1) (MathDoc d2) ->
+latexCommand2 s = newCommand [Math] s $ \(MathDoc d1) (MathDoc d2) ->
   ctl s +++ d1 +++ d2
 
 root :: Maybe MathDoc -> MathDoc -> Doc
