@@ -42,7 +42,7 @@ newtype BlockDoc = BlockDoc { unBlock :: Doc }
 newtype MathDoc = MathDoc { unMath :: Doc }
                 deriving Monoid
 
-data HeXState = HeXState { hexParsers   :: M.Map Mode [HeX Doc]
+data HeXState = HeXState { hexParsers   :: M.Map Mode (HeX Doc)
                          , hexCommands  :: M.Map (Mode, String) (HeX Doc)
                          , hexFormat    :: Format
                          , hexVars      :: M.Map String Dynamic
@@ -190,7 +190,7 @@ next :: Mode -> HeX Doc
 next mode = do
   parsers <- hexParsers <$> getState
   case M.lookup mode parsers of
-       Just ps -> choice ps
+       Just p  -> p
        Nothing -> fail $ "No parsers defined for mode " ++ show mode
 
 inline :: HeX Doc

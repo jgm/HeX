@@ -132,8 +132,8 @@ addParser modes p = forM_ modes $ \mode ->
   updateState $ \st ->
     let parsers = hexParsers st in
     st{ hexParsers = if M.member mode parsers
-                        then M.adjust (p:) mode parsers
-                        else M.insert mode [p] parsers }
+                        then M.adjust (p <|>) mode parsers
+                        else M.insert mode p parsers }
 
 register :: ToCommand a => [Mode] -> String -> a -> HeX ()
 register modes name x = forM_ modes $ \m ->
@@ -157,6 +157,24 @@ command mode = try $ do
         Just p  -> p
         Nothing -> fail $ ('\\':cmd) ++ " is not defined for " ++ show format
                           ++ " in mode " ++ show mode
+
+environment :: Mode -> HeX Doc
+environment mode = try $ do
+  string "\\begin"
+  skipBlank
+  char '{'
+  skipBlank
+  cmd <- cmdIdentifier
+  skipBlank
+  char '}'
+  skipBlank
+  st <- getState
+  let commands = hexCommands st
+  let format = hexFormat st
+  case M.lookup (mode, cmd) commands of
+        Just p  -> p
+        Nothing -> fail $ "Environment " ++ show cmd ++ " not defined " ++
+                          "in mode " ++ show mode
 
 warn :: String -> HeX ()
 warn msg = do

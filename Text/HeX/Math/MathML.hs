@@ -15,7 +15,7 @@ defaults = do
   defaultsFor writer
   addParser [Math] enclosure
   updateState $ \st -> st{ hexParsers =
-     M.adjust (\xs -> [subsup xs]) Math $ hexParsers st }
+     M.adjust (\x -> subsup x) Math $ hexParsers st }
   register [Math] "textrm" $ asText "normal" <$> inline
   register [Math] "text" $ asText "normal" <$> inline
   register [Math] "mathrm" $ asText "normal" <$> math
@@ -470,9 +470,9 @@ scalers = M.fromList
           ]
 
 -- 'wraps' a parser in a check for super/subscript/limits
-subsup :: [HeX Doc] -> HeX Doc
-subsup parsers = do
-  res <- choice parsers
+subsup :: HeX Doc -> HeX Doc
+subsup parser = do
+  res <- parser
   resStr <- case res of
                  Doc x -> return $ toString $ toLazyByteString x
                  Fut _ -> error "Unexpected Fut in math mode"
