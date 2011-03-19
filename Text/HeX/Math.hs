@@ -18,20 +18,22 @@ dollars writer = do
   display <- option False $ char '$' >> return True
   spaces
   let delim = if display
-                 then try $ spaces >> char '$' >> char '$'
-                 else try $ spaces >> char '$'
+                 then char '$' >> char '$'
+                 else char '$'
   parseMath writer display delim
 
 parenMath :: MathWriter -> HeX Doc
-parenMath writer = spaces >> parseMath writer False (try $ spaces >> string "\\)")
+parenMath writer = spaces >> parseMath writer False (try $ string "\\)")
 
 bracketMath :: MathWriter -> HeX Doc
-bracketMath writer = spaces >> parseMath writer True (try $ spaces >> string "\\]")
+bracketMath writer = spaces >> parseMath writer True (try $ string "\\]")
 
 parseMath :: MathWriter -> Bool -> HeX a -> HeX Doc
 parseMath writer display closer = do
   setVar "displaymath" display
-  res <- mconcat <$> manyTill math closer
+  res <- mconcat <$> many math
+  spaces
+  closer
   setVar "displaymath" False
   return $ if display
               then displayMath writer res
