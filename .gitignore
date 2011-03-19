@@ -1,0 +1,9 @@
+dist/*
+/HeX.hs
+/tags
+/test/Docbook.hi
+/test/Docbook.o
+/test/test.hi
+/test/texmathtests.tex
+/test/texmathtests1-5.tex
+/texmathparser.hs
