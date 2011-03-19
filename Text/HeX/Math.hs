@@ -1,4 +1,4 @@
-module Text.HeX.Math (defaultsFor) where
+module Text.HeX.Math (defaultsFor, arrayLines) where
 import Text.HeX
 import Control.Applicative ((<$>))
 import Data.Char (isAscii, isAlphaNum)

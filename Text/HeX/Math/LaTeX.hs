@@ -4,7 +4,8 @@ module Text.HeX.Math.LaTeX (defaults) where
 import Text.HeX
 import Text.HeX.Standard.TeX
 import Control.Applicative ((<$>))
-import Text.HeX.Math (defaultsFor)
+import Text.HeX.Math (defaultsFor, arrayLines)
+import Data.List (intersperse)
 
 defaults :: HeX ()
 defaults = do
@@ -332,6 +333,11 @@ defaults = do
                       , "Vert"
                       , "ulcorner"
                       , "urcorner" ]
+  mapM_ arrayEnv      [ "pmatrix"
+                      , "vmatrix"
+                      , "bmatrix"
+                      , "Vmatrix"
+                      , "Bmatrix" ]
   addParser [Math] enclosure
 
 enclosure :: HeX Doc
@@ -347,6 +353,19 @@ latexCommand1 s = newCommand [Math] s $ \(MathDoc d) -> ctl s +++ d
 latexCommand2 :: String -> HeX ()
 latexCommand2 s = newCommand [Math] s $ \(MathDoc d1) (MathDoc d2) ->
   ctl s +++ d1 +++ d2
+
+arrayEnv :: String -> HeX ()
+arrayEnv s = newEnvironment [Math] s $ \(mbopt :: Maybe String) -> do
+  lns <- arrayLines math
+  return $ "\\begin{" +++ raws s +++ "}" +++
+     (case mbopt of
+           Nothing  -> mempty
+           Just x   -> "[" +++ raws x +++ "]") +++ "\n" +++
+     (mintercalate "\\\\\n" $ map (mintercalate " & ") lns) +++
+     "\\end{" +++ raws s +++ "}"
+
+mintercalate :: Monoid m => m -> [m] -> m
+mintercalate sep items = mconcat $ intersperse sep items
 
 root :: Maybe MathDoc -> MathDoc -> Doc
 root x (MathDoc y) = "\\sqrt" +++ x' +++ y
