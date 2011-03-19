@@ -74,3 +74,19 @@ ensureMath current writer = do
   if current == Math
      then math
      else inlineMath writer <$> math
+
+endLine :: HeX ()
+endLine = try $ do
+  string "\\\\"
+  optional inbrackets  -- can contain e.g. [1.0in] for a line height, not yet supported
+  return ()
+
+inbrackets :: HeX String
+inbrackets = try $ char '[' >> manyTill (satisfy (/=']')) (char ']')
+
+arrayLine :: HeX Doc -> HeX [Doc]
+arrayLine expr =
+  sepBy1 (mconcat <$> many (notFollowedBy endLine >> expr)) (char '&')
+
+arrayLines :: HeX Doc -> HeX [[Doc]]
+arrayLines expr = sepBy1 (arrayLine expr) endLine
