@@ -540,10 +540,10 @@ limitsIndicator = try $ do
   return $ not $ no
 
 subscript :: HeX Doc
-subscript = try $ char '_' >> math
+subscript = char '_' >> math
 
 superscript :: HeX Doc
-superscript = try $ char '^' >> math
+superscript = char '^' >> math
 
 {-
 

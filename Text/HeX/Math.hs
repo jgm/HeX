@@ -18,15 +18,15 @@ dollars writer = do
   display <- option False $ char '$' >> return True
   spaces
   let delim = if display
-                 then char '$' >> char '$'
-                 else char '$'
+                 then try $ spaces >> char '$' >> char '$'
+                 else try $ spaces >> char '$'
   parseMath writer display delim
 
 parenMath :: MathWriter -> HeX Doc
-parenMath writer = spaces >> parseMath writer False (try $ string "\\)")
+parenMath writer = spaces >> parseMath writer False (try $ spaces >> string "\\)")
 
 bracketMath :: MathWriter -> HeX Doc
-bracketMath writer = spaces >> parseMath writer True (try $ string "\\]")
+bracketMath writer = spaces >> parseMath writer True (try $ spaces >> string "\\]")
 
 parseMath :: MathWriter -> Bool -> HeX a -> HeX Doc
 parseMath writer display closer = do
@@ -39,7 +39,6 @@ parseMath writer display closer = do
 
 mathParser :: MathWriter -> HeX Doc
 mathParser writer = do
-  spaces
   res <-  environment Math
       <|> command Math
       <|> comment
@@ -48,7 +47,6 @@ mathParser writer = do
       <|> variable writer <$> pVariable
       <|> operator writer <$> pOperator
       <|> (operator writer . (:[])) <$> (pEscaped <|> pUnicode)
-  spaces
   return res
 
 opLetters :: [Char]
@@ -86,7 +84,10 @@ inbrackets = try $ char '[' >> manyTill (satisfy (/=']')) (char ']')
 
 arrayLine :: HeX Doc -> HeX [Doc]
 arrayLine expr =
-  sepBy1 (mconcat <$> many (notFollowedBy endLine >> expr)) (char '&')
+  sepBy1 (mconcat <$> many (notFollowedBy endLine >> expr)) ampersand
+
+ampersand :: HeX ()
+ampersand = try $ spaces >> char '&' >> spaces
 
 arrayLines :: HeX Doc -> HeX [[Doc]]
 arrayLines expr = sepEndBy1 (arrayLine expr) endLine

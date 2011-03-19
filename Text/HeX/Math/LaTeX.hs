@@ -312,7 +312,9 @@ defaults = do
                       , "biggl"
                       , "Biggl"
                       , "bigl"
-                      , "Bigl" ]
+                      , "Bigl"
+                      , "left"
+                      , "right" ]
   mapM_ latexCommand0 [ "lbrack"
                       , "lbrace"
                       , "rbrack"

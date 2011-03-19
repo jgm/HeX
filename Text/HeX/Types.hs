@@ -198,7 +198,7 @@ inline :: HeX Doc
 inline = next Inline
 
 math :: HeX Doc
-math = next Math
+math = try $ spaces >> next Math
 
 block :: HeX Doc
 block = next Block
