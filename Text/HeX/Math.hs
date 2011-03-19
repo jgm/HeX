@@ -40,7 +40,8 @@ parseMath writer display closer = do
 mathParser :: MathWriter -> HeX Doc
 mathParser writer = do
   spaces
-  res <-  command Math
+  res <-  environment Math
+      <|> command Math
       <|> comment
       <|> grouped writer <$> group math
       <|> number writer <$> pNumber
