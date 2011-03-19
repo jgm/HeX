@@ -89,4 +89,4 @@ arrayLine expr =
   sepBy1 (mconcat <$> many (notFollowedBy endLine >> expr)) (char '&')
 
 arrayLines :: HeX Doc -> HeX [[Doc]]
-arrayLines expr = sepBy1 (arrayLine expr) endLine
+arrayLines expr = sepEndBy1 (arrayLine expr) endLine
