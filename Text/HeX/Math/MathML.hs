@@ -1,5 +1,5 @@
 {-# LANGUAGE OverloadedStrings, ScopedTypeVariables #-}
-module Text.HeX.Math.MathML (defaults) where
+module Text.HeX.Math.MathML (defaults, arrayEnv) where
 
 import Text.HeX
 import Text.HeX.Standard.Xml
@@ -571,11 +571,6 @@ arrayEnv s f =
      lns <- arrayLines math
      return $ f aligns lns
 
-arrayEnv' :: String -> ([[Doc]] -> Doc) -> HeX ()
-arrayEnv' s f =
-   newEnvironment [Math] s $ do
-     lns <- arrayLines math
-     return $ f lns
 
 
 {-

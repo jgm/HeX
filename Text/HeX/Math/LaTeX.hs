@@ -335,15 +335,15 @@ defaults = do
                       , "Vert"
                       , "ulcorner"
                       , "urcorner" ]
-  mapM_ (arrayEnv True) [ "array"
-                        , "pmatrix"
-                        , "vmatrix"
-                        , "bmatrix"
-                        , "Vmatrix"
-                        , "Bmatrix" ]
-  mapM_ (arrayEnv False) [ "eqnarray"
-                         , "align"
-                         , "cases" ]
+  mapM_ arrayEnv      [ "array"
+                      , "pmatrix"
+                      , "vmatrix"
+                      , "bmatrix"
+                      , "Vmatrix"
+                      , "Bmatrix"
+                      , "eqnarray"
+                      , "align"
+                      , "cases" ]
   addParser [Math] enclosure
 
 enclosure :: HeX Doc
@@ -360,20 +360,16 @@ latexCommand2 :: String -> HeX ()
 latexCommand2 s = newCommand [Math] s $ \(MathDoc d1) (MathDoc d2) ->
   ctl s +++ d1 +++ d2
 
-arrayEnv :: Bool -> String -> HeX ()
-arrayEnv opt s =
-  if opt
-     then newEnvironment [Math] s arrayBody
-     else newEnvironment [Math] s $ arrayBody Nothing
-   where
-      arrayBody (mbopt :: Maybe String) = do
-      lns <- arrayLines math
-      return $ "\\begin{" +++ raws s +++ "}" +++
-         (case mbopt of
-               Nothing  -> mempty
-               Just x   -> "[" +++ raws x +++ "]") +++ "\n" +++
-         (mintercalate "\\\\\n" $ map (mintercalate " & ") lns) +++
-         "\\end{" +++ raws s +++ "}"
+arrayEnv :: String -> HeX ()
+arrayEnv s =
+  newEnvironment [Math] s $ \(mbopt :: Maybe String) -> do
+    lns <- arrayLines math
+    return $ "\\begin{" +++ raws s +++ "}" +++
+               (case mbopt of
+                  Nothing  -> mempty
+                  Just x   -> "[" +++ raws x +++ "]") +++ "\n" +++
+               (mintercalate "\\\\\n" $ map (mintercalate " & ") lns) +++
+               "\\end{" +++ raws s +++ "}"
 
 mintercalate :: Monoid m => m -> [m] -> m
 mintercalate sep items = mconcat $ intersperse sep items
