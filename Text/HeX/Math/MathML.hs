@@ -4,7 +4,7 @@ module Text.HeX.Math.MathML (defaults) where
 import Text.HeX
 import Text.HeX.Standard.Xml
 import Control.Applicative ((<$>))
-import Text.HeX.Math (defaultsFor)
+import Text.HeX.Math (defaultsFor, arrayLines)
 import qualified Data.Map as M
 import Data.ByteString.Lazy.UTF8 (toString)
 import Blaze.ByteString.Builder
@@ -545,7 +545,42 @@ subscript = char '_' >> math
 superscript :: HeX Doc
 superscript = char '^' >> math
 
+data Alignment = AlignCenter | AlignLeft | AlignRight
+
+arrayAlignments :: HeX [Alignment]
+arrayAlignments = try $ do
+  spaces
+  char '['
+  als <- many alignChar
+  char ']'
+  spaces
+  return als
+
+alignChar :: HeX Alignment
+alignChar = do
+  c <- oneOf "clr"
+  return $ case c of
+             'l' -> AlignLeft
+             'r' -> AlignRight
+             'c' -> AlignCenter
+
+arrayEnv :: String -> ([Alignment] -> [[Doc]] -> Doc) -> HeX ()
+arrayEnv s f =
+   newEnvironment [Math] s $ do
+     aligns <- option [] arrayAlignments
+     lns <- arrayLines math
+     return $ f aligns lns
+
+arrayEnv' :: String -> ([[Doc]] -> Doc) -> HeX ()
+arrayEnv' s f =
+   newEnvironment [Math] s $ do
+     lns <- arrayLines math
+     return $ f lns
+
+
 {-
+
+
 
 endLine :: GenParser Char st Char
 endLine = try $ do
@@ -596,14 +631,6 @@ cases = inEnvironment "cases" $ do
   rs <- sepEndBy1 arrayLine endLine
   return $ EGrouped [EStretchy (ESymbol Open "{"), EArray [] rs]
 
-arrayAlignments :: GenParser Char st [Alignment]
-arrayAlignments = try $ do
-  as <- braces (many letter)
-  let letterToAlignment 'l' = AlignLeft
-      letterToAlignment 'c' = AlignCenter
-      letterToAlignment 'r' = AlignRight
-      letterToAlignment _   = AlignDefault
-  return $ map letterToAlignment as
 
 inEnvironment :: String
               -> GenParser Char st Exp
