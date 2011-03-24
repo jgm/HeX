@@ -547,30 +547,21 @@ superscript = char '^' >> math
 
 data Alignment = AlignCenter | AlignLeft | AlignRight
 
-arrayAlignments :: HeX [Alignment]
-arrayAlignments = try $ do
-  spaces
-  char '['
-  als <- many alignChar
-  char ']'
-  spaces
-  return als
-
-alignChar :: HeX Alignment
-alignChar = do
-  c <- oneOf "clr"
-  return $ case c of
-             'l' -> AlignLeft
-             'r' -> AlignRight
-             'c' -> AlignCenter
-
 arrayEnv :: String -> ([Alignment] -> [[Doc]] -> Doc) -> HeX ()
 arrayEnv s f =
-   newEnvironment [Math] s $ do
-     aligns <- option [] arrayAlignments
+   newEnvironment [Math] s $ \(mbopt :: Maybe String) -> do
+     let aligns = alignsFromOpt mbopt
      lns <- arrayLines math
      return $ f aligns lns
 
+alignsFromOpt :: Maybe String -> [Alignment]
+alignsFromOpt (Just s) | all (`elem` "lrc") s = map go s
+  where go c = case c of
+                 'l' -> AlignLeft
+                 'r' -> AlignRight
+                 'c' -> AlignCenter
+                 _   -> error $ "Unexpected align character " ++ ['`',c,'\'']
+alignsFromOpt _ = []
 
 
 {-
