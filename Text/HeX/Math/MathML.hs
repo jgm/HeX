@@ -339,6 +339,11 @@ defaults = do
   arrayEnv "Bmatrix" $ matrix '{' '}'
   arrayEnv "vmatrix" $ matrix '\x2223' '\x2223'
   arrayEnv "Vmatrix" $ matrix '\x2225' '\x2225'
+  arrayEnv "array"   stdarray
+  arrayEnv "eqnarray" $ \_ -> stdarray [AlignRight, AlignCenter, AlignLeft]
+  arrayEnv "align" $ \_ -> stdarray [AlignRight, AlignLeft]
+  arrayEnv "cases"   cases
+
 
 writer :: MathWriter
 writer = MathWriter{
@@ -572,6 +577,14 @@ matrix :: Char -> Char -> [Alignment] -> [[Doc]] -> Doc
 matrix opendelim closedelim aligns rows =
   mrow $ stretchy opendelim +++ arrayRows aligns rows +++ stretchy closedelim
 
+cases :: [Alignment] -> [[Doc]] -> Doc
+cases aligns rows =
+  mrow $ stretchy '{' +++ arrayRows aligns rows
+
+stdarray :: [Alignment] -> [[Doc]] -> Doc
+stdarray aligns rows =
+  mrow $ arrayRows aligns rows
+
 arrayRows :: [Alignment] -> [[Doc]] -> Doc
 arrayRows aligns = mconcat . map (arrayRow aligns)
 
@@ -589,63 +602,4 @@ arrayCell align cell = inTags "mtd" align' cell
 
 stretchy :: Char -> Doc
 stretchy c = inTags "mo" [("stretchy","true")] $ rawc c
-
-
-
-{-
-
-
-
-
-endLine :: GenParser Char st Char
-endLine = try $ do
-  symbol "\\\\"
-  optional inbrackets  -- can contain e.g. [1.0in] for a line height, not yet supported
-  return '\n'
-
-arrayLine :: GenParser Char st ArrayLine
-arrayLine = notFollowedBy (try $ char '\\' >> symbol "end" >> return '\n') >>
-  sepBy1 (many (notFollowedBy endLine >> expr)) (symbol "&")
-
-array :: GenParser Char st Exp
-array = stdarray <|> eqnarray <|> align <|> cases <|> matrix
-
-
-stdarray :: GenParser Char st Exp
-stdarray = inEnvironment "array" $ do
-  aligns <- option [] arrayAlignments
-  liftM (EArray aligns) $ sepEndBy1 arrayLine endLine
-
-eqnarray :: GenParser Char st Exp
-eqnarray = inEnvironment "eqnarray" $
-  liftM (EArray [AlignRight, AlignCenter, AlignLeft]) $
-    sepEndBy1 arrayLine endLine
-
-align :: GenParser Char st Exp
-align = inEnvironment "align" $
-  liftM (EArray [AlignRight, AlignLeft]) $
-    sepEndBy1 arrayLine endLine
-
-cases :: GenParser Char st Exp
-cases = inEnvironment "cases" $ do
-  rs <- sepEndBy1 arrayLine endLine
-  return $ EGrouped [EStretchy (ESymbol Open "{"), EArray [] rs]
-
-
-inEnvironment :: String
-              -> GenParser Char st Exp
-              -> GenParser Char st Exp
-inEnvironment envType p = do
-  try $ do char '\\'
-           symbol "begin"
-           braces $ symbol envType >> optional (symbol "*")
-  result <- p
-  char '\\'
-  symbol "end"
-  braces $ symbol envType >> optional (symbol "*")
-  return result 
-
-
-
--}
 
