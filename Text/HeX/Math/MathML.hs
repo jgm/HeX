@@ -334,6 +334,11 @@ defaults = do
     inTags "munder" [] (x +++ y)
   newCommand [Math] "binom" $ \(MathDoc x) (MathDoc y) ->
     inTags "mfenced" [] $ inTags "mfrac" [("linethickness","0")] (x +++ y)
+  arrayEnv "bmatrix" $ matrix '[' ']'
+  arrayEnv "pmatrix" $ matrix '(' ')'
+  arrayEnv "Bmatrix" $ matrix '{' '}'
+  arrayEnv "vmatrix" $ matrix '\x2223' '\x2223'
+  arrayEnv "Vmatrix" $ matrix '\x2225' '\x2225'
 
 writer :: MathWriter
 writer = MathWriter{
@@ -545,7 +550,7 @@ subscript = char '_' >> math
 superscript :: HeX Doc
 superscript = char '^' >> math
 
-data Alignment = AlignCenter | AlignLeft | AlignRight
+data Alignment = AlignCenter | AlignLeft | AlignRight | AlignDefault
 
 arrayEnv :: String -> ([Alignment] -> [[Doc]] -> Doc) -> HeX ()
 arrayEnv s f =
@@ -561,10 +566,34 @@ alignsFromOpt (Just s) | all (`elem` "lrc") s = map go s
                  'r' -> AlignRight
                  'c' -> AlignCenter
                  _   -> error $ "Unexpected align character " ++ ['`',c,'\'']
-alignsFromOpt _ = []
+alignsFromOpt _ = repeat AlignDefault
+
+matrix :: Char -> Char -> [Alignment] -> [[Doc]] -> Doc
+matrix opendelim closedelim aligns rows =
+  mrow $ stretchy opendelim +++ arrayRows aligns rows +++ stretchy closedelim
+
+arrayRows :: [Alignment] -> [[Doc]] -> Doc
+arrayRows aligns = mconcat . map (arrayRow aligns)
+
+arrayRow :: [Alignment] -> [Doc] -> Doc
+arrayRow aligns cells =
+  inTags "mtr" [] $ mconcat $ zipWith arrayCell aligns cells
+
+arrayCell :: Alignment -> Doc -> Doc
+arrayCell align cell = inTags "mtd" align' cell
+  where align' = case align of
+                      AlignDefault -> []
+                      AlignLeft    -> [("columnalign","left")]
+                      AlignRight   -> [("columnalign","right")]
+                      AlignCenter  -> [("columnalign","center")]
+
+stretchy :: Char -> Doc
+stretchy c = inTags "mo" [("stretchy","true")] $ rawc c
+
 
 
 {-
+
 
 
 
@@ -581,21 +610,6 @@ arrayLine = notFollowedBy (try $ char '\\' >> symbol "end" >> return '\n') >>
 array :: GenParser Char st Exp
 array = stdarray <|> eqnarray <|> align <|> cases <|> matrix
 
-matrix :: GenParser Char st Exp
-matrix =  matrixWith "pmatrix" "(" ")"
-      <|> matrixWith "bmatrix" "[" "]"
-      <|> matrixWith "Bmatrix" "{" "}"
-      <|> matrixWith "vmatrix" "\x2223" "\x2223"
-      <|> matrixWith "Vmatrix" "\x2225" "\x2225"
-
-matrixWith :: String -> String -> String -> GenParser Char st Exp
-matrixWith keywd opendelim closedelim =
-  inEnvironment keywd $ do
-    aligns <- option [] arrayAlignments
-    lines' <- sepEndBy1 arrayLine endLine
-    return $ EGrouped [ EStretchy (ESymbol Open opendelim)
-                      , EArray aligns lines'
-                      , EStretchy (ESymbol Close closedelim)]
 
 stdarray :: GenParser Char st Exp
 stdarray = inEnvironment "array" $ do
