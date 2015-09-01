@@ -13,6 +13,7 @@ grp :: [Doc] -> Doc
 grp xs = (rawc '{') +++ mconcat xs +++ (rawc '}')
 
 ch :: Char -> Doc
-ch c | c `elem` "$#&%" = ctl [c]
-ch c | c `elem` "&~\\{}_^"= raws $ "{\\char`\\" ++ [c] ++ "}"
+ch c | c `elem` ['$','#','&','%'] = ctl [c]
+ch c | c `elem` ['&','~','\\','{','}','_','^'] =
+  raws $ "{\\char`\\" ++ [c] ++ "}"
 ch c    = rawc c

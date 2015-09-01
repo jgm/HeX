@@ -565,7 +565,7 @@ arrayEnv s f =
      return $ f aligns lns
 
 alignsFromOpt :: Maybe String -> [Alignment]
-alignsFromOpt (Just s) | all (`elem` "lrc") s = map go s
+alignsFromOpt (Just s) | all (`elem` ['l','r','c']) s = map go s
   where go c = case c of
                  'l' -> AlignLeft
                  'r' -> AlignRight
